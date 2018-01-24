@@ -76,12 +76,12 @@ WSGI_APPLICATION = 'CourseGuru.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'CourseGuruDB',
-        'USER':'postgres',
-        'PASSWORD': 'postgres',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'db_name',                      
+        'USER': 'db_user',
+        'PASSWORD': 'db_user_password',
         'HOST': '',
-        'PORT': '5432',
+        'PORT': 'db_port_number',
     }
 }
 
