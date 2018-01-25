@@ -12,7 +12,22 @@
 					Course Guru
 				</td>
 			</tr>
+			
+			
 			<tr>
+				<td>
+				<!--{% block content %}  -->
+					<form  method="post">
+						{% csrf_token %}
+    					<label for="NQ">Ask a new question: </label>
+   					 		<input id="NQ" type="text" name="NQ">
+   							 <input type="submit" value="Enter">
+					</form>
+					<!-- {% endblock %} -->
+					<br>
+					<br>
+					Recently Asked Questions:
+					<tr>
 				<td>
 					{% for c in content %}
 						<p>{{c}}</p>
