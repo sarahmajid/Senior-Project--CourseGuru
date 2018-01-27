@@ -6,6 +6,12 @@ from urllib.request import urlopen
 import psycopg2
 from django.http.response import HttpResponseRedirect
 
+#importing modes 
+from CourseGuru_App.models import user
+from CourseGuru_App.models import course
+from CourseGuru_App.models import questions
+from CourseGuru_App.models import answers
+
 
 
 
@@ -29,6 +35,9 @@ def index(request):
     myConnection.close()
     return render(request, 'CourseGuru_App/index.html', {'content': prt})
 
+#    questionData = questions.objects.all() 
+#    return render(request, 'CourseGuru_App/index.html',{'questionData': questionData})
+
 def answer(request):
     myConnection = psycopg2.connect( host='aa1kaxr8yrczw6m.cynst32f7ubm.us-east-2.rds.amazonaws.com', 
                                      user='cguser', password='csc4996!', dbname='postgres')
@@ -49,6 +58,13 @@ def answer(request):
 
 def contact(request):
     return render(request, 'CourseGuru_App/index.html', {'content':['Hi','Mike']})
+
+#    if request.method=='GET':
+#        id = request.GET.get('id')
+        #need to edit the modules answer table where foreign key writes quesitonID
+#        answerData = answers.objects.filter(quesitonID = id) 
+#        return render(request, 'CourseGuru_App/answer.html',{'answerData': answerData})
+
 
 
 #    url = (urlopen('https://canvas.wayne.edu/api/v1/courses').read()
