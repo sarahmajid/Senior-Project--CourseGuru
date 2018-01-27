@@ -12,14 +12,13 @@
 					Course Guru
 				</td>
 			</tr>
+			{% for c in content %}
 			<tr>
-				<td>
-					{% for c in content %}
-						<p>{{c}}</p>
-					{% endfor %}
-					
+				<td style="text-align: center; padding:10px;">	
+						{{c}}
 				</td>
 			</tr>
+			{% endfor %}
 		</table>
 	</body>
 </html>
