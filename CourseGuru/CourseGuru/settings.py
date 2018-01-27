@@ -37,7 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'CourseGuru_App',
+    'CourseGuru_App.apps.CourseguruAppConfig',
 ]
 
 MIDDLEWARE = [
@@ -77,7 +77,7 @@ WSGI_APPLICATION = 'CourseGuru.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'postgres',
+        'NAME': 'TestDB',
         'USER':'cguser',
         'PASSWORD': 'csc4996!',
         'HOST': 'aa1kaxr8yrczw6m.cynst32f7ubm.us-east-2.rds.amazonaws.com',
