@@ -4,7 +4,7 @@ from django.shortcuts import render
 import json
 from urllib.request import urlopen
 import psycopg2
-from django.views.generic import TemplateView, ListView
+
 
 
 
