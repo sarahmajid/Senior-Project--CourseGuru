@@ -18,5 +18,6 @@ from django.contrib import admin
 
 urlpatterns = [
     path('', include('CourseGuru_App.urls')),
+    path('/answer/', include('CourseGuru_App.urls')),
     path('admin/', admin.site.urls),
 ]

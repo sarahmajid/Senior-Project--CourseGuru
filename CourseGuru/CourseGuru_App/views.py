@@ -25,6 +25,12 @@ def index(request):
 #    return HttpResponse(template)
 #    return HttpResponse("We made it fam!")
 
+def answer(request):
+    if request.method=='GET':
+        id = request.GET.get('id')
+        return render(request, 'CourseGuru_App/answer.html')
+
+
 def contact(request):
     return render(request, 'CourseGuru_App/index.html', {'content':['Hi','Mike']})
 
