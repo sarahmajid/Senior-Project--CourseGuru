@@ -10,7 +10,7 @@ from urllib.request import urlopen
 
 # Create your views here.
 def index(request):
-    return render(request, 'CourseGuru_App/index.html', {})
+    return render(request, 'CourseGuru_App/questions.html', {})
 #    template = loader.get_template('courseguru_app/index.html')
 #    return HttpResponse(template)
 #    return HttpResponse("We made it fam!")
