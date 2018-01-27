@@ -3,6 +3,7 @@
 <!DOCTYPE HTML>
 <html>
 	<head>
+	
 		<title> Answers </title>
 	</head>
 	<body>
@@ -20,10 +21,10 @@
 					<u>Answers</u>
 				</td>
 			</tr>
-			{% for c in content %}
+			{% for c in answerData %}
 			<tr>
 				<td style=" padding:10px;">	
-					<a href="/answer/?id={{c}}" style="cursor: pointer;">{{c}}</a>	
+					<a href="/answer/?id={{c.id}}" style="cursor: pointer;">{{c.answer}}</a>	
 				</td>
 			</tr>
 			{% endfor %}
