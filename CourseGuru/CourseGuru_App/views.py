@@ -4,6 +4,7 @@ from django.shortcuts import render
 import json
 from urllib.request import urlopen
 import psycopg2
+from django.http.response import HttpResponseRedirect
 
 
 
@@ -15,6 +16,11 @@ def index(request):
     myConnection = psycopg2.connect( host='aa1kaxr8yrczw6m.cynst32f7ubm.us-east-2.rds.amazonaws.com', 
                                      user='cguser', password='csc4996!', dbname='postgres')
     cur = myConnection.cursor()
+    if request.method == "POST":
+        nq = request.POST.get('NQ')
+        cur.execute("INSERT INTO questions (question) VALUES ('" + nq + "')") 
+        myConnection.commit()
+        return HttpResponseRedirect('/')
     cur.execute("SELECT question from questions")
     prt = []
     for row in cur.fetchall():
@@ -24,16 +30,21 @@ def index(request):
     return render(request, 'CourseGuru_App/index.html', {'content': prt})
 
 def answer(request):
-    if request.method=='GET':
-        id = request.GET.get('id')
-        myConnection = psycopg2.connect( host='aa1kaxr8yrczw6m.cynst32f7ubm.us-east-2.rds.amazonaws.com', 
+    myConnection = psycopg2.connect( host='aa1kaxr8yrczw6m.cynst32f7ubm.us-east-2.rds.amazonaws.com', 
                                      user='cguser', password='csc4996!', dbname='postgres')
-        cur = myConnection.cursor()
-        cur.execute("select answer from answers a right join questions b on a.q_id = b.q_id where question = '" + id + "'")
-        prt = []
-        for row in cur.fetchall():
-            prt.append(row[0])
-        return render(request, 'CourseGuru_App/answer.html', {'content': prt})
+    cur = myConnection.cursor()
+#    if request.method=='GET':
+    id = request.GET.get('id', '') 
+    if request.method == "POST":
+        ans = request.POST.get('ANS')
+        cur.execute("INSERT INTO answers (answer, q_id) VALUES ('" + ans + "', '1')") 
+        myConnection.commit()
+        return HttpResponseRedirect('/answer/?id=%s' % id)
+    cur.execute("select answer from answers a right join questions b on a.q_id = b.q_id where question = '" + id + "'")
+    prt = []
+    for row in cur.fetchall():
+        prt.append(row[0])
+    return render(request, 'CourseGuru_App/answer.html', {'answers': prt, 'question': id})
 
 
 def contact(request):
