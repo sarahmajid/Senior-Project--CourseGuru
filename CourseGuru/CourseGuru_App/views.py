@@ -26,7 +26,14 @@ def index(request):
 def answer(request):
     if request.method=='GET':
         id = request.GET.get('id')
-        return render(request, 'CourseGuru_App/answer.html')
+        myConnection = psycopg2.connect( host='aa1kaxr8yrczw6m.cynst32f7ubm.us-east-2.rds.amazonaws.com', 
+                                     user='cguser', password='csc4996!', dbname='postgres')
+        cur = myConnection.cursor()
+        cur.execute("select answer from answers a right join questions b on a.q_id = b.q_id where question = '" + id + "'")
+        prt = []
+        for row in cur.fetchall():
+            prt.append(row[0])
+        return render(request, 'CourseGuru_App/answer.html', {'content': prt})
 
 
 def contact(request):
