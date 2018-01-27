@@ -20,10 +20,8 @@ def index(request):
     for row in cur.fetchall():
         prt.append(row[0])
 #    prt = ' '.join(prt)
+    myConnection.close()
     return render(request, 'CourseGuru_App/index.html', {'content': prt})
-#    template = loader.get_template('courseguru_app/index.html')
-#    return HttpResponse(template)
-#    return HttpResponse("We made it fam!")
 
 def answer(request):
     if request.method=='GET':
