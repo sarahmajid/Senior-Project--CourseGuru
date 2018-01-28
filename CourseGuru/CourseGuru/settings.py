@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'CourseGuru_App',
+    'chatterbot.ext.django_chatterbot',
    
 ]
 
