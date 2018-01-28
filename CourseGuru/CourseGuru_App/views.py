@@ -4,42 +4,41 @@ from django.shortcuts import render
 import json
 from urllib.request import urlopen
 import psycopg2
+from django.http.response import HttpResponseRedirect
+
+#importing models 
+from CourseGuru_App.models import user
+from CourseGuru_App.models import course
+from CourseGuru_App.models import questions
+from CourseGuru_App.models import answers
 
 
 
-
-
-
-# Create your views here.
+# Function to populate Main page
 def index(request):
-    myConnection = psycopg2.connect( host='aa1kaxr8yrczw6m.cynst32f7ubm.us-east-2.rds.amazonaws.com', 
-                                     user='cguser', password='csc4996!', dbname='postgres')
-    cur = myConnection.cursor()
-    cur.execute("SELECT question from questions")
-    prt = []
-    for row in cur.fetchall():
-        prt.append(row[0])
-#    prt = ' '.join(prt)
-    myConnection.close()
-    return render(request, 'CourseGuru_App/index.html', {'content': prt})
+    if request.method == "POST":
+        nq = request.POST.get('NQ')
+        questions.objects.create(question = nq, course_id = 1, user_id = 1)
+        return HttpResponseRedirect('/')
+    qData = questions.objects.all()
+    return render(request, 'CourseGuru_App/index.html', {'content': qData})
 
+# Function to populate Answers page
 def answer(request):
-    if request.method=='GET':
-        id = request.GET.get('id')
-        myConnection = psycopg2.connect( host='aa1kaxr8yrczw6m.cynst32f7ubm.us-east-2.rds.amazonaws.com', 
-                                     user='cguser', password='csc4996!', dbname='postgres')
-        cur = myConnection.cursor()
-        cur.execute("select answer from answers a right join questions b on a.q_id = b.q_id where question = '" + id + "'")
-        prt = []
-        for row in cur.fetchall():
-            prt.append(row[0])
-        return render(request, 'CourseGuru_App/answer.html', {'content': prt})
+#    if request.method=='GET':
+    qid = request.GET.get('id', '') 
+    if request.method == "POST":
+        ans = request.POST.get('ANS')
+        answers.objects.create(answer = ans, user_id = 1, question_id = qid)
+        return HttpResponseRedirect('/answer/?id=%s' % qid)
+    aData = answers.objects.filter(question_id = qid)
+    qData = questions.objects.get(id = qid)
+
+    return render(request, 'CourseGuru_App/answer.html', {'answers': aData, 'Title': qData})
 
 
-def contact(request):
-    return render(request, 'CourseGuru_App/index.html', {'content':['Hi','Mike']})
 
-
+#    ---Canvas code---
 #    url = (urlopen('https://canvas.wayne.edu/api/v1/courses').read()
 #    response = urlopen('https://canvas.wayne.edu/api/v1/courses')
 #    data = json.load(response)
