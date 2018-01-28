@@ -6,7 +6,7 @@ from urllib.request import urlopen
 import psycopg2
 from django.http.response import HttpResponseRedirect
 
-#importing modes 
+#importing models 
 from CourseGuru_App.models import user
 from CourseGuru_App.models import course
 from CourseGuru_App.models import questions
@@ -14,59 +14,31 @@ from CourseGuru_App.models import answers
 
 
 
-
-
-
-# Create your views here.
+# Function to populate Main page
 def index(request):
-    myConnection = psycopg2.connect( host='aa1kaxr8yrczw6m.cynst32f7ubm.us-east-2.rds.amazonaws.com', 
-                                     user='cguser', password='csc4996!', dbname='postgres')
-    cur = myConnection.cursor()
     if request.method == "POST":
         nq = request.POST.get('NQ')
-        cur.execute("INSERT INTO questions (question) VALUES ('" + nq + "')") 
-        myConnection.commit()
+        questions.objects.create(question = nq, course_id = 1, user_id = 1)
         return HttpResponseRedirect('/')
-    cur.execute("SELECT question from questions")
-    prt = []
-    for row in cur.fetchall():
-        prt.append(row[0])
-#    prt = ' '.join(prt)
-    myConnection.close()
-    return render(request, 'CourseGuru_App/index.html', {'content': prt})
+    qData = questions.objects.all()
+    return render(request, 'CourseGuru_App/index.html', {'content': qData})
 
-#    questionData = questions.objects.all() 
-#    return render(request, 'CourseGuru_App/index.html',{'questionData': questionData})
-
+# Function to populate Answers page
 def answer(request):
-    myConnection = psycopg2.connect( host='aa1kaxr8yrczw6m.cynst32f7ubm.us-east-2.rds.amazonaws.com', 
-                                     user='cguser', password='csc4996!', dbname='postgres')
-    cur = myConnection.cursor()
 #    if request.method=='GET':
-    id = request.GET.get('id', '') 
+    qid = request.GET.get('id', '') 
     if request.method == "POST":
         ans = request.POST.get('ANS')
-        cur.execute("INSERT INTO answers (answer, q_id) VALUES ('" + ans + "', '1')") 
-        myConnection.commit()
-        return HttpResponseRedirect('/answer/?id=%s' % id)
-    cur.execute("select answer from answers a right join questions b on a.q_id = b.q_id where question = '" + id + "'")
-    prt = []
-    for row in cur.fetchall():
-        prt.append(row[0])
-    return render(request, 'CourseGuru_App/answer.html', {'answers': prt, 'question': id})
+        answers.objects.create(answer = ans, user_id = 1, question_id = qid)
+        return HttpResponseRedirect('/answer/?id=%s' % qid)
+    aData = answers.objects.filter(question_id = qid)
+    qData = questions.objects.get(id = qid)
 
-
-def contact(request):
-    return render(request, 'CourseGuru_App/index.html', {'content':['Hi','Mike']})
-
-#    if request.method=='GET':
-#        id = request.GET.get('id')
-        #need to edit the modules answer table where foreign key writes quesitonID
-#        answerData = answers.objects.filter(quesitonID = id) 
-#        return render(request, 'CourseGuru_App/answer.html',{'answerData': answerData})
+    return render(request, 'CourseGuru_App/answer.html', {'answers': aData, 'Title': qData})
 
 
 
+#    ---Canvas code---
 #    url = (urlopen('https://canvas.wayne.edu/api/v1/courses').read()
 #    response = urlopen('https://canvas.wayne.edu/api/v1/courses')
 #    data = json.load(response)
