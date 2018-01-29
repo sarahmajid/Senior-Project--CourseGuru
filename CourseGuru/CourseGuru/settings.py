@@ -40,8 +40,21 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'CourseGuru_App',
     'chatterbot.ext.django_chatterbot',
+
    
 ]
+CHATTERBOT = {
+    'name': 'CourseBot',
+    'logic_adapters': [
+        'chatterbot.logic.BestMatch'
+    ],
+    'trainer': 'chatterbot.trainers.ChatterBotCorpusTrainer',
+    'training_data': [
+         'chatterbot.corpus.english.greetings'
+    ],
+    'django_app_name': 'django_chatterbot'
+    }
+    
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

@@ -36,7 +36,8 @@ def answer(request):
 
     return render(request, 'CourseGuru_App/answer.html', {'answers': aData, 'Title': qData})
 
-
+def bot(request):
+    return render(request, 'CourseGuru_App/bot.html')
 
 #    ---Canvas code---
 #    url = (urlopen('https://canvas.wayne.edu/api/v1/courses').read()
