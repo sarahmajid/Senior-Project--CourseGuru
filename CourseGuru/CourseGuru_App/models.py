@@ -16,14 +16,12 @@ class course(models.Model):
 class questions(models.Model):
      user = models.ForeignKey(user, on_delete=models.CASCADE)
      course = models.ForeignKey(course, on_delete=models.CASCADE)
-     title = models.CharField(max_length=80)
      question = models.CharField(max_length=200)
  
 class answers(models.Model):   
     #edit variable below
-     quesitonID = models.ForeignKey(questions, on_delete=models.CASCADE)
+     question = models.ForeignKey(questions, on_delete=models.CASCADE)
      user = models.ForeignKey(user, on_delete=models.CASCADE)
-     title = models.CharField(max_length=80)
      answer = models.CharField(max_length=400)
      comments = models.CharField(max_length=200)
-     rating = models.BooleanField
+#     rating = models.BooleanField
