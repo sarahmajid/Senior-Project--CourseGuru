@@ -14,22 +14,22 @@
 			</tr>
 		</table>
 		<br><br>
-		<table width="40%" align="Center" style="background-color: grey;">
+		<table width="40%" align="Center" style="background-color: grey; border-radius: 10px;">
 			<tr>
 				<td style="text-align: center; padding:10px; font-size: 22px; color: #FFFFFF; font-family: century gothic;">
 					[Course Name] Forum - Questions
 				</td>
 			</tr>
 			<tr>
-				<td width="40%" height="3px" style="background-color: #AEADAD;"></td>
+				<td height="3px" style="background-color: #AEADAD;"></td>
 			</tr>
 			<tr>
 				<td>
-					<form method="POST" action="" style="padding: 0 10% 0 10%;">
+					<form method="POST" action="" style="margin: 0 10%;">
 						<label style="font-size: 16px; color: #FFFFFF; font-family: century gothic;">Ask a new question: </label><br>
 						{% csrf_token %}
-						<textarea id="NQ" type="text" name="NQ" rows="4" cols="80%" maxlength="180" style="resize: none;"></textarea>
-						<input type="submit" value="Enter">				
+						<textarea id="NQ" type="text" name="NQ" rows="4" maxlength="180" style="resize: none; width: 100%;"></textarea>
+						<br><input type="submit" value="Enter">				
 					</form>
 					<br>
 				</td>
@@ -45,6 +45,7 @@
 			</tr>
 			{% endfor %}
 		</table>
+		<iframe height="250px" align="right" src='https://webchat.botframework.com/embed/CourseGuru?s=YUD91DXsl40.cwA.a_g.Om9iWAEn6ToXclj9ZQ_QHFf9-l13pVkCKgxdRm9PQtE'></iframe>
 	</body>
 </html>
 
