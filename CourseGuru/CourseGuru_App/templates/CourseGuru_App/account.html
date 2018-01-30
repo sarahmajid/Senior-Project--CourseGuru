@@ -1,7 +1,4 @@
 
-<!--  {% load staticfiles %}
-<link rel="stylesheet" type="text/css" href="{% static 'CourseGuru_App/answers.css' %}"/>
--->
 
 <!DOCTYPE HTML>
 <html>
@@ -29,21 +26,25 @@
 			<tr>
 				<td>
 					<form method="POST" action="" style="margin: 0 10%;">
-						<label style="font-size: 16px; color: #FFFFFF; font-family: century gothic;">Username: </label><br>
-						{% csrf_token %}
+						<label style="font-size: 16px; color: #FFFFFF; font-family: century gothic;">First Name : </label><br>
 						<textarea id="username" type="text" name="username" rows="1" maxlength="8" style="resize: none; width: 40%;"></textarea><br>
-						<label style="font-size: 16px; color: #FFFFFF; font-family: century gothic;">Password: </label><br>
-						{% csrf_token %}
-						<textarea id="password" type="text" name="password" rows="1" maxlength="8" style="resize: none; width: 40%;"></textarea><br>						
 						
-						<input type="submit" name="submit" value="ENTER">
-						<!--  <button name="CA" type="button" >CREATE ACCOUNT</button>-->
-						<input type="submit" name= "CA" value="CREATE ACCOUNT">
+						<label style="font-size: 16px; color: #FFFFFF; font-family: century gothic;">Last Name : </label><br>
+						<textarea id="username" type="text" name="username" rows="1" maxlength="8" style="resize: none; width: 40%;"></textarea><br>
+						
+						<label style="font-size: 16px; color: #FFFFFF; font-family: century gothic;">Password: </label><br>
+						<textarea id="password" type="text" name="password" rows="1" maxlength="8" style="resize: none; width: 40%;"></textarea><br>
+						
+						<label style="font-size: 16px; color: #FFFFFF; font-family: century gothic;">Confirm Password: </label><br>
+						<textarea id="cpassword" type="text" name="cpassword" rows="1" maxlength="8" style="resize: none; width: 40%;"></textarea><br>						
+						<input type="submit" value="SUBMIT">		
+						
 					</form>
-					
 					<br>
 				</td>
 			</tr>
 		</table>
 	</body>
 </html>
+
+<!--		<a href="/answer/?id={{c.id}}" style="cursor: pointer;">{{c.question}}</a>	-->

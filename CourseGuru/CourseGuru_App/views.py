@@ -14,15 +14,42 @@ from CourseGuru_App.models import answers
 
 
 
-# Function to populate Main page
+#Function to populate Main page
 def index(request):
+    if request.method == "POST":
+        nq = request.POST.get('CA')
+        if (nq == "CREATE ACCOUNT"):
+            return HttpResponseRedirect('/account/')
+ #       user.objects.create(username = userName, password = Password, )
+        
+    qData = questions.objects.all()
+    return render(request, 'CourseGuru_App/index.html', {'content': qData})
+#     if request.method == "POST":
+#         if form.is_valid():
+ #            form.save()
+#             if 'createAccount' in request.POST:
+#                 return HttpResponseRedirect('/account/')
+#             else:
+#                 userName = request.POST.get('username')
+#                 password = request.POST.get('password')
+    
+ #       questions.objects.create(question = nq, course_id = 1, user_id = 1)
+#                 return HttpResponseRedirect('/')
+   # qData = questions.objects.all()
+#   return render(request, 'CourseGuru_App/index.html', {'content': qData})
+def account(request):
+    if request.method == "POST":
+        nq = request.POST.get('')
+        return HttpResponseRedirect('')
+    qData = questions.objects.all()
+    return render(request, 'CourseGuru_App/account.html', {'content': qData})
+def question(request):
     if request.method == "POST":
         nq = request.POST.get('NQ')
         questions.objects.create(question = nq, course_id = 1, user_id = 1)
-        return HttpResponseRedirect('/')
+        return HttpResponseRedirect('/question/')
     qData = questions.objects.all()
-    return render(request, 'CourseGuru_App/index.html', {'content': qData})
-
+    return render(request, 'CourseGuru_App/question.html', {'content': qData})
 # Function to populate Answers page
 def answer(request):
 #    if request.method=='GET':

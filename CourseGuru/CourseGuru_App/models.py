@@ -5,7 +5,9 @@ from django.db import models
 class user(models.Model):
      firstName = models.CharField(max_length=30)
      lastName = models.CharField(max_length=50)
+     #get rid of userId its auto gen by django 
      userId = models.CharField(max_length=8)
+     password = models.CharField(max_length=8)
      status = models.CharField(max_length=18)
  
 class course(models.Model):
