@@ -25,21 +25,8 @@ def index(request):
             return HttpResponseRedirect('/question/')
  #       user.objects.create(username = userName, password = Password, )
         
-#    qData = questions.objects.all()
     return render(request, 'CourseGuru_App/index.html')
-#     if request.method == "POST":
-#         if form.is_valid():
- #            form.save()
-#             if 'createAccount' in request.POST:
-#                 return HttpResponseRedirect('/account/')
-#             else:
-#                 userName = request.POST.get('username')
-#                 password = request.POST.get('password')
-    
- #       questions.objects.create(question = nq, course_id = 1, user_id = 1)
-#                 return HttpResponseRedirect('/')
-   # qData = questions.objects.all()
-#   return render(request, 'CourseGuru_App/index.html', {'content': qData})
+
 
 def account(request):
     if request.method == "POST":
@@ -47,11 +34,13 @@ def account(request):
        lastname = request.POST.get('lastname')
        psword = request.POST.get('password')
        cpsword = request.POST.get('cpassword')
-       stat = request.POST.get('status')
-       mismatch = 'password mismatch'
+       stat = request.POST.get('status')       
+       
+       mismatch = 'Password Mismatch'
        if (psword != cpsword):
-            return render(request, 'CourseGuru_App/account.html', {'fname': firstname, 'lname': lastname, 'status': stat, 'msmatch': mismatch})
+            return render(request, 'CourseGuru_App/account.html', {'fname': firstname, 'lname': lastname, 'status': stat,'msmatch': mismatch})
        else:
+           #edit possibly drop user ID from the table or allow it to be null 
             user.objects.create(firstNae = firstname, lastName = lastname, userID = 2, password = psword, status = stat)   
         
 #        return HttpResponseRedirect('/index/')

@@ -44,7 +44,13 @@
 						
 						<label style="font-size: 16px; color: #FFFFFF; font-family: century gothic;">Status: </label><br>
 						{% csrf_token %}
-						<textarea id="status" type="text" name="status" rows="1" required="required" maxlength="18" style="resize: none; width: 60%;">{{status}}</textarea><br>					
+						<select name="status" required="required" >
+							<option>{{status}}</option>
+							<option value="Student">Student</option>
+							<option value="TA">TA</option>
+							<option value="Teacher">Teacher</option>
+						</select><br><br>
+						<!--  {{status}} -->					
 
 						<input type="submit" value="SUBMIT"><h3 style="font-size: 16px; color: red; font-family: century gothic;">{{msmatch}}</h3>		
 						
