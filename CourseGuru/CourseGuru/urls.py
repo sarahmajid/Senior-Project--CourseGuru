@@ -20,6 +20,4 @@ urlpatterns = [
     url(r'^', include('CourseGuru_App.urls')),
     url(r'^answer/', include('CourseGuru_App.urls')),
     url(r'^admin/', admin.site.urls),
-    url(r'^coursebot/', include ('CourseGuru_App.urls')),
-    
 ]

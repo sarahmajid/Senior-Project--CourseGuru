@@ -1,10 +1,8 @@
-from django.conf.urls import url,include
+from django.conf.urls import url
 from . import views
 
 urlpatterns = [
     url(r'^$', views.index, name='index'),
     url(r'^answer/', views.answer, name='answer'),
-    url(r'^coursebot/', views.bot, name = 'bot'),
-    url( r'^chatterbot/', include('chatterbot.ext.django_chatterbot.urls',
-        namespace='chatterbot')),
+    
 ]
