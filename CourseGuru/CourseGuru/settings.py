@@ -40,7 +40,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'CourseGuru_App',
     'chatterbot.ext.django_chatterbot',
-    'CourseBot',
 
    
 ]
