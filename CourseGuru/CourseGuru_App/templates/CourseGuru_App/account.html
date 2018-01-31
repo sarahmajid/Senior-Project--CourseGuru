@@ -26,18 +26,27 @@
 			<tr>
 				<td>
 					<form method="POST" action="" style="margin: 0 10%;">
-						<label style="font-size: 16px; color: #FFFFFF; font-family: century gothic;">First Name : </label><br>
-						<textarea id="username" type="text" name="username" rows="1" maxlength="8" style="resize: none; width: 40%;"></textarea><br>
+						<label style="font-size: 16px; color: #FFFFFF; font-family: century gothic;">First Name: </label><br>
+						{% csrf_token %}
+						<textarea id="firstname" type="text" name="firstname" rows="1" required="required" maxlength="30" style="resize: none; width: 60%;">{{fname}}</textarea><br>
 						
-						<label style="font-size: 16px; color: #FFFFFF; font-family: century gothic;">Last Name : </label><br>
-						<textarea id="username" type="text" name="username" rows="1" maxlength="8" style="resize: none; width: 40%;"></textarea><br>
-						
+						<label style="font-size: 16px; color: #FFFFFF; font-family: century gothic;">Last Name: </label><br>
+						{% csrf_token %}
+						<textarea id="lastname" type="text" name="lastname" rows="1" required="required" maxlength="50" style="resize: none; width: 60%;">{{lname}}</textarea><br>
+						 
 						<label style="font-size: 16px; color: #FFFFFF; font-family: century gothic;">Password: </label><br>
-						<textarea id="password" type="text" name="password" rows="1" maxlength="8" style="resize: none; width: 40%;"></textarea><br>
+						{% csrf_token %}
+						<textarea id="password" type="text" name="password" rows="1" required="required" maxlength="8" style="resize: none; width: 60%;"></textarea><br>
 						
 						<label style="font-size: 16px; color: #FFFFFF; font-family: century gothic;">Confirm Password: </label><br>
-						<textarea id="cpassword" type="text" name="cpassword" rows="1" maxlength="8" style="resize: none; width: 40%;"></textarea><br>						
-						<input type="submit" value="SUBMIT">		
+						{% csrf_token %}
+						<textarea id ="cpassword" type="text" name="cpassword" rows="1" required="required" maxlength="8" style="resize: none; width: 60%;"></textarea><br>						
+						
+						<label style="font-size: 16px; color: #FFFFFF; font-family: century gothic;">Status: </label><br>
+						{% csrf_token %}
+						<textarea id="status" type="text" name="status" rows="1" required="required" maxlength="18" style="resize: none; width: 60%;">{{status}}</textarea><br>					
+
+						<input type="submit" value="SUBMIT"><h3 style="font-size: 16px; color: red; font-family: century gothic;">{{msmatch}}</h3>		
 						
 					</form>
 					<br>

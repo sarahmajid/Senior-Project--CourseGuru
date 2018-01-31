@@ -1,3 +1,4 @@
+
 from django.http import HttpResponse
 from django.template import loader
 from django.shortcuts import render
@@ -17,13 +18,15 @@ from CourseGuru_App.models import answers
 #Function to populate Main page
 def index(request):
     if request.method == "POST":
-        nq = request.POST.get('CA')
-        if (nq == "CREATE ACCOUNT"):
+        submit = request.POST.get('submit')
+        if (submit == "CREATE ACCOUNT"):
             return HttpResponseRedirect('/account/')
+        if (submit == "ENTER"):
+            return HttpResponseRedirect('/question/')
  #       user.objects.create(username = userName, password = Password, )
         
-    qData = questions.objects.all()
-    return render(request, 'CourseGuru_App/index.html', {'content': qData})
+#    qData = questions.objects.all()
+    return render(request, 'CourseGuru_App/index.html')
 #     if request.method == "POST":
 #         if form.is_valid():
  #            form.save()
@@ -37,12 +40,24 @@ def index(request):
 #                 return HttpResponseRedirect('/')
    # qData = questions.objects.all()
 #   return render(request, 'CourseGuru_App/index.html', {'content': qData})
+
 def account(request):
     if request.method == "POST":
-        nq = request.POST.get('')
-        return HttpResponseRedirect('')
-    qData = questions.objects.all()
-    return render(request, 'CourseGuru_App/account.html', {'content': qData})
+       firstname = request.POST.get('firstname')
+       lastname = request.POST.get('lastname')
+       psword = request.POST.get('password')
+       cpsword = request.POST.get('cpassword')
+       stat = request.POST.get('status')
+       mismatch = 'password mismatch'
+       if (psword != cpsword):
+            return render(request, 'CourseGuru_App/account.html', {'fname': firstname, 'lname': lastname, 'status': stat, 'msmatch': mismatch})
+       else:
+            user.objects.create(firstNae = firstname, lastName = lastname, userID = 2, password = psword, status = stat)   
+        
+#        return HttpResponseRedirect('/index/')
+#       
+#    usData = 
+    return render(request, 'CourseGuru_App/account.html')
 def question(request):
     if request.method == "POST":
         nq = request.POST.get('NQ')
