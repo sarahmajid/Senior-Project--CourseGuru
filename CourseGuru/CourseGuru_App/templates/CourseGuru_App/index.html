@@ -1,11 +1,10 @@
-
-
 <!DOCTYPE HTML>
+{% load staticfiles %}
 <html>
 	<head>
 		<title> Course Guru </title>
 	</head>
-	<body>
+	<body>    
 		<table width="40%" align="Center" style="background-color: grey;">
 			<tr>
 				<td height="50px" style="text-align: center; font-size: 30px; color: #FFFFFF; font-family: century gothic;">
@@ -45,8 +44,8 @@
 			</tr>
 			{% endfor %}
 		</table>
-		<iframe height="250px" align="right" src='https://webchat.botframework.com/embed/CourseGuru?s=YUD91DXsl40.cwA.a_g.Om9iWAEn6ToXclj9ZQ_QHFf9-l13pVkCKgxdRm9PQtE'></iframe>
+		<iframe style="position:fixed; bottom: 0; right: 0;" src="/chatbot/" height="350px" width="350px"/>
+		
 	</body>
 </html>
-
 <!--		<a href="/answer/?id={{c.id}}" style="cursor: pointer;">{{c.question}}</a>	-->

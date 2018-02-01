@@ -36,6 +36,8 @@ def answer(request):
 
     return render(request, 'CourseGuru_App/answer.html', {'answers': aData, 'Title': qData})
 
+def chatbot(request):
+    return render(request, 'CourseGuru_App/botchat.html',)
 
 
 #    ---Canvas code---

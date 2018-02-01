@@ -5,5 +5,5 @@ urlpatterns = [
  #   path('contact/', views.contact, name='contact')
     path('', views.index, name='index'),
     path('answer/', views.answer, name='answer'),
-    
+    path('chatbot/', views.chatbot, name='chatbot'),
 ]

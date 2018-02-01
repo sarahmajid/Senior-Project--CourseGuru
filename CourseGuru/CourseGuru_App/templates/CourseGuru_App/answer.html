@@ -1,9 +1,9 @@
-
-
 <!DOCTYPE HTML>
+{% load staticfiles %}
 <html>
 	<head>
 		<title> Course Guru </title>
+		<!-- <link rel="stylesheet" href="{# static 'css/answers.css' #}"> -->
 	</head>
 	<body>
 		<table width="40%" align="Center" style="background-color: grey;">
@@ -53,6 +53,7 @@
 			</tr>
 			{% endfor %}
 		</table>
+		<iframe style="position:fixed; bottom: 0; right: 0;" src="/chatbot/" height="350px" width="350px"/>
 	</body>
 </html>
 
