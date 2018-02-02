@@ -1,4 +1,5 @@
 from django.db import models
+from email.policy import default
 
 # Create your models here.
 #database set up in django
@@ -26,4 +27,18 @@ class answers(models.Model):
      user = models.ForeignKey(user, on_delete=models.CASCADE)
      answer = models.CharField(max_length=400)
      comments = models.CharField(max_length=200)
-#     rating = models.BooleanField
+     rating = models.IntegerField(default=0)
+     
+class category(models.Model):
+    intent = models.CharField(max_length=50)
+    entities = models.CharField(max_length=150)
+    
+class botanswers(models.Model):
+    category = models.ForeignKey(category, on_delete=models.CASCADE)
+    answer = models.CharField(max_length=400)
+    rating = models.IntegerField(default=0)
+    
+    
+    
+    
+    

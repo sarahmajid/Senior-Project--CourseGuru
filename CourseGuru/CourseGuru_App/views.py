@@ -12,6 +12,9 @@ from CourseGuru_App.models import user
 from CourseGuru_App.models import course
 from CourseGuru_App.models import questions
 from CourseGuru_App.models import answers
+from CourseGuru_App.models import category
+from CourseGuru_App.models import botanswers
+from test.test_enum import Answer
 
 
 
@@ -54,6 +57,26 @@ def question(request):
         return HttpResponseRedirect('/question/')
     qData = questions.objects.all()
     return render(request, 'CourseGuru_App/question.html', {'content': qData})
+
+def getIntent(category, entities):
+    
+    answer = category.objects.filter(intent = category) 
+    entitylist = entities.split(",")
+    
+    numEntMtch = 0
+    ansID= 0
+    
+    for i in answer:
+        entList = answer.entities(i)
+        temp = 0
+        for j in entList:
+            temp += entitylist.count(j)
+            if temp > numEntMtch:
+                numEntMtch = temp
+                ansID = answer.objects.get(id)
+            
+    return ansID
+
 # Function to populate Answers page
 def answer(request):
 #    if request.method=='GET':

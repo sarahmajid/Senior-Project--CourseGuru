@@ -1,12 +1,14 @@
 
-<!--  {% load staticfiles %}
-<link rel="stylesheet" type="text/css" href="{% static 'CourseGuru_App/answers.css' %}"/>
--->
+{% load staticfiles %}
+<link rel="" type="text/css" href="{% static 'css/BotChat.css' %}"/>
+
 
 <!DOCTYPE HTML>
 <html>
 	<head>
 		<title> Course Guru </title>
+		<link href="https://cdn.botframework.com/botframework-webchat/latest/botchat.css" rel="stylesheet" />
+		
 	</head>
 	<body>
 		<table width="40%" align="Center" style="background-color: grey;">
@@ -45,5 +47,16 @@
 				</td>
 			</tr>
 		</table>
+
+<!-- 		 <div id="bot"/>
+    <script src="https://cdn.botframework.com/botframework-webchat/latest/botchat.js"></script>
+    <script>
+      BotChat.App({
+        directLine: { secret: direct_line_secret },
+        user: { id: '' },
+        bot: { id: 'ChatResponder' },
+        resize: 'detect'
+      }, document.getElementById("bot"));
+    </script> -->
 	</body>
 </html>

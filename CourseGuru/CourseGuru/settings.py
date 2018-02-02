@@ -79,10 +79,10 @@ WSGI_APPLICATION = 'CourseGuru.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'postgres',
-        'USER':'cguser',
-        'PASSWORD': 'HadToChange1',
-        'HOST': 'aa1kaxr8yrczw6m.cynst32f7ubm.us-east-2.rds.amazonaws.com',
+        'NAME': '',
+        'USER':'',
+        'PASSWORD': '',
+        'HOST': '',
         'PORT': '5432',
     }
 }
