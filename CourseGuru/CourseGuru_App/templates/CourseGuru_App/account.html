@@ -33,6 +33,10 @@
 						<label style="font-size: 16px; color: #FFFFFF; font-family: century gothic;">Last Name: </label><br>
 						{% csrf_token %}
 						<textarea id="lastname" type="text" name="lastname" rows="1" required="required" maxlength="50" style="resize: none; width: 60%;">{{lname}}</textarea><br>
+						
+						<label style="font-size: 16px; color: #FFFFFF; font-family: century gothic;">User Name: </label><br>
+						{% csrf_token %}
+						<textarea id="username" type="text" name="username" rows="1" required="required" maxlength="50" style="resize: none; width: 60%;">{{uname}}</textarea><br>
 						 
 						<label style="font-size: 16px; color: #FFFFFF; font-family: century gothic;">Password: </label><br>
 						{% csrf_token %}

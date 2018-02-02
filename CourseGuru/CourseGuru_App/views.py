@@ -15,6 +15,7 @@ from CourseGuru_App.models import answers
 from CourseGuru_App.models import category
 from CourseGuru_App.models import botanswers
 from test.test_enum import Answer
+from sqlalchemy.sql.expression import null
 
 
 
@@ -35,16 +36,17 @@ def account(request):
     if request.method == "POST":
        firstname = request.POST.get('firstname')
        lastname = request.POST.get('lastname')
+       username = request.POST.get('username')
        psword = request.POST.get('password')
        cpsword = request.POST.get('cpassword')
        stat = request.POST.get('status')       
        
        mismatch = 'Password Mismatch'
        if (psword != cpsword):
-            return render(request, 'CourseGuru_App/account.html', {'fname': firstname, 'lname': lastname, 'status': stat,'msmatch': mismatch})
+            return render(request, 'CourseGuru_App/account.html', {'fname': firstname, 'lname': lastname, 'uname': username, 'status': stat,'msmatch': mismatch})
        else:
            #edit possibly drop user ID from the table or allow it to be null 
-            user.objects.create(firstNae = firstname, lastName = lastname, userID = 2, password = psword, status = stat)   
+            user.objects.create(firstName = firstname, lastName = lastname, userName = username, password = psword, status = stat)   
         
 #        return HttpResponseRedirect('/index/')
 #       
