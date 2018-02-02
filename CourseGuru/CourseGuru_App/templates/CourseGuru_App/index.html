@@ -1,16 +1,15 @@
-
+<!DOCTYPE HTML>
 {% load staticfiles %}
 <link rel="" type="text/css" href="{% static 'css/BotChat.css' %}"/>
 
 
-<!DOCTYPE HTML>
 <html>
 	<head>
 		<title> Course Guru </title>
 		<link href="https://cdn.botframework.com/botframework-webchat/latest/botchat.css" rel="stylesheet" />
 		
 	</head>
-	<body>
+	<body>    
 		<table width="40%" align="Center" style="background-color: grey;">
 			<tr>
 				<td height="50px" style="text-align: center; font-size: 30px; color: #FFFFFF; font-family: century gothic;">
@@ -19,7 +18,7 @@
 			</tr>
 		</table>
 		<br><br>
-		<table width="40%" align="Center" style="background-color: grey;">
+		<table width="40%" align="Center" style="background-color: grey; border-radius: 10px;">
 			<tr>
 				<td style="text-align: center; padding:10px; font-size: 22px; color: #FFFFFF; font-family: century gothic;">
 					Please Login
@@ -42,21 +41,13 @@
 						<!--  <button name="CA" type="button" >CREATE ACCOUNT</button>-->
 						<input type="submit" name= "submit" value="CREATE ACCOUNT">
 					</form>
-					
 					<br>
 				</td>
 			</tr>
 		</table>
-
-<!-- 		 <div id="bot"/>
-    <script src="https://cdn.botframework.com/botframework-webchat/latest/botchat.js"></script>
-    <script>
-      BotChat.App({
-        directLine: { secret: direct_line_secret },
-        user: { id: '' },
-        bot: { id: 'ChatResponder' },
-        resize: 'detect'
-      }, document.getElementById("bot"));
-    </script> -->
+		<iframe style="position:fixed; bottom: 0; right: 0;" src="/chatbot/" height="350px" width="350px"/>
 	</body>
 </html>
+
+<!--		<a href="/answer/?id={{c.id}}" style="cursor: pointer;">{{c.question}}</a>	-->
+
