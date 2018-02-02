@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+{% load staticfiles %}
+<html>
+  <head>
+    <link href="https://cdn.botframework.com/botframework-webchat/latest/botchat.css" rel="stylesheet" />
+  </head>
+  <body>
+    <div id="bot"/>
+    <script src="https://cdn.botframework.com/botframework-webchat/latest/botchat.js"></script>
+    
+	    <script>
+	      BotChat.App({
+	        directLine: { secret: 'SECRET_DIRECT_LINE_KEY' },
+	        user: { id: 'You' },
+	        bot: { id: 'CourseGuru' },
+	        resize: 'detect'
+	      }, document.getElementById("bot"));
+	    </script>
+  </body>
+</html>
+
+<!--  <script src="{# static 'js/botchat.js' #}"></script>  -->

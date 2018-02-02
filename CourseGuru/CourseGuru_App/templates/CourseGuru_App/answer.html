@@ -1,0 +1,67 @@
+<!DOCTYPE HTML>
+{% load staticfiles %}
+<html>
+	<head>
+		<title> Course Guru </title>
+		<!-- <link rel="stylesheet" href="{# static 'css/answers.css' #}"> -->
+	</head>
+	<body>
+		<table width="40%" align="Center" style="background-color: grey;">
+			<tr>
+				<td height="50px" style="text-align: center; font-size: 30px; color: #FFFFFF; font-family: century gothic;">
+					Course Guru
+				</td>
+			</tr>
+		</table>
+		<br><br>
+
+		<table width="40%" align="Center" style="background-color: grey; border-radius: 10px;" cellspacing="0" cellpadding="0">
+
+			<tr>
+				<td style="text-align: center; padding:10px; font-size: 22px; color: #FFFFFF; font-family: century gothic;">
+					[Course Name] Forum - Answers
+				</td>
+			</tr>
+			<tr>
+				<td height="3px" style="background-color: #AEADAD;"></td>
+			</tr>
+			<tr>
+				<td style="padding:10px; font-size: 20px; color: #FFFFFF; font-family: century gothic;">
+					{{Title.question}}
+				</td>
+			</tr>
+			<tr>
+				<td height="3px" style="background-color: #AEADAD;"></td>
+			</tr>
+			<tr>
+				<td>
+					<br>
+					<form method="POST" action="" style="margin: 0 10%;">
+						<label style="font-size: 16px; color: #FFFFFF; font-family: century gothic;">Enter an answer: </label><br>
+						{% csrf_token %}
+						
+						<textarea id="ANS" type="text" name="ANS" rows="4" maxlength="180" style="resize: none; width: 100%;"></textarea>				
+						<input type="submit" value="Enter">							
+
+					</form>
+					<br>
+				</td>
+			</tr>
+			{% for a in answers %}
+			<tr>
+				<td style="border-style:collapse; color: #FFFFFF;">	
+					<div style="padding: 5px;">User:</div>
+					<div style="font-size: 20px; border-top: 2px solid #AEADAD; border-bottom: 2px solid #AEADAD; padding: 5px; ">{{a.answer}}</div>
+					<br>
+				</td>
+			</tr>
+			{% endfor %}
+		</table>
+		<iframe style="position:fixed; bottom: 0; right: 0;" src="/chatbot/" height="350px" width="350px"/>
+	</body>
+</html>
+
+<!-- 		{ # for c in answerData # }
+ 			<tr>
+				<td style=" padding:10px;">	
+					<a href="/answer/?id={{c.id}}" style="cursor: pointer;">{{c.answer}}</a>	-->

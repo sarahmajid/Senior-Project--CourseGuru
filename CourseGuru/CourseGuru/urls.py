@@ -16,7 +16,12 @@ Including another URLconf
 from django.urls import include, path
 from django.contrib import admin
 
+
 urlpatterns = [
     path('', include('CourseGuru_App.urls')),
+    path('/account/', include('CourseGuru_App.urls')),
+    path('/question/', include('CourseGuru_App.urls')),
+    path('/answer/', include('CourseGuru_App.urls')),
+    path('chatbot/', include('CourseGuru_App.urls')),
     path('admin/', admin.site.urls),
 ]
