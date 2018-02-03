@@ -79,7 +79,7 @@ WSGI_APPLICATION = 'CourseGuru.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'null',
+        'NAME': 'testgitignore',
         'USER':'null',
         'PASSWORD': 'null',
         'HOST': 'null',
