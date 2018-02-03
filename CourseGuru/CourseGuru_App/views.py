@@ -1,4 +1,3 @@
-
 from django.http import HttpResponse
 from django.template import loader
 from django.shortcuts import render
@@ -6,15 +5,15 @@ import json
 from urllib.request import urlopen
 import psycopg2
 from django.http.response import HttpResponseRedirect
+import requests
 
 #importing models 
-from CourseGuru_App.models import user, category
+from CourseGuru_App.models import user
 from CourseGuru_App.models import course
 from CourseGuru_App.models import questions
 from CourseGuru_App.models import answers
 from CourseGuru_App.models import category
 from CourseGuru_App.models import botanswers
-from test.test_enum import Answer
 
 
 
@@ -50,29 +49,43 @@ def account(request):
 #       
 #    usData = 
     return render(request, 'CourseGuru_App/account.html')
+
+
 def question(request):
     if request.method == "POST":
         nq = request.POST.get('NQ')
         questions.objects.create(question = nq, course_id = 1, user_id = 1)
-        return HttpResponseRedirect('/question/')
+        cbAnswer(nq)
+        #=======================================================================
+        # luisIntent = cbAnswer(nq)
+        # catID = category.objects.get(id=1)
+        # cbAns = botanswers.objects.get(category_id = catID.id)
+        # qid = questions.objects.get(question = nq)
+        # answers.objects.create(answer = cbAns.answer, user_id = 1, question_id = qid.id)
+        #=======================================================================
+#        questions.objects.filter(id=4).update(question=catID.id)
+        
+        #=======================================================================
+        # try:
+        #     r = request.get('ENDPOINT&q=%s' % nq, '')
+        #     luisStr = json.loads(r.text)
+        #     luisStr = luisStr['topScoringIntent']['intent']
+        #     questions.objects.filter(id=3).update(question=luisStr)
+        # except Exception as e:
+        #     questions.objects.filter(id=3).update(question='failed')
+        #=======================================================================
+        return HttpResponseRedirect('/question/') 
     qData = questions.objects.all()
     return render(request, 'CourseGuru_App/question.html', {'content': qData})
 
 # returns a good match to entities answer object  
-def getIntent(intnt, entities):    
-#def getIntent(request):   
-#    catgry=""
+def getIntentAns(luisIntent, luisEntities):    
+
     count = 0
     answr = ""
-    #=========for testing using index page=============
-    # if request.method == "POST":
-    #      submit = request.POST.get('submit')
-    #      if (submit == "CREATE ACCOUNT"):
-    #         categories = request.POST.get('username')
-    #         entities = request.POST.get('password')
-    #===========================================================================
-    entitiesList = entities.split(",")
-    catgry = category.objects.get(intent = intnt)
+    
+    entitiesList = luisEntities.split(",")
+    catgry = category.objects.get(intent = luisIntent)
     
     filtAns = botanswers.objects.filter(category_id = catgry.id)
      
@@ -87,31 +100,7 @@ def getIntent(intnt, entities):
                 count = cntAccuracy 
                 answr = botanswers.objects.get(id = m.id)
     return (answr)                     
-    #===========================================================================
-    # return render(request, 'CourseGuru_App/index.html', {'answers': ansID})
-    #===========================================================================
-#    print(a.intent)
-    
-#===========================================================================
-    # answer = category.objects.filter(intent = category) 
-    # entitylist = entities.split(",")
-    # 
-    # numEntMtch = 0
-    # ansID= 0
-    # 
-    # for i in answer:
-    #     entList = answer.entities(i)
-    #     temp = 0
-    #     for j in entList:
-    #         temp += entitylist.count(j)
-    #         if temp > numEntMtch:
-    #             numEntMtch = temp
-    #             ansID = answer.objects.get(id = i.id)
-    # aData = answers.objects.filter(id = ansID)
-    #===========================================================================
-#    return render(request, 'CourseGuru_App/index.html', {'answers': a})
 
-#    return ansID
 
 # Function to populate Answers page
 def answer(request):
@@ -129,8 +118,25 @@ def answer(request):
 def chatbot(request):
     return render(request, 'CourseGuru_App/botchat.html',)
 
+def cbAnswer(nq):
+    r = requests.get('ENDPOINTq=%s' % nq)
+    luisStr = json.loads(r.text)
+    #Grabs intent score of question
+    luisScore = float(luisStr['topScoringIntent']['score'])
+    #Grabs intent of question
+    luisIntent = luisStr['topScoringIntent']['intent']
+    #If intent receives a lower score than 60% or there is no intent, the question does not get answered
+    if luisScore < 0.6 or luisIntent == 'None':
+        return
+    catID = category.objects.get(intent=luisIntent)
+    #Sets cbAns to the first answer it can find matching that category (This needs to be improved)
+    cbAns = botanswers.objects.filter(category_id = catID.id).first()
+    #ID of the latest question created
+    qid = questions.objects.last()
+    answers.objects.create(answer = cbAns.answer, user_id = 1, question_id = qid.id)
+#    return(intent)
 
 #    ---Canvas code---
 #    url = (urlopen('https://canvas.wayne.edu/api/v1/courses').read()
-#    response = urlopen('https://canvas.wayne.edu/api/v1/courses')
+
 #    data = json.load(response)
