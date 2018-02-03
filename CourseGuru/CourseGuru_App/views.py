@@ -30,13 +30,11 @@ def index(request):
             
             usname = request.POST.get('username')
             psword = request.POST.get('password')
-        #if user.objects.get(id = lid).exists():
             try:
                 lid = user.objects.get(userName = usname, password = psword)
             
                 if (lid.id>0):
-                    return render(request, 'CourseGuru_App/question.html')
-                    #return render(request, 'CourseGuru_App/index.html',{'credentialmismatch': credentialmismatch})
+                    return HttpResponseRedirect('/question/') 
             except:
                 return render(request, 'CourseGuru_App/index.html',{'credentialmismatch': credentialmismatch})
 
