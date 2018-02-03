@@ -39,7 +39,7 @@ for page in doc.get_pages():
         if isinstance(lt_obj, LTTextBox) or isinstance(lt_obj, LTTextLine):
             extracted_text += lt_obj.get_text()
 
-hello = extracted_text
+
 
 import sys
 
