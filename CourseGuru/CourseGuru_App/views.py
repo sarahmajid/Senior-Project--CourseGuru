@@ -44,7 +44,7 @@ def account(request):
             return render(request, 'CourseGuru_App/account.html', {'fname': firstname, 'lname': lastname, 'status': stat,'msmatch': mismatch})
        else:
            #edit possibly drop user ID from the table or allow it to be null 
-            user.objects.create(firstNae = firstname, lastName = lastname, userID = 2, password = psword, status = stat)   
+            user.objects.create(firstName = firstname, lastName = lastname, id = 2, password = psword, status = stat)   
         
 #        return HttpResponseRedirect('/index/')
 #       
