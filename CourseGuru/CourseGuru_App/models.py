@@ -7,7 +7,7 @@ class user(models.Model):
      firstName = models.CharField(max_length=30)
      lastName = models.CharField(max_length=50)
      #get rid of userId its auto gen by django 
-     userId = models.CharField(max_length=8)
+     userName = models.CharField(max_length=20)
      password = models.CharField(max_length=8)
      status = models.CharField(max_length=18)
  
@@ -31,12 +31,12 @@ class answers(models.Model):
      
 class category(models.Model):
     intent = models.CharField(max_length=50)
-    entities = models.CharField(max_length=150)
     
 class botanswers(models.Model):
     category = models.ForeignKey(category, on_delete=models.CASCADE)
     answer = models.CharField(max_length=400)
     rating = models.IntegerField(default=0)
+    entities = models.CharField(max_length=200)
     
     
     

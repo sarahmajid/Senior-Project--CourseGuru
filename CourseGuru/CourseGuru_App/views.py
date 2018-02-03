@@ -8,7 +8,7 @@ import psycopg2
 from django.http.response import HttpResponseRedirect
 
 #importing models 
-from CourseGuru_App.models import user
+from CourseGuru_App.models import user, category
 from CourseGuru_App.models import course
 from CourseGuru_App.models import questions
 from CourseGuru_App.models import answers
@@ -44,7 +44,7 @@ def account(request):
             return render(request, 'CourseGuru_App/account.html', {'fname': firstname, 'lname': lastname, 'status': stat,'msmatch': mismatch})
        else:
            #edit possibly drop user ID from the table or allow it to be null 
-            user.objects.create(firstNae = firstname, lastName = lastname, userID = 2, password = psword, status = stat)   
+            user.objects.create(firstName = firstname, lastName = lastname, userID = 2, password = psword, status = stat)   
         
 #        return HttpResponseRedirect('/index/')
 #       
@@ -58,24 +58,60 @@ def question(request):
     qData = questions.objects.all()
     return render(request, 'CourseGuru_App/question.html', {'content': qData})
 
-def getIntent(category, entities):
+# returns a good match to entities answer object  
+def getIntent(intnt, entities):    
+#def getIntent(request):   
+#    catgry=""
+    count = 0
+    answr = ""
+    #=========for testing using index page=============
+    # if request.method == "POST":
+    #      submit = request.POST.get('submit')
+    #      if (submit == "CREATE ACCOUNT"):
+    #         categories = request.POST.get('username')
+    #         entities = request.POST.get('password')
+    #===========================================================================
+    entitiesList = entities.split(",")
+    catgry = category.objects.get(intent = intnt)
     
-    answer = category.objects.filter(intent = category) 
-    entitylist = entities.split(",")
+    filtAns = botanswers.objects.filter(category_id = catgry.id)
+     
+    for m in filtAns:
+        b = m.entities.split(",")
+        tempCntMtch = 0
+        ttlCnt = len(b)
+        for n in b: 
+            tempCntMtch += entitiesList.count(n)
+            cntAccuracy = (tempCntMtch/ttlCnt)
+            if cntAccuracy>count:
+                count = cntAccuracy 
+                answr = botanswers.objects.get(id = m.id)
+    return (answr)                     
+    #===========================================================================
+    # return render(request, 'CourseGuru_App/index.html', {'answers': ansID})
+    #===========================================================================
+#    print(a.intent)
     
-    numEntMtch = 0
-    ansID= 0
-    
-    for i in answer:
-        entList = answer.entities(i)
-        temp = 0
-        for j in entList:
-            temp += entitylist.count(j)
-            if temp > numEntMtch:
-                numEntMtch = temp
-                ansID = answer.objects.get(id)
-            
-    return ansID
+#===========================================================================
+    # answer = category.objects.filter(intent = category) 
+    # entitylist = entities.split(",")
+    # 
+    # numEntMtch = 0
+    # ansID= 0
+    # 
+    # for i in answer:
+    #     entList = answer.entities(i)
+    #     temp = 0
+    #     for j in entList:
+    #         temp += entitylist.count(j)
+    #         if temp > numEntMtch:
+    #             numEntMtch = temp
+    #             ansID = answer.objects.get(id = i.id)
+    # aData = answers.objects.filter(id = ansID)
+    #===========================================================================
+#    return render(request, 'CourseGuru_App/index.html', {'answers': a})
+
+#    return ansID
 
 # Function to populate Answers page
 def answer(request):
