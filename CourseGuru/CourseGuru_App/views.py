@@ -21,16 +21,27 @@ from sqlalchemy.sql.expression import null
 
 #Function to populate Main page
 def index(request):
+    credentialmismatch = 'This associated username and password does not exist'
     if request.method == "POST":
         submit = request.POST.get('submit')
         if (submit == "CREATE ACCOUNT"):
             return HttpResponseRedirect('/account/')
         if (submit == "ENTER"):
-            return HttpResponseRedirect('/question/')
- #       user.objects.create(username = userName, password = Password, )
-        
-    return render(request, 'CourseGuru_App/index.html')
+            
+            usname = request.POST.get('username')
+            psword = request.POST.get('password')
+        #if user.objects.get(id = lid).exists():
+            lid = user.objects.get(userName = usname, password = psword)
+            if (lid.id>0):
+                return render(request, 'CourseGuru_App/question.html')
+                #return render(request, 'CourseGuru_App/index.html',{'credentialmismatch': credentialmismatch})
+            else:
+                return render(request, 'CourseGuru_App/index.html',{'credentialmismatch': credentialmismatch})
 
+        
+    else:
+        return render(request, 'CourseGuru_App/index.html')
+    
 
 def account(request):
     if request.method == "POST":
