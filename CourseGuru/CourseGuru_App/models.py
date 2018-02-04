@@ -28,6 +28,8 @@ class answers(models.Model):
      answer = models.CharField(max_length=400)
      comments = models.CharField(max_length=200)
      rating = models.IntegerField(default=0)
+     class meta:
+        ordering = ['-rating']
      
 class category(models.Model):
     intent = models.CharField(max_length=50)

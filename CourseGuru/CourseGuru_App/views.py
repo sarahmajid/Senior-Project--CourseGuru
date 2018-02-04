@@ -93,7 +93,7 @@ def getIntent(category, entities):
 # Function to populate Answers page
 def answer(request):
 #    if request.method=='GET':
-    qid = request.GET.get('id', '') 
+    qid = request.GET.get('id', '')
     if request.method == "POST":
         ans = request.POST.get('ANS')
         answers.objects.create(answer = ans, user_id = 1, question_id = qid)
@@ -104,10 +104,16 @@ def answer(request):
     return render(request, 'CourseGuru_App/answer.html', {'answers': aData, 'Title': qData})
     
     voteUp = request.POST.get('voteUp')
-    votDown = request.POST.get('votDown')
-    if request.method == "POST":
-        answer.objects.get(rating = rate + 1)
-        request.POST.save('rating')
+    voteDown = request.POST.get('voteDown')
+    aid = request.GET.get('answer-id','')
+    if voteUp:
+        increment = answer.objects.get(answer_id = aid)
+        increment.rating = increment.rating + 1
+        increment.save()
+    if voteDown:
+        decrement = answer.objects.get(answer_id = aid)
+        decrement.rating = increment.rating - 1
+        decrement.save()
     return render(request, 'CourseGuru_App/answer.html',)
 
 def chatbot(request):
