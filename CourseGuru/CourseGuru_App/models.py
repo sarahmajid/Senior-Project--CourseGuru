@@ -37,6 +37,16 @@ class botanswers(models.Model):
     answer = models.CharField(max_length=400)
     rating = models.IntegerField(default=0)
     
+class keywords(models.Model):
+    word = models.CharField(max_length=50)
+    common_name = models.CharField(max_length=50)
+    
+class courseinfo(models.Model):
+    keyword_common_name = models.CharField(max_length=50)
+    syllabus_data = models.CharField(max_length=50)
+    course_id = models.CharField(max_length=20)
+    
+    
     
     
     

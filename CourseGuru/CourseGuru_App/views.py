@@ -6,6 +6,12 @@ import json
 from urllib.request import urlopen
 import psycopg2
 from django.http.response import HttpResponseRedirect
+import tempfile
+from pdfminer.pdfparser import PDFParser, PDFDocument
+from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
+from pdfminer.layout import LAParams, LTTextBox, LTTextLine
+from pdfminer.converter import PDFPageAggregator
+import re
 
 #importing models 
 from CourseGuru_App.models import user
@@ -14,7 +20,10 @@ from CourseGuru_App.models import questions
 from CourseGuru_App.models import answers
 from CourseGuru_App.models import category
 from CourseGuru_App.models import botanswers
+from CourseGuru_App.models import keywords
+from CourseGuru_App.models import courseinfo
 from test.test_enum import Answer
+import shutil
 
 
 
@@ -93,7 +102,43 @@ def answer(request):
 def chatbot(request):
     return render(request, 'CourseGuru_App/botchat.html',)
 
-
+def parse(request):
+    extracted_text = ''
+    if request.method == "POST":
+        myfile = request.FILES.get("syllabusFile").file.read()
+        f = tempfile.TemporaryFile('r+b')
+        f.write(myfile)
+        f.seek(0)
+        parser = PDFParser(f)
+        doc = PDFDocument()
+        parser.set_document(doc)
+        doc.set_parser(parser)
+        doc.initialize('')
+        rsrcmgr = PDFResourceManager()
+        laparams = LAParams()
+        
+        #Required to define seperation of text within pdf
+        laparams.char_margin = 1
+        laparams.word_margin = 1
+        
+        #Device takes LAPrams and uses them to parse individual pdf objects
+        device = PDFPageAggregator(rsrcmgr, laparams=laparams)
+        interpreter = PDFPageInterpreter(rsrcmgr, device)
+        
+        for page in doc.get_pages():
+            interpreter.process_page(page)
+            layout = device.get_result()
+            for lt_obj in layout:
+                if isinstance(lt_obj, LTTextBox) or isinstance(lt_obj, LTTextLine):
+                    extracted_text += lt_obj.get_text()
+        
+        f.close()
+        kData = keywords.objects.all()
+        for k in kData:
+            results = re.search(k.word + "(*)", extracted_text, re.MULTILINE)
+            return render(request, 'CourseGuru_App/parse.html', {'keywords': kData})
+    kData = keywords.objects.all()
+    return render(request, 'CourseGuru_App/parse.html', {'keywords': kData})
 #    ---Canvas code---
 #    url = (urlopen('https://canvas.wayne.edu/api/v1/courses').read()
 #    response = urlopen('https://canvas.wayne.edu/api/v1/courses')

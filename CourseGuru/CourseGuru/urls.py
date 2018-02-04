@@ -23,5 +23,6 @@ urlpatterns = [
     path('/question/', include('CourseGuru_App.urls')),
     path('/answer/', include('CourseGuru_App.urls')),
     path('chatbot/', include('CourseGuru_App.urls')),
+    path('/parse/', include('CourseGuru_App.urls')), 
     path('admin/', admin.site.urls),
 ]
