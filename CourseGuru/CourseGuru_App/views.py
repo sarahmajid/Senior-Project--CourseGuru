@@ -102,6 +102,13 @@ def answer(request):
     qData = questions.objects.get(id = qid)
 
     return render(request, 'CourseGuru_App/answer.html', {'answers': aData, 'Title': qData})
+    
+    voteUp = request.POST.get('voteUp')
+    votDown = request.POST.get('votDown')
+    if request.method == "POST":
+        answer.objects.get(rating = rate + 1)
+        request.POST.save('rating')
+    return render(request, 'CourseGuru_App/answer.html',)
 
 def chatbot(request):
     return render(request, 'CourseGuru_App/botchat.html',)
