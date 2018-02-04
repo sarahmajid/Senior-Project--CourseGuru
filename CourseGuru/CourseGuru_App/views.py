@@ -95,27 +95,42 @@ def answer(request):
 #    if request.method=='GET':
     qid = request.GET.get('id', '')
     if request.method == "POST":
-        ans = request.POST.get('ANS')
-        answers.objects.create(answer = ans, user_id = 1, question_id = qid)
+        if 'ANS' in request.POST:
+            ans = request.POST.get('ANS')
+            answers.objects.create(answer = ans, user_id = 1, question_id = qid)
+        elif 'voteUp' in request.POST: 
+            answerId = request.POST.get('voteUp')
+            record = answers.objects.get(id = answerId)
+            record.rating = record.rating + 1
+            record.save()
+            return HttpResponseRedirect('/answer/?id=%s' % qid)
+        elif 'voteDown' in request.POST: 
+            answerId = request.POST.get('voteDown')
+            record = answers.objects.get(id = answerId)
+            record.rating = record.rating - 1
+            record.save()
+            return HttpResponseRedirect('/answer/?id=%s' % qid)
+        
+#===============================================================================
+#         if (voteButton == "voteUp"):
+#             record = answer.objects.get(answer_id = answerId)
+#             record.rating = record.rating + 1
+#             record.save(record.rating)
+# #            answers.objects.create(answer = ans, user_id = 1, question_id = qid, )
+#             return HttpResponseRedirect('/answer/?id=%s' % qid)
+#         if (voteButton == "voteDown"):
+#             record = answer.objects.get(answer_id = answerId)
+#             record.rating = record.rating - 1
+#             record.save()
+#             return HttpResponseRedirect('/answer/?id=%s' % qid)
+#===============================================================================
+            
+        
+       
         return HttpResponseRedirect('/answer/?id=%s' % qid)
     aData = answers.objects.filter(question_id = qid)
     qData = questions.objects.get(id = qid)
 
-    
-    credentialmismatch = 'This associated username and password does not exist'
-    voteButton = request.POST.get('submit')
-    answerId = request.POST.get('answer-id')
-    
-    if (voteButton == "voteUp"):
-        record = answer.objects.get(answer_id = answerId)
-        record.rating = record.rating + 1
-        record.save()
-        return render(request, 'CourseGuru_App/index.html',{'credentialmismatch': credentialmismatch})
-    if (voteButton == "voteDown"):
-        record = answer.objects.get(answer_id = answerId)
-        record.rating = record.rating - 1
-        record.save()
-        
         
     return render(request, 'CourseGuru_App/answer.html', {'answers': aData, 'Title': qData})
 

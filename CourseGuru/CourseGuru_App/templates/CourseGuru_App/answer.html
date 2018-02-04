@@ -57,8 +57,11 @@
 					<div answer-rating="{{a.rating}}" style="font-size: 20px; border-top: 2px solid #AEADAD; border-bottom: 2px solid #AEADAD; padding: 5px; ">{{a.answer}}</div>
 					<label style="font-size: 12px; color: #FFFFFF; font-family: century gothic;">Was this answer helpful? </label><br>
 					<div style="float:right;">
-					<button answer-id="{{a.id}}" type="submit" name="voteUp" style="margin-left: 10px; margin-top: 2px; margin-bottom: 2px;"><div><i class="fas fa-thumbs-up"></i></div></button>
-					<button answer-id="{{a.id}}" type="submit" name="voteDown" style="margin-right: 10px; margin-top: 2px; margin-bottom: 2px;"><div><i class="fas fa-thumbs-down vote"></i></div></button>
+					<form action="" method="POST">
+					{% csrf_token %}
+					<button name="voteUp" type="submit" value="{{a.id}}" style="margin-left: 10px; margin-top: 2px; margin-bottom: 2px;"><div><i class="fas fa-thumbs-up"></i></div></button>
+					<button name="voteDown" type="submit" value="{{a.id}}" style="margin-right: 10px; margin-top: 2px; margin-bottom: 2px;"><div><i class="fas fa-thumbs-down vote"></i></div></button>
+					</form>
 					</div>
 					<div id="votingResult" style="float:right;">
 					<span>{{a.rating}}</span>

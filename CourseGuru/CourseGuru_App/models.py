@@ -29,7 +29,7 @@ class answers(models.Model):
      comments = models.CharField(max_length=200)
      rating = models.IntegerField(default=0)
      class meta:
-        ordering = ['-rating']
+        ordering = ['rating']
      
 class category(models.Model):
     intent = models.CharField(max_length=50)
