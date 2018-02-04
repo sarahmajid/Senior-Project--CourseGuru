@@ -4,6 +4,9 @@
 	<head>
 		<title> Course Guru </title>
 		<!-- <link rel="stylesheet" href="{# static 'css/answers.css' #}"> -->
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+		<script src="https://code.jquery.com/ui/1.12.0/jquery-ui.js" integrity="sha256-0YPKAwZP7Mp3ALMRVB2i8GXeEndvCq3eSl/WsAl1Ryk=" crossorigin="anonymous"></script>
+		<script defer src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"></script>
 	</head>
 	<body>
 		<table width="40%" align="Center" style="background-color: grey;">
@@ -52,11 +55,50 @@
 				<td style="border-style:collapse; color: #FFFFFF;">	
 					<div style="padding: 5px;">User:</div>
 					<div style="font-size: 20px; border-top: 2px solid #AEADAD; border-bottom: 2px solid #AEADAD; padding: 5px; ">{{a.answer}}</div>
+					<label style="font-size: 12px; color: #FFFFFF; font-family: century gothic;">Was this answer helpful? </label><br>
+					<div style="float:right;">
+					<div class="voteUp" style="margin-left: 10px; margin-right: 10px; margin-top: 2px; margin-bottom: 2px;"><div><i class="fas fa-thumbs-up"></i></div></div>
+					<div class="voteDown" style="margin-left: 10px; margin-right: 10px; margin-top: 2px; margin-bottom: 2px;"><div><i class="fas fa-thumbs-down vote"></i></div></div>
+					</div>
+					<div id="votingResult" style="float:right;">
+					<span>X</span>
+					</div>
+					<!--<input class="vote" type="submit" name = rating value="Y">
+					<input class="vote" type="submit" name = rating value="N"> -->
 					<br>
-				</td>
+				</td>		
 			</tr>
 			{% endfor %}
 		</table>
+		<script>
+		var voteValue = 0;
+  		//$( function() {
+    	//$( "#dialog" ).("p").text(voteValue);
+  		//} );
+  		
+  		$(function(){ 
+  			$("#dialog").hide();
+  		    $(".voteUp").click(function(){
+  		    	
+  		    		voteValue = voteValue + 1;
+  		    		alert("Up-voted to " + voteValue);
+  		    		$("#votingResult").html(voteValue);
+
+  		    }); 
+  		  $(".voteDown").click(function(){
+	    
+	    		voteValue = voteValue - 1;
+	    		alert("Down-voted to " + voteValue);
+	    		$("#votingResult").html(voteValue);
+
+	    });
+  		});
+  		</script>
+		
+		<div id="dialog" title="Basic dialog">
+  		<p>vote completed</p>
+		</div>
+		
 		<iframe style="position:fixed; bottom: 0; right: 0;" src="/chatbot/" height="350px" width="350px"/>
 	</body>
 </html>

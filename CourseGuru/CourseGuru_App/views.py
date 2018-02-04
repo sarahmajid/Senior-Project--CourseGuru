@@ -24,36 +24,50 @@ from CourseGuru_App.models import keywords
 from CourseGuru_App.models import courseinfo
 from test.test_enum import Answer
 import shutil
+from sqlalchemy.sql.expression import null
+
 
 
 
 #Function to populate Main page
 def index(request):
+    credentialmismatch = 'This associated username and password does not exist'
     if request.method == "POST":
         submit = request.POST.get('submit')
         if (submit == "CREATE ACCOUNT"):
             return HttpResponseRedirect('/account/')
         if (submit == "ENTER"):
-            return HttpResponseRedirect('/question/')
- #       user.objects.create(username = userName, password = Password, )
-        
-    return render(request, 'CourseGuru_App/index.html')
+            
+            usname = request.POST.get('username')
+            psword = request.POST.get('password')
+            try:
+                lid = user.objects.get(userName = usname, password = psword)
+            
+                if (lid.id>0):
+                    return HttpResponseRedirect('/question/') 
+            except:
+                return render(request, 'CourseGuru_App/index.html',{'credentialmismatch': credentialmismatch})
 
+        
+    else:
+        return render(request, 'CourseGuru_App/index.html')
+    
 
 def account(request):
     if request.method == "POST":
        firstname = request.POST.get('firstname')
        lastname = request.POST.get('lastname')
+       username = request.POST.get('username')
        psword = request.POST.get('password')
        cpsword = request.POST.get('cpassword')
        stat = request.POST.get('status')       
        
        mismatch = 'Password Mismatch'
        if (psword != cpsword):
-            return render(request, 'CourseGuru_App/account.html', {'fname': firstname, 'lname': lastname, 'status': stat,'msmatch': mismatch})
+            return render(request, 'CourseGuru_App/account.html', {'fname': firstname, 'lname': lastname, 'uname': username, 'status': stat,'msmatch': mismatch})
        else:
            #edit possibly drop user ID from the table or allow it to be null 
-            user.objects.create(firstName = firstname, lastName = lastname, id = 2, password = psword, status = stat)   
+            user.objects.create(firstName = firstname, lastName = lastname, userName = username, password = psword, status = stat)   
         
 #        return HttpResponseRedirect('/index/')
 #       

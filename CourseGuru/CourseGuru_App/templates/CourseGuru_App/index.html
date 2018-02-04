@@ -32,12 +32,13 @@
 					<form method="POST" action="" style="margin: 0 10%;">
 						<label style="font-size: 16px; color: #FFFFFF; font-family: century gothic;">Username: </label><br>
 						{% csrf_token %}
-						<textarea id="username" type="text" name="username" rows="1" maxlength="8" style="resize: none; width: 40%;"></textarea><br>
+						<textarea id="username" type="text" name="username" rows="1" maxlength="20" style="resize: none; width: 40%;"></textarea><br>
 						<label style="font-size: 16px; color: #FFFFFF; font-family: century gothic;">Password: </label><br>
 						{% csrf_token %}
 						<textarea id="password" type="text" name="password" rows="1" maxlength="8" style="resize: none; width: 40%;"></textarea><br>						
 						
-						<input type="submit" name="submit" value="ENTER">
+						<input type="submit" name="submit" value="ENTER"><h3 style="font-size: 16px; color: red; font-family: century gothic;">{{credentialmismatch}}</h3>		
+						
 						<!--  <button name="CA" type="button" >CREATE ACCOUNT</button>-->
 						<input type="submit" name= "submit" value="CREATE ACCOUNT">
 					</form>
