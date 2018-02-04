@@ -1,20 +1,19 @@
-
-
 <!DOCTYPE HTML>
+{% load staticfiles %}
 <html>
 	<head>
-		<title> Course Guru </title>
+		<title> Amesite Chat Responder </title>
 	</head>
-	<body>
+	<body>    
 		<table width="40%" align="Center" style="background-color: grey;">
 			<tr>
 				<td height="50px" style="text-align: center; font-size: 30px; color: #FFFFFF; font-family: century gothic;">
-					Course Guru
+					Amesite Chat Responder
 				</td>
 			</tr>
 		</table>
 		<br><br>
-		<table width="40%" align="Center" style="background-color: grey;">
+		<table class="table table bordered" width="40%" align="Center" style="background-color: grey; border-radius: 10px;">
 			<tr>
 				<td style="text-align: center; padding:10px; font-size: 22px; color: #FFFFFF; font-family: century gothic;">
 					[Course Name] Forum - Questions
@@ -28,23 +27,63 @@
 					<form method="POST" action="" style="margin: 0 10%;">
 						<label style="font-size: 16px; color: #FFFFFF; font-family: century gothic;">Ask a new question: </label><br>
 						{% csrf_token %}
-						<textarea id="NQ" type="text" name="NQ" rows="4" maxlength="180" style="resize: none; width: 100%;"></textarea>						<input type="submit" value="Enter">				
+						<textarea id="NQ" type="text" name="NQ" rows="4" maxlength="180" style="resize: none; width: 100%;"></textarea>
+						<br><input type="submit" value="Enter">				
 					</form>
 					<br>
 				</td>
 			</tr>
 			{% for c in content %}
 			<tr>
-				<td style=" padding:10px;">	
-					User: 				
+				<td style=" padding:10px; border-top: 2px solid #AEADAD;">	
+					<font style="color: #FFFFFF">User:</font> 				
 					<br>
 					<a href="/answer/?id={{c.id}}" style="cursor: pointer; font-size: 20px;">{{c.question}}</a>	
-					<br>Date Added:
+					<br>Date Added: {{c.date}}
+
 				</td>
 			</tr>
 			{% endfor %}
 		</table>
+		
+		<style>
+			#page-menu {
+				text-align: center;
+			}
+			
+			ul#horiz-list {
+				display: inline-block;
+				text-align: left;
+			}
+			ul#horiz-list li{
+				display: inline;
+			}
+		</style>
+		
+		{% if content.has_other_pages %}
+			<div id="page-menu">
+				<ul id="horiz-list" class="pagination">
+					{% if content.has_previous %}
+						<li><a href="?page={{ content.previous_page_number }}">&laquo;</a></li>
+					{% else %}
+						<li class="disabled"><span>&laquo;</span></li>
+					{% endif %}
+					{% for i in content.paginator.page_range %}
+						{% if content.number == i %}
+							<li class="active"><span>{{ i }} <span class="sr-only"></span></span></li>
+						{% else %}
+							<li><a href="?page={{ i }}">{{ i }}</a></li>
+						{% endif %}			
+					{% endfor %}
+					{% if content.has_next %}
+						<li><a href="?page={{ content.next_page_number }}">&raquo;</a></li>
+					{% else %}
+						<li class="disabled"><span>&raquo;</span></li>
+					{% endif %}
+				</ul>
+			</div>
+		{% endif %}
+		<iframe style="position:fixed; bottom: 0; right: 0;" src="/chatbot/" height="35%" width="20%"/>
 	</body>
 </html>
-
 <!--		<a href="/answer/?id={{c.id}}" style="cursor: pointer;">{{c.question}}</a>	-->

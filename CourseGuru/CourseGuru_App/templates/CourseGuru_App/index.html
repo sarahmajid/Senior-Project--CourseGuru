@@ -1,19 +1,15 @@
 <!DOCTYPE HTML>
 {% load staticfiles %}
-<link rel="" type="text/css" href="{% static 'css/BotChat.css' %}"/>
-
 
 <html>
 	<head>
-		<title> Course Guru </title>
-		<link href="https://cdn.botframework.com/botframework-webchat/latest/botchat.css" rel="stylesheet" />
-		
+		<title> Amesite Chat Responder </title>		
 	</head>
 	<body>    
 		<table width="40%" align="Center" style="background-color: grey;">
 			<tr>
 				<td height="50px" style="text-align: center; font-size: 30px; color: #FFFFFF; font-family: century gothic;">
-					Course Guru
+					Amesite Chat Responder
 				</td>
 			</tr>
 		</table>
@@ -33,13 +29,11 @@
 						<label style="font-size: 16px; color: #FFFFFF; font-family: century gothic;">Username: </label><br>
 						{% csrf_token %}
 						<textarea id="username" type="text" name="username" rows="1" maxlength="20" style="resize: none; width: 40%;"></textarea><br>
-						
 						<label style="font-size: 16px; color: #FFFFFF; font-family: century gothic;">Password: </label><br>
 						{% csrf_token %}
 						<input id="password" type="password" name="password" rows="1" maxlength="8" style="resize: none; width: 40%;"></input><br>						
 						
 						<input type="submit" name="submit" value="ENTER"><h3 style="font-size: 16px; color: red; font-family: century gothic;">{{credentialmismatch}}</h3>		
-						
 						<!--  <button name="CA" type="button" >CREATE ACCOUNT</button>-->
 						<input type="submit" name= "submit" value="CREATE ACCOUNT">
 					</form>
@@ -52,4 +46,3 @@
 </html>
 
 <!--		<a href="/answer/?id={{c.id}}" style="cursor: pointer;">{{c.question}}</a>	-->
-
