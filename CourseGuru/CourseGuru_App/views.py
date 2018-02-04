@@ -1,9 +1,9 @@
-from django.http import HttpResponse
-from django.template import loader
+#from django.http import HttpResponse
+#from django.template import loader
 from django.shortcuts import render
 import json
-from urllib.request import urlopen
-import psycopg2
+#from urllib.request import urlopen
+#import psycopg2
 from django.http.response import HttpResponseRedirect
 import requests
 import datetime
@@ -15,8 +15,7 @@ from CourseGuru_App.models import questions
 from CourseGuru_App.models import answers
 from CourseGuru_App.models import category
 from CourseGuru_App.models import botanswers
-
-
+from CourseGuru_App.models import comments
 
 #Function to populate Main page
 def index(request):
@@ -26,8 +25,8 @@ def index(request):
             return HttpResponseRedirect('/account/')
         if (submit == "ENTER"):
             return HttpResponseRedirect('/question/')
- #       user.objects.create(username = userName, password = Password, )
-        
+#       user.objects.create(username = userName, password = Password, )
+         
     return render(request, 'CourseGuru_App/index.html')
 
 
@@ -37,21 +36,22 @@ def account(request):
         lastname = request.POST.get('lastname')
         psword = request.POST.get('password')
         cpsword = request.POST.get('cpassword')
-        stat = request.POST.get('status') 
-   
+        stat = request.POST.get('status')       
+        
         mismatch = 'Password Mismatch'
         if (psword != cpsword):
             return render(request, 'CourseGuru_App/account.html', {'fname': firstname, 'lname': lastname, 'status': stat,'msmatch': mismatch})
         else:
             #edit possibly drop user ID from the table or allow it to be null 
-            user.objects.create(firstName = firstname, lastName = lastname, userID = 2, password = psword, status = stat)   
-        
+            user.objects.create(firstNae = firstname, lastName = lastname, userID = 2, password = psword, status = stat)   
+         
 #        return HttpResponseRedirect('/index/')
 #       
 #    usData = 
     return render(request, 'CourseGuru_App/account.html')
 
 
+# Function to populate Main page
 def question(request):
     if request.method == "POST":
         nq = request.POST.get('NQ')
@@ -69,7 +69,7 @@ def question(request):
         
         #=======================================================================
         # try:
-        #     r = request.get('ENDPOINT&q=%s' % nq, '')
+        #     r = request.get('ENDPOINTq=%s' % nq, '')
         #     luisStr = json.loads(r.text)
         #     luisStr = luisStr['topScoringIntent']['intent']
         #     questions.objects.filter(id=3).update(question=luisStr)
@@ -79,6 +79,26 @@ def question(request):
         return HttpResponseRedirect('/question/') 
     qData = questions.objects.all()
     return render(request, 'CourseGuru_App/question.html', {'content': qData})
+
+# Function to populate Answers page
+def answer(request):
+#    if request.method=='GET':
+    qid = request.GET.get('id', '') 
+    if request.method == "POST":
+        if 'COM' not in request.POST:
+            ans = request.POST.get('ANS')
+            answerDate = datetime.datetime.now().strftime("%m-%d-%Y %H:%M")
+            answers.objects.create(answer = ans, user_id = 1, question_id = qid, date = answerDate)
+            return HttpResponseRedirect('/answer/?id=%s' % qid)
+        else:
+            com = request.POST.get('COM')
+            commentDate = datetime.datetime.now().strftime("%m-%d-%Y %H:%M")
+            comments.objects.create(comment = com, question_id = qid, user_id = 1, date = commentDate)
+            return HttpResponseRedirect('/answer/?id=%s' % qid)
+    aData = answers.objects.filter(question_id = qid)
+    qData = questions.objects.get(id = qid)
+    cData = comments.objects.filter(question_id = qid)
+    return render(request, 'CourseGuru_App/answer.html', {'answers': aData, 'Title': qData, 'comments': cData})
 
 # returns a good match to entities answer object  
 def getIntentAns(luisIntent, luisEntities):    
@@ -104,25 +124,11 @@ def getIntentAns(luisIntent, luisEntities):
     return (answr)                     
 
 
-# Function to populate Answers page
-def answer(request):
-#    if request.method=='GET':
-    qid = request.GET.get('id', '') 
-    if request.method == "POST":
-        ans = request.POST.get('ANS')
-        answerDate = datetime.datetime.now().strftime("%m-%d-%Y %H:%M")
-        answers.objects.create(answer = ans, user_id = 1, question_id = qid, date = answerDate)
-        return HttpResponseRedirect('/answer/?id=%s' % qid)
-    aData = answers.objects.filter(question_id = qid)
-    qData = questions.objects.get(id = qid)
-
-    return render(request, 'CourseGuru_App/answer.html', {'answers': aData, 'Title': qData})
-
 def chatbot(request):
     return render(request, 'CourseGuru_App/botchat.html',)
 
 def cbAnswer(nq):
-    r = requests.get('ENDPOINTq=%s' % nq)
+    r = requests.get('ENDPOINT%s' % nq)
     luisStr = json.loads(r.text)
     #Grabs intent score of question
     luisScore = float(luisStr['topScoringIntent']['score'])
@@ -141,5 +147,5 @@ def cbAnswer(nq):
 
 #    ---Canvas code---
 #    url = (urlopen('https://canvas.wayne.edu/api/v1/courses').read()
-
+#    response = urlopen('https://canvas.wayne.edu/api/v1/courses')
 #    data = json.load(response)

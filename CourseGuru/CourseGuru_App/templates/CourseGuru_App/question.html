@@ -2,13 +2,13 @@
 {% load staticfiles %}
 <html>
 	<head>
-		<title> Course Guru </title>
+		<title> Amesite Chat Responder </title>
 	</head>
 	<body>    
 		<table width="40%" align="Center" style="background-color: grey;">
 			<tr>
 				<td height="50px" style="text-align: center; font-size: 30px; color: #FFFFFF; font-family: century gothic;">
-					Course Guru
+					Amesite Chat Responder
 				</td>
 			</tr>
 		</table>
@@ -35,16 +35,17 @@
 			</tr>
 			{% for c in content %}
 			<tr>
-				<td style=" padding:10px;">	
-					User: 				
+				<td style=" padding:10px; border-top: 2px solid #AEADAD;">	
+					<font style="color: #FFFFFF">User:</font> 				
 					<br>
 					<a href="/answer/?id={{c.id}}" style="cursor: pointer; font-size: 20px;">{{c.question}}</a>	
 					<br>Date Added: {{c.date}}
+
 				</td>
 			</tr>
 			{% endfor %}
 		</table>
-		<iframe style="position:fixed; bottom: 0; right: 0;" src="/chatbot/" height="350px" width="350px"/>
+		<iframe style="position:fixed; bottom: 0; right: 0;" src="/chatbot/" height="35%" width="20%"/>
 		
 	</body>
 </html>
