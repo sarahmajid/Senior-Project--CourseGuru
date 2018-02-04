@@ -101,20 +101,23 @@ def answer(request):
     aData = answers.objects.filter(question_id = qid)
     qData = questions.objects.get(id = qid)
 
-    return render(request, 'CourseGuru_App/answer.html', {'answers': aData, 'Title': qData})
     
-    voteUp = request.POST.get('voteUp')
-    voteDown = request.POST.get('voteDown')
-    aid = request.GET.get('answer-id','')
-    if voteUp:
-        increment = answer.objects.get(answer_id = aid)
-        increment.rating = increment.rating + 1
-        increment.save()
-    if voteDown:
-        decrement = answer.objects.get(answer_id = aid)
-        decrement.rating = increment.rating - 1
-        decrement.save()
-    return render(request, 'CourseGuru_App/answer.html',)
+    credentialmismatch = 'This associated username and password does not exist'
+    voteButton = request.POST.get('submit')
+    answerId = request.POST.get('answer-id')
+    
+    if (voteButton == "voteUp"):
+        record = answer.objects.get(answer_id = answerId)
+        record.rating = record.rating + 1
+        record.save()
+        return render(request, 'CourseGuru_App/index.html',{'credentialmismatch': credentialmismatch})
+    if (voteButton == "voteDown"):
+        record = answer.objects.get(answer_id = answerId)
+        record.rating = record.rating - 1
+        record.save()
+        
+        
+    return render(request, 'CourseGuru_App/answer.html', {'answers': aData, 'Title': qData})
 
 def chatbot(request):
     return render(request, 'CourseGuru_App/botchat.html',)
