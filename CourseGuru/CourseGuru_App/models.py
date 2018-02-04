@@ -29,9 +29,14 @@ class answers(models.Model):
      comments = models.CharField(max_length=200)
      rating = models.IntegerField(default=0)
      
+class comments(models.Model):
+    #edit variable below
+     question = models.ForeignKey(questions, on_delete=models.CASCADE)
+     user = models.ForeignKey(user, on_delete=models.CASCADE)
+     comment = models.CharField(max_length=300)
+     
 class category(models.Model):
     intent = models.CharField(max_length=50)
-    entities = models.CharField(max_length=150)
     
 class botanswers(models.Model):
     category = models.ForeignKey(category, on_delete=models.CASCADE)

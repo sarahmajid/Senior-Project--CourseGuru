@@ -15,6 +15,7 @@ from CourseGuru_App.models import questions
 from CourseGuru_App.models import answers
 from CourseGuru_App.models import category
 from CourseGuru_App.models import botanswers
+from CourseGuru_App.models import comments
 
 #Function to populate Main page
 def index(request):
@@ -67,7 +68,7 @@ def question(request):
         
         #=======================================================================
         # try:
-        #     r = request.get('ENDPOINT&q=%s' % nq, '')
+        #     r = request.get('ENDPOINTq=%s' % nq, '')
         #     luisStr = json.loads(r.text)
         #     luisStr = luisStr['topScoringIntent']['intent']
         #     questions.objects.filter(id=3).update(question=luisStr)
@@ -83,18 +84,24 @@ def answer(request):
 #    if request.method=='GET':
     qid = request.GET.get('id', '') 
     if request.method == "POST":
-        ans = request.POST.get('ANS')
-        answers.objects.create(answer = ans, user_id = 1, question_id = qid)
-        return HttpResponseRedirect('/answer/?id=%s' % qid)
+        if 'COM' not in request.POST:
+            ans = request.POST.get('ANS')
+            answers.objects.create(answer = ans, user_id = 1, question_id = qid)
+            return HttpResponseRedirect('/answer/?id=%s' % qid)
+        else:
+            com = request.POST.get('COM')
+            comments.objects.create(comment = com, question_id = qid, user_id = 1)
+            return HttpResponseRedirect('/answer/?id=%s' % qid)
     aData = answers.objects.filter(question_id = qid)
     qData = questions.objects.get(id = qid)
-    return render(request, 'CourseGuru_App/answer.html', {'answers': aData, 'Title': qData})
+    cData = comments.objects.filter(question_id = qid)
+    return render(request, 'CourseGuru_App/answer.html', {'answers': aData, 'Title': qData, 'comments': cData})
 
 def chatbot(request):
     return render(request, 'CourseGuru_App/botchat.html',)
 
 def cbAnswer(nq):
-    r = requests.get('ENDPOINTq=%s' % nq)
+    r = requests.get('ENDPOINT&q=%s' % nq)
     luisStr = json.loads(r.text)
     #Grabs intent score of question
     luisScore = float(luisStr['topScoringIntent']['score'])

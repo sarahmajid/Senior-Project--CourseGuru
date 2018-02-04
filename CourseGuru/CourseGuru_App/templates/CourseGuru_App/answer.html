@@ -36,22 +36,49 @@
 			<tr>
 				<td>
 					<br>
-					<form method="POST" action="" style="margin: 0 10%;">
+					<form method="POST" action="" style="margin-left: 10px;">
 						<label style="font-size: 16px; color: #FFFFFF; font-family: century gothic;">Enter an answer: </label><br>
 						{% csrf_token %}
 						
-						<textarea id="ANS" type="text" name="ANS" rows="4" maxlength="180" style="resize: none; width: 100%;"></textarea>				
-						<input type="submit" value="Enter">							
+						<textarea id="ANS" type="text" name="ANS" rows="4" maxlength="180" style="resize: none; width: 50%;"></textarea>				
+						<br><input type="submit" value="Enter">							
 
 					</form>
 					<br>
 				</td>
 			</tr>
+			<tr><td> <br><br> </td></tr>
 			{% for a in answers %}
 			<tr>
-				<td style="border-style:collapse; color: #FFFFFF;">	
+				<td style="border-style:collapse; color: #FFFFFF; padding-bottom: 20px;">	
 					<div style="padding: 5px;">User:</div>
 					<div style="font-size: 20px; border-top: 2px solid #AEADAD; border-bottom: 2px solid #AEADAD; padding: 5px; ">{{a.answer}}</div>
+					<br>
+				</td>
+			</tr>
+			{% endfor %}
+			<tr>
+				<td height="1.5px" style="background-color: white;"></td>				
+			</tr>
+			<tr>
+				<td style="padding: 15px 0;">
+					<br>
+					<form method="POST" action="" style="margin-left: 10px;">
+						<label style="font-size: 16px; color: #FFFFFF; font-family: century gothic;">Enter a comment: </label><br>
+						{% csrf_token %}
+						
+						<textarea id="COM" type="text" name="COM" rows="4" maxlength="180" style="resize: none; width: 50%;"></textarea>				
+						<br><input type="submit" value="Enter">							
+
+					</form>
+					<br>
+				</td>
+			</tr>
+			{% for c in comments %}
+			<tr>
+				<td style="border-style:collapse; color: #FFFFFF; padding-bottom: 20px;">	
+					<div style="padding: 5px;">User:</div>
+					<div style="font-size: 20px; border-top: 2px solid #AEADAD; border-bottom: 2px solid #AEADAD; padding: 5px; ">{{c.comment}}</div>
 					<br>
 				</td>
 			</tr>
