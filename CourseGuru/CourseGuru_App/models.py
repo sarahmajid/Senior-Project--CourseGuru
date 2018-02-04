@@ -8,7 +8,7 @@ class user(models.Model):
      lastName = models.CharField(max_length=50)
      #get rid of userId its auto gen by django 
      userName = models.CharField(max_length=20)
-     password = models.CharField(max_length=8)
+     password = models.CharField(max_length=20)
      status = models.CharField(max_length=18)
  
 class course(models.Model):
