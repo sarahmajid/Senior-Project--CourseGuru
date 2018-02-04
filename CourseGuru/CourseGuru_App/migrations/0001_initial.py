@@ -59,10 +59,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('firstName', models.CharField(max_length=30)),
                 ('lastName', models.CharField(max_length=50)),
-<<<<<<< HEAD
-=======
                 ('userName', models.CharField(max_length=8)),
->>>>>>> origin/SarahBranch
                 ('password', models.CharField(max_length=8)),
                 ('status', models.CharField(max_length=18)),
             ],
