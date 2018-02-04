@@ -3,7 +3,7 @@ from . import views
 
 urlpatterns = [
 #    path('', views.index, name='index'),
-    path('', views.getIntent, name='index'),
+    path('', views.index, name='index'),
     path('account/', views.account, name='account'),
     path('question/', views.question, name='question'),
     path('answer/', views.answer, name='answer'),

@@ -6,6 +6,7 @@ from urllib.request import urlopen
 import psycopg2
 from django.http.response import HttpResponseRedirect
 import requests
+import datetime
 
 #importing models 
 from CourseGuru_App.models import user
@@ -32,17 +33,17 @@ def index(request):
 
 def account(request):
     if request.method == "POST":
-       firstname = request.POST.get('firstname')
-       lastname = request.POST.get('lastname')
-       psword = request.POST.get('password')
-       cpsword = request.POST.get('cpassword')
-       stat = request.POST.get('status')       
-       
-       mismatch = 'Password Mismatch'
-       if (psword != cpsword):
+        firstname = request.POST.get('firstname')
+        lastname = request.POST.get('lastname')
+        psword = request.POST.get('password')
+        cpsword = request.POST.get('cpassword')
+        stat = request.POST.get('status') 
+   
+        mismatch = 'Password Mismatch'
+        if (psword != cpsword):
             return render(request, 'CourseGuru_App/account.html', {'fname': firstname, 'lname': lastname, 'status': stat,'msmatch': mismatch})
-       else:
-           #edit possibly drop user ID from the table or allow it to be null 
+        else:
+            #edit possibly drop user ID from the table or allow it to be null 
             user.objects.create(firstName = firstname, lastName = lastname, userID = 2, password = psword, status = stat)   
         
 #        return HttpResponseRedirect('/index/')
@@ -54,8 +55,9 @@ def account(request):
 def question(request):
     if request.method == "POST":
         nq = request.POST.get('NQ')
-        questions.objects.create(question = nq, course_id = 1, user_id = 1)
-        cbAnswer(nq)
+        questionDate = datetime.datetime.now().strftime("%m-%d-%Y %H:%M")
+        questions.objects.create(question = nq, course_id = 1, user_id = 1, date = questionDate)
+#        cbAnswer(nq)
         #=======================================================================
         # luisIntent = cbAnswer(nq)
         # catID = category.objects.get(id=1)
@@ -108,7 +110,8 @@ def answer(request):
     qid = request.GET.get('id', '') 
     if request.method == "POST":
         ans = request.POST.get('ANS')
-        answers.objects.create(answer = ans, user_id = 1, question_id = qid)
+        answerDate = datetime.datetime.now().strftime("%m-%d-%Y %H:%M")
+        answers.objects.create(answer = ans, user_id = 1, question_id = qid, date = answerDate)
         return HttpResponseRedirect('/answer/?id=%s' % qid)
     aData = answers.objects.filter(question_id = qid)
     qData = questions.objects.get(id = qid)

@@ -20,6 +20,7 @@ class questions(models.Model):
      user = models.ForeignKey(user, on_delete=models.CASCADE)
      course = models.ForeignKey(course, on_delete=models.CASCADE)
      question = models.CharField(max_length=200)
+     date = models.CharField(max_length=20)
  
 class answers(models.Model):   
     #edit variable below
@@ -28,7 +29,7 @@ class answers(models.Model):
      answer = models.CharField(max_length=400)
      comments = models.CharField(max_length=200)
      rating = models.IntegerField(default=0)
-     
+     date = models.CharField(max_length=20)
 class category(models.Model):
     intent = models.CharField(max_length=50)
     
