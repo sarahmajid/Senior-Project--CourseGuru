@@ -14,7 +14,7 @@
 			</tr>
 		</table>
 		<br><br>
-		<table width="40%" align="Center" style="background-color: grey;">
+		<table class="table table bordered" width="40%" align="Center" style="background-color: grey;">
 			<tr>
 				<td style="text-align: center; padding:10px; font-size: 22px; color: #FFFFFF; font-family: century gothic;">
 					[Course Name] Forum - Questions
@@ -44,6 +44,45 @@
 			</tr>
 			{% endfor %}
 		</table>
+		
+		<style>
+			#page-menu {
+				text-align: center;
+			}
+			
+			ul#horiz-list {
+				display: inline-block;
+				text-align: left;
+			}
+			ul#horiz-list li{
+				display: inline;
+			}
+		</style>
+		
+		{% if content.has_other_pages %}
+			<div id="page-menu">
+				<ul id="horiz-list" class="pagination">
+					{% if content.has_previous %}
+						<li><a href="?page={{ content.previous_page_number }}">&laquo;</a></li>
+					{% else %}
+						<li class="disabled"><span>&laquo;</span></li>
+					{% endif %}
+					{% for i in content.paginator.page_range %}
+						{% if content.number == i %}
+							<li class="active"><span>{{ i }} <span class="sr-only"></span></span></li>
+						{% else %}
+							<li><a href="?page={{ i }}">{{ i }}</a></li>
+						{% endif %}			
+					{% endfor %}
+					{% if content.has_next %}
+						<li><a href="?page={{ content.next_page_number }}">&raquo;</a></li>
+					{% else %}
+						<li class="disabled"><span>&raquo;</span></li>
+					{% endif %}
+				</ul>
+			</div>
+		{% endif %}
+		
 	</body>
 </html>
 

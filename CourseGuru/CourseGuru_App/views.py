@@ -12,6 +12,7 @@ from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
 from pdfminer.layout import LAParams, LTTextBox, LTTextLine
 from pdfminer.converter import PDFPageAggregator
 import re
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 #importing models 
 from CourseGuru_App.models import user
@@ -24,7 +25,7 @@ from CourseGuru_App.models import keywords
 from CourseGuru_App.models import courseinfo
 from test.test_enum import Answer
 import shutil
-from sqlalchemy.sql.expression import null
+from sqlalchemy.sql.expression import null, except_
 
 
 
@@ -73,13 +74,23 @@ def account(request):
 #       
 #    usData = 
     return render(request, 'CourseGuru_App/account.html')
+
 def question(request):
     if request.method == "POST":
         nq = request.POST.get('NQ')
         questions.objects.create(question = nq, course_id = 1, user_id = 1)
         return HttpResponseRedirect('/question/')
-    qData = questions.objects.all()
-    return render(request, 'CourseGuru_App/question.html', {'content': qData})
+    qData = questions.objects.get_queryset().order_by('id')
+    page = request.GET.get('page', 1)
+    
+    paginator = Paginator(qData, 10)
+    try:
+        fquestions = paginator.page(page)
+    except PageNotAnInteger:
+        fquestions = paginator.page(1)
+    except EmptyPage:
+        fquestions = paginator.page(paginator.num_pages())
+    return render(request, 'CourseGuru_App/question.html', {'content': fquestions})
 
 def getIntent(category, entities):
     
@@ -149,7 +160,8 @@ def parse(request):
         f.close()
         kData = keywords.objects.all()
         for k in kData:
-            results = re.search(k.word + "(*)", extracted_text, re.MULTILINE)
+            results = re.search(k.word + "(.*)", extracted_text, re.MULTILINE)
+            courseinfo.objects.create(keyword_common_name = k.common_name, syllabus_data = results.group(1), course_id = 'CSC 3110')
             return render(request, 'CourseGuru_App/parse.html', {'keywords': kData})
     kData = keywords.objects.all()
     return render(request, 'CourseGuru_App/parse.html', {'keywords': kData})
