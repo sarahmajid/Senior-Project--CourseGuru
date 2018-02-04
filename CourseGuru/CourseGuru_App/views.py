@@ -35,6 +35,11 @@ from CourseGuru_App.models import botanswers
 from CourseGuru_App.models import comments
 
 
+from test.test_enum import Answer
+from sqlalchemy.sql.expression import null
+
+
+
 #Function to populate Main page
 def index(request):
     credentialmismatch = 'This associated username and password does not exist'
@@ -42,29 +47,38 @@ def index(request):
         submit = request.POST.get('submit')
         if (submit == "CREATE ACCOUNT"):
             return HttpResponseRedirect('/account/')
-        if (submit == "ENTER"):
-            return HttpResponseRedirect('/question/')
-#       user.objects.create(username = userName, password = Password, )
-         
-    return render(request, 'CourseGuru_App/index.html')
+        if (submit == "ENTER"): 
+            usname = request.POST.get('username')
+            psword = request.POST.get('password')
+            try:
+                lid = user.objects.get(userName = usname, password = psword)
+            
+                if (lid.id>0):
+                    return HttpResponseRedirect('/question/') 
+            except:
+                return render(request, 'CourseGuru_App/index.html',{'credentialmismatch': credentialmismatch})
+
+        
+    else:
+        return render(request, 'CourseGuru_App/index.html')
     
 
 def account(request):
     if request.method == "POST":
+       firstname = request.POST.get('firstname')
+       lastname = request.POST.get('lastname')
+       username = request.POST.get('username')
+       psword = request.POST.get('password')
+       cpsword = request.POST.get('cpassword')
+       stat = request.POST.get('status')       
+       
+       mismatch = 'Password Mismatch'
+       if (psword != cpsword):
+            return render(request, 'CourseGuru_App/account.html', {'fname': firstname, 'lname': lastname, 'uname': username, 'status': stat,'msmatch': mismatch})
+       else:
+           #edit possibly drop user ID from the table or allow it to be null 
+            user.objects.create(firstName = firstname, lastName = lastname, userName = username, password = psword, status = stat)   
 
-        firstname = request.POST.get('firstname')
-        lastname = request.POST.get('lastname')
-        psword = request.POST.get('password')
-        cpsword = request.POST.get('cpassword')
-        stat = request.POST.get('status')       
-        
-        mismatch = 'Password Mismatch'
-        if (psword != cpsword):
-            return render(request, 'CourseGuru_App/account.html', {'fname': firstname, 'lname': lastname, 'status': stat,'msmatch': mismatch})
-        else:
-            #edit possibly drop user ID from the table or allow it to be null 
-            user.objects.create(firstNae = firstname, lastName = lastname, userID = 2, password = psword, status = stat)   
-         
 #        return HttpResponseRedirect('/index/')
 #       
 #    usData = 
@@ -118,22 +132,33 @@ def question(request):
 
 # Function to populate Answers page
 def answer(request):
-    
-    #Grab question id to associate with answer
-    qid = request.GET.get('id', '') 
-    
-    #Create new answer
+#    if request.method=='GET':
+    qid = request.GET.get('id', '')
     if request.method == "POST":
-        if 'COM' not in request.POST:
+        if 'ANS' in request.POST:
             ans = request.POST.get('ANS')
             answerDate = datetime.datetime.now().strftime("%m-%d-%Y %H:%M")
             answers.objects.create(answer = ans, user_id = 1, question_id = qid, date = answerDate)
             return HttpResponseRedirect('/answer/?id=%s' % qid)
-        else:
+        elif 'COM' in request.POST:
             com = request.POST.get('COM')
             commentDate = datetime.datetime.now().strftime("%m-%d-%Y %H:%M")
             comments.objects.create(comment = com, question_id = qid, user_id = 1, date = commentDate)
             return HttpResponseRedirect('/answer/?id=%s' % qid)
+        elif 'voteUp' in request.POST: 
+            answerId = request.POST.get('voteUp')
+            record = answers.objects.get(id = answerId)
+            record.rating = record.rating + 1
+            record.save()
+            return HttpResponseRedirect('/answer/?id=%s' % qid)
+        elif 'voteDown' in request.POST: 
+            answerId = request.POST.get('voteDown')
+            record = answers.objects.get(id = answerId)
+            record.rating = record.rating - 1
+            record.save()
+            return HttpResponseRedirect('/answer/?id=%s' % qid)
+        
+        return HttpResponseRedirect('/answer/?id=%s' % qid)
     aData = answers.objects.filter(question_id = qid)
     qData = questions.objects.get(id = qid)
     cData = comments.objects.filter(question_id = qid)
