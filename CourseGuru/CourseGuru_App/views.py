@@ -111,22 +111,6 @@ def answer(request):
             record.save()
             return HttpResponseRedirect('/answer/?id=%s' % qid)
         
-#===============================================================================
-#         if (voteButton == "voteUp"):
-#             record = answer.objects.get(answer_id = answerId)
-#             record.rating = record.rating + 1
-#             record.save(record.rating)
-# #            answers.objects.create(answer = ans, user_id = 1, question_id = qid, )
-#             return HttpResponseRedirect('/answer/?id=%s' % qid)
-#         if (voteButton == "voteDown"):
-#             record = answer.objects.get(answer_id = answerId)
-#             record.rating = record.rating - 1
-#             record.save()
-#             return HttpResponseRedirect('/answer/?id=%s' % qid)
-#===============================================================================
-            
-        
-       
         return HttpResponseRedirect('/answer/?id=%s' % qid)
     aData = answers.objects.filter(question_id = qid)
     qData = questions.objects.get(id = qid)
