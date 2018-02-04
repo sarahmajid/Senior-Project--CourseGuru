@@ -1,12 +1,11 @@
-from django.http import HttpResponse
-from django.template import loader
+#from django.http import HttpResponse
+#from django.template import loader
 from django.shortcuts import render
 import json
-from urllib.request import urlopen
-import psycopg2
+#from urllib.request import urlopen
+#import psycopg2
 from django.http.response import HttpResponseRedirect
 import requests
-import json
 
 #importing models 
 from CourseGuru_App.models import user
@@ -25,7 +24,7 @@ def index(request):
             return HttpResponseRedirect('/account/')
         if (submit == "ENTER"):
             return HttpResponseRedirect('/question/')
- #       user.objects.create(username = userName, password = Password, )
+#       user.objects.create(username = userName, password = Password, )
          
     return render(request, 'CourseGuru_App/index.html')
 
@@ -101,7 +100,7 @@ def chatbot(request):
     return render(request, 'CourseGuru_App/botchat.html',)
 
 def cbAnswer(nq):
-    r = requests.get('ENDPOINT&q=%s' % nq)
+    r = requests.get('ENDPOINT%s' % nq)
     luisStr = json.loads(r.text)
     #Grabs intent score of question
     luisScore = float(luisStr['topScoringIntent']['score'])
