@@ -1,5 +1,6 @@
 from django.db import models
 from email.policy import default
+from datetime import timezone
 
 # Create your models here.
 #database set up in django
@@ -29,10 +30,10 @@ class answers(models.Model):
      answer = models.CharField(max_length=400)
      comments = models.CharField(max_length=200)
      rating = models.IntegerField(default=0)
-     date = models.CharField(max_length=20)
+     date = models.CharField(max_length=20, null=True)
 
      class meta:
-        ordering = ['rating']
+        ordering = ['-rating']
  
 class comments(models.Model):
     #edit variable below
