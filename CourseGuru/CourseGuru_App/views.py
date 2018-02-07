@@ -176,7 +176,7 @@ def getIntentAns(luisIntent, luisEntities):
     filtAns = botanswers.objects.filter(category_id = catgry.id)
      
     for m in filtAns:
-        b = m.entities.split(",")
+        b = m.answer.split(" ")
         tempCntMtch = 0
         ttlCnt = len(b)
         for n in b: 
