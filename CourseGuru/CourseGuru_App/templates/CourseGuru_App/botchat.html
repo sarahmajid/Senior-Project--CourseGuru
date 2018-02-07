@@ -2,20 +2,23 @@
 {% load staticfiles %}
 <html>
   <head>
-    <link href="https://cdn.botframework.com/botframework-webchat/latest/botchat.css" rel="stylesheet" />
+  	<title> Course Guru </title>
   </head>
   <body>
-    <div id="bot"/>
-    <script src="https://cdn.botframework.com/botframework-webchat/latest/botchat.js"></script>
-    
-	    <script>
-	      BotChat.App({
-	        directLine: { secret: 'DIRECTLINEKEY' },
-	        user: { id: 'You' },
-	        bot: { id: 'CourseGuru' },
-	        resize: 'detect'
-	      }, document.getElementById("bot"));
-	    </script>
+  	
+		<p id="test"></p>
+		<div id="CWindow">
+			<p></p>
+		</div>
+		
+		<div id="message">
+			<textarea id="inp" type="text" name="cb" rows="4" maxlength="180" style="resize: none; width: 100%;"></textarea>
+		</div>
+		<br><button id="submit">Enter</button>				
+	
+	
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+	<script src="{% static 'js/style.js' %}"></script>
   </body>
 </html>
 
