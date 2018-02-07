@@ -36,7 +36,7 @@ from CourseGuru_App.models import comments
 
 
 from test.test_enum import Answer
-from sqlalchemy.sql.expression import null
+#from sqlalchemy.sql.expression import null
 
 
 
@@ -65,21 +65,21 @@ def index(request):
 
 def account(request):
     if request.method == "POST":
-       firstname = request.POST.get('firstname')
-       lastname = request.POST.get('lastname')
-       username = request.POST.get('username')
-       psword = request.POST.get('password')
-       cpsword = request.POST.get('cpassword')
-       stat = request.POST.get('status')       
+        
+        firstname = request.POST.get('firstname')
+        lastname = request.POST.get('lastname')
+        username = request.POST.get('username')
+        psword = request.POST.get('password')
+        cpsword = request.POST.get('cpassword')
+        stat = request.POST.get('status')       
        
-       mismatch = 'Password Mismatch'
-       if (psword != cpsword):
+        mismatch = 'Password Mismatch'
+        if (psword != cpsword):
             return render(request, 'CourseGuru_App/account.html', {'fname': firstname, 'lname': lastname, 'uname': username, 'status': stat,'msmatch': mismatch})
-       else:
-           #edit possibly drop user ID from the table or allow it to be null 
+        else:
+            #edit possibly drop user ID from the table or allow it to be null 
             user.objects.create(firstName = firstname, lastName = lastname, userName = username, password = psword, status = stat)   
-
-#        return HttpResponseRedirect('/index/')
+            return HttpResponseRedirect('/')
 #       
 #    usData = 
     return render(request, 'CourseGuru_App/account.html')
@@ -93,7 +93,7 @@ def question(request):
         nq = request.POST.get('NQ')
         questionDate = datetime.datetime.now().strftime("%m-%d-%Y %H:%M")
         questions.objects.create(question = nq, course_id = 1, user_id = 1, date = questionDate)
-#        cbAnswer(nq)
+        cbAnswer(nq)
         #=======================================================================
         # luisIntent = cbAnswer(nq)
         # catID = category.objects.get(id=1)
@@ -187,64 +187,67 @@ def getIntentAns(luisIntent, luisEntities):
                 answr = botanswers.objects.get(id = m.id)
     return (answr)                     
 
-def chatbot(request):
-    return render(request, 'CourseGuru_App/botchat.html',)
 
 def parse(request):
     #Create empty string for text to be extracted into
-    extracted_text = ''
-    
-    #When button is clicked we parse the file
-    if request.method == "POST":
-        #Sets myfile to the selected file on page and reads it
-        myfile = request.FILES.get("syllabusFile").file.read()
-        
-        #Create tempfile in read and write binary mode
-        f = tempfile.TemporaryFile('r+b')
-        f.write(myfile)
-        
-        #Sets the cursor back to 0 in f to be parsed and sets the documents and parser
-        f.seek(0)
-        parser = PDFParser(f)
-        doc = PDFDocument()
-        parser.set_document(doc)
-        doc.set_parser(parser)
-        doc.initialize('')
-        rsrcmgr = PDFResourceManager()
-        laparams = LAParams()
-        
-        #Required to define seperation of text within pdf
-        laparams.char_margin = 1
-        laparams.word_margin = 1
-        
-        #Device takes LAPrams and uses them to parse individual pdf objects
-        device = PDFPageAggregator(rsrcmgr, laparams=laparams)
-        interpreter = PDFPageInterpreter(rsrcmgr, device)
-        
-        for page in doc.get_pages():
-            interpreter.process_page(page)
-            layout = device.get_result()
-            for lt_obj in layout:
-                if isinstance(lt_obj, LTTextBox) or isinstance(lt_obj, LTTextLine):
-                    extracted_text += lt_obj.get_text()
-        courseid = re.search('[A-Z]{3} \d{4}', extracted_text, re.MULTILINE)
-        f.close()
-        kData = keywords.objects.all()
-        for k in kData:
-            results = re.search(k.word + "(.*)", extracted_text, re.MULTILINE)
-            if results is not None:
-                info = re.sub('[^0-9a-zA-Z][ ]', '', results.group(1))
-                courseinfo.objects.create(keyword_common_name = k.common_name, syllabus_data = info, course_id = courseid[0])
+#     extracted_text = ''
+#     
+#     #When button is clicked we parse the file
+#     if request.method == "POST":
+#         #Sets myfile to the selected file on page and reads it
+#         myfile = request.FILES.get("syllabusFile").file.read()
+#         
+#         #Create tempfile in read and write binary mode
+#         f = tempfile.TemporaryFile('r+b')
+#         f.write(myfile)
+#         
+#         #Sets the cursor back to 0 in f to be parsed and sets the documents and parser
+#         f.seek(0)
+#         parser = PDFParser(f)
+#         doc = PDFDocument()
+#         parser.set_document(doc)
+#         doc.set_parser(parser)
+#         doc.initialize('')
+#         rsrcmgr = PDFResourceManager()
+#         laparams = LAParams()
+#         
+#         #Required to define seperation of text within pdf
+#         laparams.char_margin = 1
+#         laparams.word_margin = 1
+#         
+#         #Device takes LAPrams and uses them to parse individual pdf objects
+#         device = PDFPageAggregator(rsrcmgr, laparams=laparams)
+#         interpreter = PDFPageInterpreter(rsrcmgr, device)
+#         
+#         for page in doc.get_pages():
+#             interpreter.process_page(page)
+#             layout = device.get_result()
+#             for lt_obj in layout:
+#                 if isinstance(lt_obj, LTTextBox) or isinstance(lt_obj, LTTextLine):
+#                     extracted_text += lt_obj.get_text()
+#         courseid = re.search('[A-Z]{3} \d{4}', extracted_text, re.MULTILINE)
+#         f.close()
+#         kData = keywords.objects.all()
+#         for k in kData:
+#             results = re.search(k.word + "(.*)", extracted_text, re.MULTILINE)
+#             if results is not None:
+#                 info = re.sub('[^0-9a-zA-Z][ ]', '', results.group(1))
+#                 courseinfo.objects.create(keyword_common_name = k.common_name, syllabus_data = info, course_id = courseid[0])
     return render(request, 'CourseGuru_App/parse.html')
 
+
+def chatbot(request):
+    return render(request, 'CourseGuru_App/botchat.html',)
+
 def cbAnswer(nq):
-    r = requests.get('ENDPOINT%s' % nq)
+    r = requests.get('https://westus.api.cognitive.microsoft.com/luis/v2.0/apps/6059c365-d88a-412b-8f33-d7393ba3bf9f?subscription-key=c574439a46e64d8cb597879499ccf8f9&verbose=true&timezoneOffset=0&q=%s' % nq)
     luisStr = json.loads(r.text)
     #Grabs intent score of question
     luisScore = float(luisStr['topScoringIntent']['score'])
     #Grabs intent of question
     luisIntent = luisStr['topScoringIntent']['intent']
     #If intent receives a lower score than 60% or there is no intent, the question does not get answered
+    
     if luisScore < 0.6 or luisIntent == 'None':
         return
     catID = category.objects.get(intent=luisIntent)
@@ -252,7 +255,8 @@ def cbAnswer(nq):
     cbAns = botanswers.objects.filter(category_id = catID.id).first()
     #ID of the latest question created
     qid = questions.objects.last()
-    answers.objects.create(answer = cbAns.answer, user_id = 1, question_id = qid.id)
+    answerDate = datetime.datetime.now().strftime("%m-%d-%Y %H:%M")
+    answers.objects.create(answer = cbAns.answer, user_id = 1, question_id = qid.id, date = answerDate)
 #    return(intent)
 
 #    ---Canvas code---

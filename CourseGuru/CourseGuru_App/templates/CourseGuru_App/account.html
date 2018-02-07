@@ -40,11 +40,11 @@
 						 
 						<label style="font-size: 16px; color: #FFFFFF; font-family: century gothic;">Password: </label><br>
 						{% csrf_token %}
-						<textarea id="password" type="text" name="password" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" rows="1" required="required" maxlength="20" style="resize: none; width: 60%;"></textarea><br>
+						<input id="password" type="password" name="password" rows="1" required="required" maxlength="20" style="resize: none; width: 60%;"></input><br>
 						
 						<label style="font-size: 16px; color: #FFFFFF; font-family: century gothic;">Confirm Password: </label><br>
 						{% csrf_token %}
-						<textarea id ="cpassword" type="text" name="cpassword" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" rows="1" required="required" maxlength="20" style="resize: none; width: 60%;"></textarea><br>						
+						<input id ="cpassword" type="password" name="cpassword" rows="1" required="required" maxlength="20" style="resize: none; width: 60%;"></input><br>						
 						
 						<label style="font-size: 16px; color: #FFFFFF; font-family: century gothic;">Status: </label><br>
 						{% csrf_token %}

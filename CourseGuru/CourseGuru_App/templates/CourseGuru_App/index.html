@@ -31,7 +31,7 @@
 						<textarea id="username" type="text" name="username" rows="1" maxlength="20" style="resize: none; width: 40%;"></textarea><br>
 						<label style="font-size: 16px; color: #FFFFFF; font-family: century gothic;">Password: </label><br>
 						{% csrf_token %}
-						<input id="password" type="password" name="password" rows="1" maxlength="8" style="resize: none; width: 40%;"></input><br>						
+						<input id="password" type="password" name="password" rows="1" maxlength="20" style="resize: none; width: 40%;"></input><br>						
 						
 						<input type="submit" name="submit" value="ENTER"><h3 style="font-size: 16px; color: red; font-family: century gothic;">{{credentialmismatch}}</h3>		
 
@@ -42,7 +42,7 @@
 				</td>
 			</tr>
 		</table>
-		<iframe style="position:fixed; bottom: 0; right: 0;" src="/chatbot/" height="350px" width="350px"/>
+		<iframe style="position:fixed; bottom: 0; right: 0;" src="/chatbot/" height="35%" width="20%"/>
 	</body>
 </html>
 
