@@ -1,0 +1,9 @@
+{% block title %} Amesite Chat Responder
+	<div class = "row">
+		<form action = "" method = "POST">
+		{{ form.as_p }}
+		{% csrf_token %}
+		<input type = "submit" value = "Enter" class = "button">
+		</form>
+	</div>
+{% endblock %}

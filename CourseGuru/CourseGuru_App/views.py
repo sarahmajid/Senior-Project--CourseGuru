@@ -20,7 +20,7 @@ from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
 from pdfminer.layout import LAParams, LTTextBox, LTTextLine
 from pdfminer.converter import PDFPageAggregator
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-
+from . import forms
 
 #importing models 
 from CourseGuru_App.models import user
@@ -39,6 +39,10 @@ from test.test_enum import Answer
 from sqlalchemy.sql.expression import null
 
 
+def login(request):
+    #instantiate an instance of the form
+    form = forms.LoginForm()
+    return render(request, 'CourseGuru_App/loginform.html', {'form':form})
 
 #Function to populate Main page
 def index(request):
@@ -159,9 +163,13 @@ def answer(request):
             return HttpResponseRedirect('/answer/?id=%s' % qid)
         
         return HttpResponseRedirect('/answer/?id=%s' % qid)
+    
     aData = answers.objects.filter(question_id = qid)
     qData = questions.objects.get(id = qid)
     cData = comments.objects.filter(question_id = qid)
+    reorderData = answers.objects.get_queryset().order_by('-rating')
+    #answers = reorderData
+    
     return render(request, 'CourseGuru_App/answer.html', {'answers': aData, 'Title': qData, 'comments': cData})
 
 # returns a good match to entities answer object  
