@@ -84,6 +84,11 @@ def account(request):
 #    usData = 
     return render(request, 'CourseGuru_App/account.html')
 
+def genDate():
+    
+    curDate = datetime.datetime.now().strftime("%m-%d-%Y %I:%M %p")
+        
+    return (curDate)
 
 # Function to populate Main page
 def question(request):
@@ -91,7 +96,7 @@ def question(request):
     if request.method == "POST":
 
         nq = request.POST.get('NQ')
-        questionDate = datetime.datetime.now().strftime("%m-%d-%Y %H:%M")
+        questionDate = genDate()
         questions.objects.create(question = nq, course_id = 1, user_id = 1, date = questionDate)
         cbAnswer(nq)
         #=======================================================================
@@ -137,12 +142,12 @@ def answer(request):
     if request.method == "POST":
         if 'ANS' in request.POST:
             ans = request.POST.get('ANS')
-            answerDate = datetime.datetime.now().strftime("%m-%d-%Y %H:%M")
+            answerDate = genDate()
             answers.objects.create(answer = ans, user_id = 1, question_id = qid, date = answerDate)
             return HttpResponseRedirect('/answer/?id=%s' % qid)
         elif 'COM' in request.POST:
             com = request.POST.get('COM')
-            commentDate = datetime.datetime.now().strftime("%m-%d-%Y %H:%M")
+            commentDate = genDate()
             comments.objects.create(comment = com, question_id = qid, user_id = 1, date = commentDate)
             return HttpResponseRedirect('/answer/?id=%s' % qid)
         elif 'voteUp' in request.POST: 
@@ -235,6 +240,13 @@ def parse(request):
 #                 courseinfo.objects.create(keyword_common_name = k.common_name, syllabus_data = info, course_id = courseid[0])
     return render(request, 'CourseGuru_App/parse.html')
 
+#===============================================================================
+# def fileParser(file):
+#     
+#     
+#     
+#     return(csvFile)
+#===============================================================================
 
 def chatbot(request):
     return render(request, 'CourseGuru_App/botchat.html',)
@@ -248,14 +260,20 @@ def cbAnswer(nq):
     luisIntent = luisStr['topScoringIntent']['intent']
     #If intent receives a lower score than 60% or there is no intent, the question does not get answered
     
-    if luisScore < 0.6 or luisIntent == 'None':
+#    luisEntities = luisStr['entities']['entity']
+    
+    
+    if luisScore < 0.75 or luisIntent == 'None':
         return
+    
+#    botAnsResp = getIntentAns(luisIntent, luisEntities)
+    
     catID = category.objects.get(intent=luisIntent)
     #Sets cbAns to the first answer it can find matching that category (This needs to be improved)
     cbAns = botanswers.objects.filter(category_id = catID.id).first()
     #ID of the latest question created
     qid = questions.objects.last()
-    answerDate = datetime.datetime.now().strftime("%m-%d-%Y %H:%M")
+    answerDate = genDate()
     answers.objects.create(answer = cbAns.answer, user_id = 1, question_id = qid.id, date = answerDate)
 #    return(intent)
 
