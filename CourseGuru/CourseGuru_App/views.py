@@ -106,6 +106,8 @@ def cbAnswer(nq):
     luisScore = float(luisStr['topScoringIntent']['score'])
     #Grabs intent of question
     luisIntent = luisStr['topScoringIntent']['intent']
+    #Grabs entities
+    luisEntity = luisStr['entities']
     #If intent receives a lower score than 60% or there is no intent, the question does not get answered
     if luisScore < 0.6 or luisIntent == 'None':
         return
