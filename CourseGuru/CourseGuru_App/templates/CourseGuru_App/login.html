@@ -1,0 +1,17 @@
+{% block title %} Amesite Chat Responder
+	<form action = "{%url 'loginform' %}" method = "POST">
+	{% csrf_token %}
+		<div>
+			<td>form.username.label_tag</td>
+			<td>{{form.username}}</td>
+		</div>
+		<div>
+			<td>form.password.label_tag</td>
+			<td>{{form.password}}</td>
+		</div>
+		<div>
+			<input type = "submit" value = "Enter" class = "button">
+		</div>
+	
+	</form>
+{% endblock %}

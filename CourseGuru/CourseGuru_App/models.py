@@ -1,9 +1,14 @@
 from django.db import models
 from email.policy import default
 from datetime import timezone
+from django.contrib.auth.models import User
 
 # Create your models here.
 #database set up in django
+
+class UserProfile(models.Model):
+    user = models.OneToOneField(User)
+
 class user(models.Model):
      firstName = models.CharField(max_length=30)
      lastName = models.CharField(max_length=50)
