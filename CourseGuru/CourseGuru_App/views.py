@@ -132,7 +132,7 @@ def question(request):
         fquestions = paginator.page(paginator.num_pages())
     return render(request, 'CourseGuru_App/question.html', {'content': fquestions})
     
-    return render(request, 'CourseGuru_App/question.html', {'content': qData})
+#    return render(request, 'CourseGuru_App/question.html', {'content': qData})
 
 
 # Function to populate Answers page
@@ -175,7 +175,7 @@ def getIntentAns(luisIntent, luisEntities):
     count = 0
     answr = ""
     
-    entitiesList = luisEntities.split(",")
+#    entitiesList = luisEntities.split(",")
     catgry = category.objects.get(intent = luisIntent)
     
     filtAns = botanswers.objects.filter(category_id = catgry.id)
@@ -185,10 +185,12 @@ def getIntentAns(luisIntent, luisEntities):
         tempCntMtch = 0
         ttlCnt = len(b)
         for n in b: 
-            tempCntMtch += entitiesList.count(n)
+            tempCntMtch += luisEntities.count(n)
             cntAccuracy = (tempCntMtch/ttlCnt)
             if cntAccuracy>count:
                 count = cntAccuracy 
+                answr = botanswers.objects.get(id = m.id)
+            else:
                 answr = botanswers.objects.get(id = m.id)
     return (answr)                     
 
@@ -260,21 +262,23 @@ def cbAnswer(nq):
     luisIntent = luisStr['topScoringIntent']['intent']
     #If intent receives a lower score than 60% or there is no intent, the question does not get answered
     
-#    luisEntities = luisStr['entities']['entity']
+    luisEntities = luisStr['entities']
     
     
     if luisScore < 0.75 or luisIntent == 'None':
         return
     
-#    botAnsResp = getIntentAns(luisIntent, luisEntities)
+    botAnsResp = getIntentAns(luisIntent, luisEntities)
     
-    catID = category.objects.get(intent=luisIntent)
-    #Sets cbAns to the first answer it can find matching that category (This needs to be improved)
-    cbAns = botanswers.objects.filter(category_id = catID.id).first()
-    #ID of the latest question created
+    #===========================================================================
+    # catID = category.objects.get(intent=luisIntent)
+    # #Sets cbAns to the first answer it can find matching that category (This needs to be improved)
+    # cbAns = botanswers.objects.filter(category_id = catID.id).first()
+    # #ID of the latest question created
+    #===========================================================================
     qid = questions.objects.last()
     answerDate = genDate()
-    answers.objects.create(answer = cbAns.answer, user_id = 1, question_id = qid.id, date = answerDate)
+    answers.objects.create(answer = botAnsResp.answer, user_id = 1, question_id = qid.id, date = answerDate)
 #    return(intent)
 
 #    ---Canvas code---
