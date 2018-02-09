@@ -15,11 +15,11 @@ import datetime
 #===============================================================================
 from django.shortcuts import render
 from django.http.response import HttpResponseRedirect
-from pdfminer.pdfparser import PDFParser, PDFDocument
-from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
-from pdfminer.layout import LAParams, LTTextBox, LTTextLine
-from pdfminer.converter import PDFPageAggregator
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+#from pdfminer.pdfparser import PDFParser, PDFDocument
+#from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
+#from pdfminer.layout import LAParams, LTTextBox, LTTextLine
+#from pdfminer.converter import PDFPageAggregator
+#from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from . import forms
 
 #importing models 
@@ -198,52 +198,54 @@ def getIntentAns(luisIntent, luisEntities):
 def chatbot(request):
     return render(request, 'CourseGuru_App/botchat.html',)
 
-def parse(request):
-    #Create empty string for text to be extracted into
-    extracted_text = ''
-    
-    #When button is clicked we parse the file
-    if request.method == "POST":
-        #Sets myfile to the selected file on page and reads it
-        myfile = request.FILES.get("syllabusFile").file.read()
-        
-        #Create tempfile in read and write binary mode
-        f = tempfile.TemporaryFile('r+b')
-        f.write(myfile)
-        
-        #Sets the cursor back to 0 in f to be parsed and sets the documents and parser
-        f.seek(0)
-        parser = PDFParser(f)
-        doc = PDFDocument()
-        parser.set_document(doc)
-        doc.set_parser(parser)
-        doc.initialize('')
-        rsrcmgr = PDFResourceManager()
-        laparams = LAParams()
-        
-        #Required to define seperation of text within pdf
-        laparams.char_margin = 1
-        laparams.word_margin = 1
-        
-        #Device takes LAPrams and uses them to parse individual pdf objects
-        device = PDFPageAggregator(rsrcmgr, laparams=laparams)
-        interpreter = PDFPageInterpreter(rsrcmgr, device)
-        
-        for page in doc.get_pages():
-            interpreter.process_page(page)
-            layout = device.get_result()
-            for lt_obj in layout:
-                if isinstance(lt_obj, LTTextBox) or isinstance(lt_obj, LTTextLine):
-                    extracted_text += lt_obj.get_text()
-        courseid = re.search('[A-Z]{3} \d{4}', extracted_text, re.MULTILINE)
-        f.close()
-        kData = keywords.objects.all()
-        for k in kData:
-            results = re.search(k.word + "(.*)", extracted_text, re.MULTILINE)
-            if results is not None:
-                info = re.sub('[^0-9a-zA-Z][ ]', '', results.group(1))
-                courseinfo.objects.create(keyword_common_name = k.common_name, syllabus_data = info, course_id = courseid[0])
-    return render(request, 'CourseGuru_App/parse.html')
+#===============================================================================
+# def parse(request):
+#     #Create empty string for text to be extracted into
+#     extracted_text = ''
+#     
+#     #When button is clicked we parse the file
+#     if request.method == "POST":
+#         #Sets myfile to the selected file on page and reads it
+#         myfile = request.FILES.get("syllabusFile").file.read()
+#         
+#         #Create tempfile in read and write binary mode
+#         f = tempfile.TemporaryFile('r+b')
+#         f.write(myfile)
+#         
+#         #Sets the cursor back to 0 in f to be parsed and sets the documents and parser
+#         f.seek(0)
+#         parser = PDFParser(f)
+#         doc = PDFDocument()
+#         parser.set_document(doc)
+#         doc.set_parser(parser)
+#         doc.initialize('')
+#         rsrcmgr = PDFResourceManager()
+#         laparams = LAParams()
+#         
+#         #Required to define seperation of text within pdf
+#         laparams.char_margin = 1
+#         laparams.word_margin = 1
+#         
+#         #Device takes LAPrams and uses them to parse individual pdf objects
+#         device = PDFPageAggregator(rsrcmgr, laparams=laparams)
+#         interpreter = PDFPageInterpreter(rsrcmgr, device)
+#         
+#         for page in doc.get_pages():
+#             interpreter.process_page(page)
+#             layout = device.get_result()
+#             for lt_obj in layout:
+#                 if isinstance(lt_obj, LTTextBox) or isinstance(lt_obj, LTTextLine):
+#                     extracted_text += lt_obj.get_text()
+#         courseid = re.search('[A-Z]{3} \d{4}', extracted_text, re.MULTILINE)
+#         f.close()
+#         kData = keywords.objects.all()
+#         for k in kData:
+#             results = re.search(k.word + "(.*)", extracted_text, re.MULTILINE)
+#             if results is not None:
+#                 info = re.sub('[^0-9a-zA-Z][ ]', '', results.group(1))
+#                 courseinfo.objects.create(keyword_common_name = k.common_name, syllabus_data = info, course_id = courseid[0])
+#     return render(request, 'CourseGuru_App/parse.html')
+#===============================================================================
 
 def cbAnswer(nq):
     r = requests.get('ENDPOINT%s' % nq)
