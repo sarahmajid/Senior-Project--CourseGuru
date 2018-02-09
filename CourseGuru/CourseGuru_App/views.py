@@ -132,7 +132,7 @@ def question(request):
         fquestions = paginator.page(paginator.num_pages())
     return render(request, 'CourseGuru_App/question.html', {'content': fquestions})
     
-#    return render(request, 'CourseGuru_App/question.html', {'content': qData})
+    return render(request, 'CourseGuru_App/question.html', {'content': qData})
 
 
 # Function to populate Answers page
@@ -175,7 +175,7 @@ def getIntentAns(luisIntent, luisEntities):
     count = 0
     answr = ""
     
-#    entitiesList = luisEntities.split(",")
+    entitiesList = luisEntities.split(",")
     catgry = category.objects.get(intent = luisIntent)
     
     filtAns = botanswers.objects.filter(category_id = catgry.id)
@@ -189,9 +189,9 @@ def getIntentAns(luisIntent, luisEntities):
             cntAccuracy = (tempCntMtch/ttlCnt)
             if cntAccuracy>count:
                 count = cntAccuracy 
-                answr = botanswers.objects.get(id = m.id)
-            else:
-                answr = botanswers.objects.get(id = m.id)
+                answr = m.answer
+    if answr == "":
+        answr = (botanswers.objects.filter(category_id = catgry.id).first()).answer
     return (answr)                     
 
 
@@ -254,7 +254,7 @@ def chatbot(request):
     return render(request, 'CourseGuru_App/botchat.html',)
 
 def cbAnswer(nq):
-    r = requests.get('%s' % nq)
+    r = requests.get('https://westus.api.cognitive.microsoft.com/luis/v2.0/apps/6059c365-d88a-412b-8f33-d7393ba3bf9f?subscription-key=c574439a46e64d8cb597879499ccf8f9&verbose=true&timezoneOffset=0&q=%s' % nq)
     luisStr = json.loads(r.text)
     #Grabs intent score of question
     luisScore = float(luisStr['topScoringIntent']['score'])
@@ -262,23 +262,24 @@ def cbAnswer(nq):
     luisIntent = luisStr['topScoringIntent']['intent']
     #If intent receives a lower score than 60% or there is no intent, the question does not get answered
     
-    luisEntities = luisStr['entities']
+    luisEntities = luisStr['entities'][0]['entity']
+#    luisEnti = luisStr['entities']
     
     
     if luisScore < 0.75 or luisIntent == 'None':
         return
-    
-    botAnsResp = getIntentAns(luisIntent, luisEntities)
-    
     #===========================================================================
     # catID = category.objects.get(intent=luisIntent)
     # #Sets cbAns to the first answer it can find matching that category (This needs to be improved)
     # cbAns = botanswers.objects.filter(category_id = catID.id).first()
     # #ID of the latest question created
-    #===========================================================================
     qid = questions.objects.last()
+    #===========================================================================
+    entAnswer = getIntentAns(luisIntent, luisEntities)
+    
+        
     answerDate = genDate()
-    answers.objects.create(answer = botAnsResp.answer, user_id = 1, question_id = qid.id, date = answerDate)
+    answers.objects.create(answer = entAnswer, user_id = 1, question_id = qid.id, date = answerDate)
 #    return(intent)
 
 #    ---Canvas code---
