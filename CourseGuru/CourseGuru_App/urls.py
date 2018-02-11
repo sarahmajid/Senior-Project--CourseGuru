@@ -7,7 +7,7 @@ urlpatterns = [
     path('account/', views.account, name='account'),
     path('question/', views.question, name='question'),
     path('answer/', views.answer, name='answer'),
-    path('parse/', views.parse, name='parse'),
+    path('parse/', views.pdfToText, name='parse'),
     path('chatbot/', views.chatbot, name='chatbot'),
 
 ]
