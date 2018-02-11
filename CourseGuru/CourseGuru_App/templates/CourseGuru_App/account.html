@@ -6,18 +6,20 @@
 		<title> Amesite Chat Responder </title>
 	</head>
 	<body>
-		<table width="40%" align="Center" style="background-color: grey;">
+		<header width="40%" align="center" height="50px" style="line-height: 56px; text-align: center; font-size: 30px; color: grey; font-family: century gothic; font-weight: normal;">
+			Amesite Chat Responder	
+		</header>
+		
+		<br><br>
+		<table width="40%" align="Center">
 			<tr>
-				<td height="50px" style="text-align: center; font-size: 30px; color: #FFFFFF; font-family: century gothic;">
-					Amesite Chat Responder
+				<td align="right">
+					<a href="/" style="cursor: pointer; font-size: 18px; font-family: century gothic; color: grey; text-decoration: none;">Login</a> 
 				</td>
 			</tr>
-		</table>
-		<br><br>
-		<table width="40%" align="Center" style="background-color: grey;">
 			<tr>
-				<td style="text-align: center; padding:10px; font-size: 22px; color: #FFFFFF; font-family: century gothic;">
-					Please Login
+				<td style="padding:10px; font-size: 26px; color: grey; font-family: century gothic;">
+					Create an account
 				</td>
 			</tr>
 			<tr>
@@ -25,24 +27,17 @@
 			</tr>
 			<tr>
 				<td>
-					<form method="POST" action="" style="margin: 0 10%;">
-						<label style="font-size: 16px; color: #FFFFFF; font-family: century gothic;">First Name: </label><br>
+					<form method="POST" action="" style="padding: 10px;">
+						<h3 style="font-size: 16px; color: red; font-family: century gothic;">{{msmatch}}</h3>	
+						<label style="font-size: 16px; color: grey; font-family: century gothic;">First Name: </label><br>
 						{% csrf_token %}
-						<textarea id="firstname" type="text" name="firstname" rows="1" required="required" maxlength="30" style="resize: none; width: 60%;">{{fname}}</textarea><br>
-						
-						<label style="font-size: 16px; color: #FFFFFF; font-family: century gothic;">Last Name: </label><br>
+						<input type="text" name="firstname" required="required" maxlength="30" style=" width: 100%;"></input><br>
+						<br>
+						<label style="font-size: 16px; color: grey; font-family: century gothic;">Last Name: </label><br>
 						{% csrf_token %}
-						<textarea id="lastname" type="text" name="lastname" rows="1" required="required" maxlength="50" style="resize: none; width: 60%;">{{lname}}</textarea><br>
-						 
-						<label style="font-size: 16px; color: #FFFFFF; font-family: century gothic;">Password: </label><br>
-						{% csrf_token %}
-						<textarea id="password" type="text" name="password" rows="1" required="required" maxlength="8" style="resize: none; width: 60%;"></textarea><br>
-						
-						<label style="font-size: 16px; color: #FFFFFF; font-family: century gothic;">Confirm Password: </label><br>
-						{% csrf_token %}
-						<textarea id ="cpassword" type="text" name="cpassword" rows="1" required="required" maxlength="8" style="resize: none; width: 60%;"></textarea><br>						
-						
-						<label style="font-size: 16px; color: #FFFFFF; font-family: century gothic;">Status: </label><br>
+						<input type="text" name="lastname" required="required" maxlength="50" style="width: 100%;"></input><br>
+						<br>
+						<label style="font-size: 16px; color: grey; font-family: century gothic;">Status: </label><br>
 						{% csrf_token %}
 						<select name="status" required="required" >
 							<option>{{status}}</option>
@@ -50,10 +45,22 @@
 							<option value="TA">TA</option>
 							<option value="Teacher">Teacher</option>
 						</select><br><br>
-						<!--  {{status}} -->					
-
-						<input type="submit" value="SUBMIT"><h3 style="font-size: 16px; color: red; font-family: century gothic;">{{msmatch}}</h3>		
-						
+						<hr>
+						<br>
+						<label style="font-size: 16px; color: grey; font-family: century gothic;">User Name: </label><br>
+						{% csrf_token %}
+						<input type="text" name="username" required="required" maxlength="50" style="width: 100%;"></input><br>
+						 <br>
+						<label style="font-size: 16px; color: grey; font-family: century gothic;">Password: </label><br>
+						{% csrf_token %}
+						<input type="password" name="password" required="required" maxlength="20" style="width: 100%;"></input><br>
+						<br>
+						<label style="font-size: 16px; color: grey; font-family: century gothic;">Confirm Password: </label><br>
+						{% csrf_token %}
+						<input type="password" name="cpassword" required="required" maxlength="20" style="width: 100%;"></input><br>						
+						<br><br>
+											
+						<input type="submit" name="submit" value="Create Account" style="cursor: pointer; font-size: 16px; background-color: #cecece; font-family: century gothic; box-shadow: none; border: 0; padding: 5px 10px;">					
 					</form>
 					<br>
 				</td>
