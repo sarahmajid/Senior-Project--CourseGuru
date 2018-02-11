@@ -1,4 +1,8 @@
 from django.db import models
+from django.forms import ModelForm
+from django import forms
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from email.policy import default
 from datetime import timezone
 from django.contrib.auth.models import User
@@ -6,16 +10,21 @@ from django.contrib.auth.models import User
 # Create your models here.
 #database set up in django
 
-class UserProfile(models.Model):
-    user = models.OneToOneField(User)
-
 class user(models.Model):
-     firstName = models.CharField(max_length=30)
-     lastName = models.CharField(max_length=50)
-     #get rid of userId its auto gen by django 
-     userName = models.CharField(max_length=20)
-     password = models.CharField(max_length=20)
-     status = models.CharField(max_length=18)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    status = models.CharField(max_length=18)
+    
+class UserForm(forms.ModelForm):
+    password = forms.CharField(widget=forms.PasswordInput)
+    class Meta:
+            model = User
+            fields = ["username", "password", "first_name", "last_name", "email" ]
+
+class UserProfileForm(forms.ModelForm):
+        
+        class Meta:
+                model = user
+                fields = ['status']
 
 class course(models.Model):
     user = models.ForeignKey(user, on_delete=models.CASCADE)

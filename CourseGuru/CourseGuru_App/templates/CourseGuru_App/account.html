@@ -6,7 +6,17 @@
 		<title> Amesite Chat Responder </title>
 	</head>
 	<body>
-		<table width="40%" align="Center" style="background-color: grey;">
+	{% if registered %}
+        <a href="index">Chat Responder</a> says: thank you for registering.
+	{% else %}
+        <form id="user_form" method="post" action="/account/" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{ uform.as_p }}
+                {{ pform.as_p }}
+                <input type="submit" name="submit" value="submit" />
+        </form>
+	{% endif %}
+		<!-- <table width="40%" align="Center" style="background-color: grey;">
 			<tr>
 				<td height="50px" style="text-align: center; font-size: 30px; color: #FFFFFF; font-family: century gothic;">
 					Amesite Chat Responder
@@ -44,7 +54,11 @@
 						
 						<label style="font-size: 16px; color: #FFFFFF; font-family: century gothic;">Confirm Password: </label><br>
 						{% csrf_token %}
-						<textarea id ="cpassword" type="text" name="cpassword" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" rows="1" required="required" maxlength="20" style="resize: none; width: 60%;"></textarea><br>						
+						<textarea id ="cpassword" type="text" name="cpassword" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" rows="1" required="required" maxlength="20" style="resize: none; width: 60%;"></textarea><br>		
+						
+						<label style="font-size: 16px; color: #FFFFFF; font-family: century gothic;">Email Address: </label><br>
+						{% csrf_token %}
+						<textarea id ="email" type="text" name="email" rows="1" required="required" maxlength="30" style="resize: none; width: 60%;">{{email}}</textarea><br>										
 						
 						<label style="font-size: 16px; color: #FFFFFF; font-family: century gothic;">Status: </label><br>
 						{% csrf_token %}
@@ -54,7 +68,7 @@
 							<option value="TA">TA</option>
 							<option value="Teacher">Teacher</option>
 						</select><br><br>
-						<!--  {{status}} -->					
+						 {{status}}					
 
 						<input type="submit" value="SUBMIT"><h3 style="font-size: 16px; color: red; font-family: century gothic;">{{msmatch}}</h3>		
 						
@@ -66,4 +80,4 @@
 	</body>
 </html>
 
-<!--		<a href="/answer/?id={{c.id}}" style="cursor: pointer;">{{c.question}}</a>	-->
+		<a href="/answer/?id={{c.id}}" style="cursor: pointer;">{{c.question}}</a>	 -->
