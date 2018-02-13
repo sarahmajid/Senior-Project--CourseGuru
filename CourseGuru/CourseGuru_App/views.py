@@ -20,7 +20,7 @@ from django.contrib.auth.models import User
 
 
 #importing models 
-from CourseGuru_App.models import user
+#from CourseGuru_App.models import user
 
 from CourseGuru_App.models import questions
 from CourseGuru_App.models import answers
@@ -80,15 +80,16 @@ def account(request):
             mismatch = 'Password Mismatch'
             return render(request, 'CourseGuru_App/account.html', {'msmatch': mismatch})
         else:
-            if user.objects.filter(userName = username).exists():
+            if User.objects.filter(username = username).exists():
                 mismatch = "Username taken"
                 return render(request, 'CourseGuru_App/account.html', {'msmatch': mismatch})
             else:
                 #edit possibly drop user ID from the table or allow it to be null 
-                user.objects.create(firstName = firstname, lastName = lastname, userName = username, password = psword, status = stat)  
+                #user.objects.create(firstName = firstname, lastName = lastname, userName = username, password = psword, status = stat)  
                 newUser = User.objects.create_user(username, 'test@test.com', psword) 
                 newUser.first_name = firstname
                 newUser.last_name = lastname
+                newUser.status = stat
                 newUser.save()
                 return HttpResponseRedirect('/?newAct=1')  
     else:
@@ -105,7 +106,7 @@ def genDate():
 def question(request):
     
         #Grabs the questions form the db and orders them by id in desc fashion so the newest are first
-    qData = questions.objects.get_queryset().order_by('id')
+    qData = questions.objects.get_queryset().order_by('pk')
     page = request.GET.get('page', 1)
     
     #Paginator created to limit page display to 10 data items per page
@@ -128,7 +129,8 @@ def publish(request):
             ques = request.POST.get('NQ')
             comm = request.POST.get('NQcom')
             questionDate = genDate()
-            questions.objects.create(question = ques, course_id = 1, user_id = 1, date = questionDate, comment = comm)
+            user = request.user
+            questions.objects.create(question = ques, course_id = 1, user_id = user.id, date = questionDate, comment = comm)
             cbAnswer(ques)
             return HttpResponseRedirect('/question/') 
     return render(request, 'CourseGuru_App/publish.html', {})
@@ -140,7 +142,8 @@ def publishAnswer(request):
         if request.GET.get('type') == "Answer":
                 ans = request.POST.get('NQcom')
                 answerDate = genDate()
-                answers.objects.create(answer = ans, user_id = 1, question_id = qid, date = answerDate)
+                user = request.user
+                answers.objects.create(answer = ans, user_id = user.id, question_id = qid, date = answerDate)
                 return HttpResponseRedirect('/answer/?id=%s' % qid)
     return render(request, 'CourseGuru_App/publishAnswer.html', {'Title': qData})
 
@@ -148,6 +151,7 @@ def publishAnswer(request):
 def answer(request):
 #    if request.method=='GET':
     qid = request.GET.get('id', '')
+    user = request.user
     if request.method == "POST":
         if 'voteUp' in request.POST: 
             answerId = request.POST.get('voteUp')
@@ -162,7 +166,7 @@ def answer(request):
             record.save()
             return HttpResponseRedirect('/answer/?id=%s' % qid)
         
-        return HttpResponseRedirect('/answer/?id=%s' % qid)
+        return HttpResponseRedirect('/answer/?id=%s' % qid)  
     aData = answers.objects.filter(question_id = qid).order_by('date')
     qData = questions.objects.get(id = qid)
     cData = comments.objects.filter(question_id = qid)
@@ -213,7 +217,7 @@ def cbAnswer(nq):
     #ID of the latest question created
     qid = questions.objects.last()
     answerDate = genDate()
-    answers.objects.create(answer = cbAns.answer, user_id = 1, question_id = qid.id, date = answerDate)
+    answers.objects.create(answer = cbAns.answer, user_id = 38, question_id = qid.id, date = answerDate)
 #    return(intent)
 
 #    ---Canvas code---

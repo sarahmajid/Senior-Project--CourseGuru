@@ -7,14 +7,21 @@
   <body>
   	
 		<p id="test"></p>
-		<div id="CWindow">
-			<p></p>
-		</div>
+		<table width="100%" height="100%">
+			<tr>
+				<td style="width: 100%; height: 200px; border: solid 1px; white-space: nowrap; display: inline-block; overflow-y: scroll;">
+					<div id="CWindow">
+						<p></p>
+					</div>
+				</td>
+			</tr>
+		</table>
 		
-		<div id="message">
+		<div id="message" style="position: fixed; bottom: 0; width: 90%;">
 			<textarea id="inp" type="text" name="cb" rows="4" maxlength="180" style="resize: none; width: 100%;"></textarea>
 		</div>
-		<br><button id="submit">Enter</button>				
+		<br>
+		<!-- <button id="submit">Enter</button>	 -->	 		
 	
 	
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>

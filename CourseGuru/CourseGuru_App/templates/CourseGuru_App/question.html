@@ -12,7 +12,7 @@
 		<table width="60%" align="Center">
 			<tr>
 				<td align="right">
-					<a href="/" style="cursor: pointer; font-size: 18px; font-family: century gothic; color: #444; text-decoration: none;">Hi {{user.get_username}}</a> 
+					<a href="/" style="cursor: pointer; font-size: 18px; font-family: century gothic; color: #444; text-decoration: none;">Hi {{user.get_short_name}}</a> 
 					<br><br>
 				</td>
 			</tr>
@@ -32,8 +32,8 @@
 			{% for c in content %}
 			<tr>
 				<td style=" padding:10px; border-bottom: 2px solid #AEADAD;">					
-					<a href="/answer/?id={{c.id}}" style="cursor: pointer; font-size: 20px; font-family: century gothic;">{{c.question}}</a>	
-					<font style="color: grey; float: right; font-family: century gothic;"><b>User:</b> test <br><b>Date Added:</b> {{c.date}}</font> 	
+					<a href="/answer/?id={{c.id}}" style="cursor: pointer; font-size: 20px; font-family: century gothic; text-decoration: none;">{{c.question}}</a>	
+					<font style="color: grey; float: right; font-family: century gothic;"><b>User: </b> {{c.user.username}} <br><b>Date Added:</b> {{c.date}}</font> 	
 				</td>
 			</tr>
 			{% endfor %}
