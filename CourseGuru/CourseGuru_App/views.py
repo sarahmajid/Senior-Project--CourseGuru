@@ -40,6 +40,8 @@ from CourseGuru_App.models import comments
 
 from test.test_enum import Answer
 from PyPDF2.generic import PdfObject
+from PyPDF2 import pdf
+from django.template.context_processors import request
 #from sqlalchemy.sql.expression import null
 
 
@@ -202,7 +204,7 @@ def getIntentAns(luisIntent, luisEntities):
 def pdfToText(request):
 #    Create empty string for text to be extracted into
     extracted_text = '' 
-   
+    test = ''
      #When button is clicked we parse the file
     if request.method == "POST":
         #Sets myfile to the selected file on page and reads it
@@ -211,20 +213,7 @@ def pdfToText(request):
          #Create tempfile in read and write binary mode
         f = tempfile.TemporaryFile('r+b')
         f.write(myfile)
-        #=======================================================================
-        # ###################################
-        # PDFtext = ''   
-        # pdfObject = f
-        # pdfReader  = PyPDF2.PdfFileReader(pdfObject)
-        #           
-        # pdfReader.numPages
-        #   
-        #   
-        # for n in pdfReader.numPages:
-        #     PDFtext += pdfObject.extractText()
-        #      
-        # 
-        #=======================================================================
+
         #Sets the cursor back to 0 in f to be parsed and sets the documents and parser
         f.seek(0)
         parser = PDFParser(f)
@@ -267,21 +256,66 @@ def pdfToText(request):
 
 #===============================================================================
 def pullInfo(file):
-    
-    stopWords = set(stopwords.words("english"))
+        #=======================================================================
+        # NOTES ON NLTK
+        # PunkSentenceTokenizer can be trained and used for answering questions 
+        #===========================================================
+    keyWords = 'Instructor, Prof., Office, Location, email, hours'
+    keyList = keyWords.split(",")
+#    keyList = keyWords.split() 
+#    keyL = word_tokenize(keywords)
+
 #    print(stopWords)
-    testTok = ' '
+#    testTok = ' '
 #    course, prof, officeL, officeH, phone, email = ''
 #    lines = file.readlines()
-    testTok = sent_tokenize(file, 'english')
+
+    pdfWords = word_tokenize(file, 'english')
+    stopWords = stopwords.words("english")
+    cleanText = ['(',')',';',':','[',']','.',',']
+    filteredText = [ word for word in pdfWords if not word in stopWords and not word in cleanText]
+    profName = 'Nothing Found'
+    a = filteredText.index('Prof.')
+    profName = filteredText[a+1 : a+3]
+    List=''
+    content=''
+    profName += ' ' + filteredText[a+2]
+    
+    if (filteredText.index(keyWords[1]) == True):
+        for n in keyList:
+            a = filteredText.index(n)+1
+            for m in keyList:
+                while(filteredText[a] != m):
+                    content += filteredText[a]
+                    ++a
+            List += n 
+
+            
+    print()
+#    courseID = re.search('[A-Z]{3} \d{4}', file)
+#    profName +=' '+filteredText[a+2]
+    
+    #===========================================================================
+    # for n in filteredText:
+    #     if filteredText[n].__eq__('Prof.'):
+    #         profName= filteredText[n+1]
+    #         profName+=  filteredText[n+2]
+    # 
+    #===========================================================================
+
+    
+#    for 
+#    c = pdfWords.split('')
 #    test.split('\n')
-#    for n in lines:
-         
+    #===========================================================================
+    # for n in pdfWords:
+    #     c += keyWords.count(n)              
+    #===========================================================================
     
 #    course = 
 #    print(file.encode("utf-8"))
      
-    return(testTok)
+    return(profName)
 
 
     
