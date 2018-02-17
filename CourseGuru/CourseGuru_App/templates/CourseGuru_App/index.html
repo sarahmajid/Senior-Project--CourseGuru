@@ -27,11 +27,11 @@
 						<h3 style="font-size: 16px; color: green; font-family: century gothic;">{{newAct}}</h3>
 						<label style="font-size: 16px; color: grey; font-family: century gothic;">Username: </label><br>
 						{% csrf_token %}
-						<input id="username" type="text" name="username" maxlength="20" style="width: 100%;"></input>
+						<input id="username" type="text" required="required" name="username" maxlength="20" style="width: 100%;"></input>
 						<br><br>
 						<label style="font-size: 16px; color: grey; font-family: century gothic;">Password: </label><br>
 						{% csrf_token %}
-						<input id="password" type="password" name="password" maxlength="20" style=" width: 100%;"></input><br>						
+						<input id="password" type="password" required="required" name="password" maxlength="20" style=" width: 100%;"></input><br>						
 						<br>
 						<input type="submit" name="submit" value="Login" style="cursor: pointer; font-size: 16px; color: #444; background-color: #cecece; font-family: century gothic; box-shadow: none; border: 0; padding: 5px 10px;">
 						<br><br><br>

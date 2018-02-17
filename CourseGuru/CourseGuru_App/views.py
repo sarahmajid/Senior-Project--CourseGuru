@@ -33,37 +33,40 @@ from CourseGuru_App.models import comments
 
 
 from test.test_enum import Answer
-from django.contrib.auth import authenticate, login
+from django.contrib.auth import authenticate, login, logout
 
 #Function to populate Main page
 def index(request):
-    credentialmismatch = 'Incorrect username or password'
-    if request.method == "POST":
-        submit = request.POST.get('submit')
-        if (submit == "Login"): 
-            usname = request.POST.get('username')
-            psword = request.POST.get('password')
-            user = authenticate(username=usname, password=psword)
-            if user is not None:
-                if user.is_active:
-                    login(request, user)
-                    return HttpResponseRedirect('/question/')
-            else:
-                return render(request, 'CourseGuru_App/index.html')
-    
-            #try:
-            #    
-            #    lid = user.objects.get(userName = usname, password = psword)        
-            #    if (lid.id>0):
-            #        return HttpResponseRedirect('/question/') 
-            #except:
-            #    return render(request, 'CourseGuru_App/index.html',{'credentialmismatch': credentialmismatch})      
+    if request.user.is_authenticated:
+        return HttpResponseRedirect('/question/')
     else:
-        newAct = request.GET.get('newAct', '')
-        if newAct == "1":
-            newAct = "Account successfully created"
-            return render(request, 'CourseGuru_App/index.html',{'newAct': newAct}) 
-        return render(request, 'CourseGuru_App/index.html')
+        credentialmismatch = 'Incorrect username or password'
+        if request.method == "POST":
+            submit = request.POST.get('submit')
+            if (submit == "Login"): 
+                usname = request.POST.get('username')
+                psword = request.POST.get('password')
+                user = authenticate(username=usname, password=psword)
+                if user is not None:
+                    if user.is_active:
+                        login(request, user)
+                        return HttpResponseRedirect('/question/')
+                else:
+                    return render(request, 'CourseGuru_App/index.html')
+        
+                #try:
+                #    
+                #    lid = user.objects.get(userName = usname, password = psword)        
+                #    if (lid.id>0):
+                #        return HttpResponseRedirect('/question/') 
+                #except:
+                #    return render(request, 'CourseGuru_App/index.html',{'credentialmismatch': credentialmismatch})      
+        else:
+            newAct = request.GET.get('newAct', '')
+            if newAct == "1":
+                newAct = "Account successfully created"
+                return render(request, 'CourseGuru_App/index.html',{'newAct': newAct}) 
+            return render(request, 'CourseGuru_App/index.html')
     
 
 def account(request):
@@ -104,73 +107,92 @@ def genDate():
 
 # Function to populate Main page
 def question(request):
-    
-        #Grabs the questions form the db and orders them by id in desc fashion so the newest are first
-    qData = questions.objects.get_queryset().order_by('pk')
-    page = request.GET.get('page', 1)
-    
-    #Paginator created to limit page display to 10 data items per page
-    paginator = Paginator(qData, 10)
-    try:
-        fquestions = paginator.page(page)
-    except PageNotAnInteger:
-        fquestions = paginator.page(1)
-    except EmptyPage:
-        fquestions = paginator.page(paginator.num_pages())
-#    return render(request, 'CourseGuru_App/question.html', {'content': fquestions})
-    user = request.user
-    
-    return render(request, 'CourseGuru_App/question.html', {'content': fquestions, 'user': user})
+    if request.user.is_authenticated:
+            #Grabs the questions form the db and orders them by id in desc fashion so the newest are first
+        qData = questions.objects.get_queryset().order_by('pk')
+        page = request.GET.get('page', 1)
+        
+        if request.method == "POST":
+            if request.POST.get('Logout') == "Logout":
+                logout(request)
+                return HttpResponseRedirect('/')
+        
+        #Paginator created to limit page display to 10 data items per page
+        paginator = Paginator(qData, 10)
+        try:
+            fquestions = paginator.page(page)
+        except PageNotAnInteger:
+            fquestions = paginator.page(1)
+        except EmptyPage:
+            fquestions = paginator.page(paginator.num_pages())
+    #    return render(request, 'CourseGuru_App/question.html', {'content': fquestions})
+        user = request.user
+        
+        return render(request, 'CourseGuru_App/question.html', {'content': fquestions, 'user': user})
+    else:
+        return HttpResponseRedirect('/')
 
 def publish(request):
-    # Passes in new question when the submit button is selected
-    if request.method == "POST":
-        if request.GET.get('type') == "Question":
-            ques = request.POST.get('NQ')
-            comm = request.POST.get('NQcom')
-            questionDate = genDate()
-            user = request.user
-            questions.objects.create(question = ques, course_id = 1, user_id = user.id, date = questionDate, comment = comm)
-            cbAnswer(ques)
-            return HttpResponseRedirect('/question/') 
-    return render(request, 'CourseGuru_App/publish.html', {})
+    if request.user.is_authenticated:
+        # Passes in new question when the submit button is selected
+        if request.method == "POST":
+            if request.GET.get('type') == "Question":
+                ques = request.POST.get('NQ')
+                comm = request.POST.get('NQcom')
+                questionDate = genDate()
+                user = request.user
+                questions.objects.create(question = ques, course_id = 1, user_id = user.id, date = questionDate, comment = comm)
+                cbAnswer(ques)
+                return HttpResponseRedirect('/question/') 
+        return render(request, 'CourseGuru_App/publish.html', {})
+    else:
+        return HttpResponseRedirect('/')
 
 def publishAnswer(request):
-    qid = request.GET.get('id', '')
-    qData = questions.objects.get(id = qid)
-    if request.method == "POST":
-        if request.GET.get('type') == "Answer":
-                ans = request.POST.get('NQcom')
-                answerDate = genDate()
-                user = request.user
-                answers.objects.create(answer = ans, user_id = user.id, question_id = qid, date = answerDate)
-                return HttpResponseRedirect('/answer/?id=%s' % qid)
-    return render(request, 'CourseGuru_App/publishAnswer.html', {'Title': qData})
+    if request.user.is_authenticated:
+        qid = request.GET.get('id', '')
+        qData = questions.objects.get(id = qid)
+        if request.method == "POST":
+            if request.GET.get('type') == "Answer":
+                    ans = request.POST.get('NQcom')
+                    answerDate = genDate()
+                    user = request.user
+                    answers.objects.create(answer = ans, user_id = user.id, question_id = qid, date = answerDate)
+                    return HttpResponseRedirect('/answer/?id=%s' % qid)
+        return render(request, 'CourseGuru_App/publishAnswer.html', {'Title': qData})
+    else:
+        return HttpResponseRedirect('/')
 
 # Function to populate Answers page
 def answer(request):
-#    if request.method=='GET':
-    qid = request.GET.get('id', '')
-    user = request.user
-    if request.method == "POST":
-        if 'voteUp' in request.POST: 
-            answerId = request.POST.get('voteUp')
-            record = answers.objects.get(id = answerId)
-            record.rating = record.rating + 1
-            record.save()
-            return HttpResponseRedirect('/answer/?id=%s' % qid)
-        elif 'voteDown' in request.POST: 
-            answerId = request.POST.get('voteDown')
-            record = answers.objects.get(id = answerId)
-            record.rating = record.rating - 1
-            record.save()
-            return HttpResponseRedirect('/answer/?id=%s' % qid)
-        
-        return HttpResponseRedirect('/answer/?id=%s' % qid)  
-    aData = answers.objects.filter(question_id = qid).order_by('date')
-    qData = questions.objects.get(id = qid)
-    cData = comments.objects.filter(question_id = qid)
-    return render(request, 'CourseGuru_App/answer.html', {'answers': aData, 'Title': qData, 'comments': cData})
+    if request.user.is_authenticated:
+    #    if request.method=='GET':
+        qid = request.GET.get('id', '')
+        user = request.user
+        if request.method == "POST":
+            if request.POST.get('Logout') == "Logout":
+                logout(request)
+                return HttpResponseRedirect('/')
+            if 'voteUp' in request.POST: 
+                answerId = request.POST.get('voteUp')
+                record = answers.objects.get(id = answerId)
+                record.rating = record.rating + 1
+                record.save()
+                return HttpResponseRedirect('/answer/?id=%s' % qid)
+            elif 'voteDown' in request.POST: 
+                answerId = request.POST.get('voteDown')
+                record = answers.objects.get(id = answerId)
+                record.rating = record.rating - 1
+                record.save()
+                return HttpResponseRedirect('/answer/?id=%s' % qid)
+            
+            return HttpResponseRedirect('/answer/?id=%s' % qid)  
+        aData = answers.objects.filter(question_id = qid).order_by('date')
+        qData = questions.objects.get(id = qid)
+        cData = comments.objects.filter(question_id = qid)
+        return render(request, 'CourseGuru_App/answer.html', {'answers': aData, 'Title': qData, 'comments': cData})
+    else:
+        return HttpResponseRedirect('/')
 
 # returns a good match to entities answer object  
 def getIntentAns(luisIntent, luisEntities):    
@@ -188,11 +210,15 @@ def getIntentAns(luisIntent, luisEntities):
         tempCntMtch = 0
         ttlCnt = len(b)
         for n in b: 
-            tempCntMtch += entitiesList.count(n)
+            #if the word in the answer is in the list of entities then increment by 1
+            if luisEntities.count(n) > 0:
+                tempCntMtch += 1
             cntAccuracy = (tempCntMtch/ttlCnt)
             if cntAccuracy>count:
                 count = cntAccuracy 
-                answr = botanswers.objects.get(id = m.id)
+                answr = m.answer
+    #if answr == "":
+        #answr = (botanswers.objects.filter(category_id = catgry.id).first()).answer
     return (answr)    
 
 
@@ -207,17 +233,24 @@ def cbAnswer(nq):
     #Grabs intent of question
     luisIntent = luisStr['topScoringIntent']['intent']
     #Grabs entities
-    luisEntity = luisStr['entities']
-    #If intent receives a lower score than 60% or there is no intent, the question does not get answered
-    if luisScore < 0.6 or luisIntent == 'None':
+    if not luisStr['entities']:
         return
-    catID = category.objects.get(intent=luisIntent)
+    luisEntities = luisStr['entities'][0]['entity']
+    #If intent receives a lower score than 75% or there is no intent, the question does not get answered
+    if luisScore < 0.75 or luisIntent == 'None':
+        return
+    #---catID = category.objects.get(intent=luisIntent)
     #Sets cbAns to the first answer it can find matching that category (This needs to be improved)
-    cbAns = botanswers.objects.filter(category_id = catID.id).first()
+    #---cbAns = botanswers.objects.filter(category_id = catID.id).first()
     #ID of the latest question created
     qid = questions.objects.last()
+    
+    entAnswer = getIntentAns(luisIntent, luisEntities)
+    if entAnswer == "":
+        return
+    
     answerDate = genDate()
-    answers.objects.create(answer = cbAns.answer, user_id = 38, question_id = qid.id, date = answerDate)
+    answers.objects.create(answer = entAnswer, user_id = 38, question_id = qid.id, date = answerDate)
 #    return(intent)
 
 #    ---Canvas code---

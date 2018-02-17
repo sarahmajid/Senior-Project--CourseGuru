@@ -36,7 +36,7 @@
 						<br><br>
 						<label style="font-size: 16px; color: grey; font-family: century gothic;">Answer: </label><br>
 						{% csrf_token %}
-						<textarea type="text" name="NQcom" rows="4" maxlength="180" style="resize: none; width: 50%;"></textarea>
+						<textarea type="text" name="NQcom" rows="4" required="required" maxlength="180" style="resize: none; width: 50%;"></textarea>
 						<br><br>
 						<input type="submit" name="submit" value="Publish" style="cursor: pointer; font-size: 16px; color: #444; background-color: #cecece; font-family: century gothic; box-shadow: none; border: 0; padding: 5px 10px;">				
 					</form>

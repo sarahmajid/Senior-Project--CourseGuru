@@ -11,8 +11,13 @@
 		<br>
 		<table width="60%" align="Center">
 			<tr>
-				<td align="right">
-					<a href="/" style="cursor: pointer; font-size: 18px; font-family: century gothic; color: #444; text-decoration: none;">Hi {{user.get_short_name}}</a> 
+				<td align="right" style="font-size: 18px; font-family: century gothic; color: #444;">
+					Hi {{user.get_short_name}}!
+					<br>
+					<form method="POST" action=""> 
+						{% csrf_token %}
+						<input type="submit" name="Logout" value="Logout" style="font-family: century gothic; color: #444; cursor: pointer; font-size: 16px; background-color: transparent; box-shadow: none; border: 0;">
+					</form>
 					<br><br>
 				</td>
 			</tr>
