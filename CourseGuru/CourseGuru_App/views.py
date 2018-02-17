@@ -1,7 +1,3 @@
-#===============================================================================
-# import psycopg2
-# import shutil
-#===============================================================================
 import re
 import tempfile
 import json
@@ -15,20 +11,13 @@ import datetime
 #===============================================================================
 from django.shortcuts import render
 from django.http.response import HttpResponseRedirect
-#from pdfminer.pdfparser import PDFParser, PDFDocument
-#from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
-#from pdfminer.layout import LAParams, LTTextBox, LTTextLine
-#from pdfminer.converter import PDFPageAggregator
+from pdfminer.pdfparser import PDFParser, PDFDocument
+from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
+from pdfminer.layout import LAParams, LTTextBox, LTTextLine
+from pdfminer.converter import PDFPageAggregator
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.shortcuts import render_to_response
-from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.decorators import login_required
-from django.views.generic import View
+from django.contrib.auth.models import User
 
-
-#importing models 
-from CourseGuru_App.models import user
 
 from CourseGuru_App.models import questions
 from CourseGuru_App.models import answers
@@ -39,95 +28,81 @@ from CourseGuru_App.models import category
 from CourseGuru_App.models import botanswers
 from CourseGuru_App.models import comments
 
-
 from test.test_enum import Answer
-from sqlalchemy.sql.expression import null
-from django.template.context import RequestContext
-
+from django.contrib.auth import authenticate, login
 
 #Function to populate Main page
-    
 def index(request):
-    credentialmismatch = 'This associated username and password does not exist'
+    credentialmismatch = 'Incorrect username or password'
     if request.method == "POST":
         submit = request.POST.get('submit')
-        if (submit == "CREATE ACCOUNT"):
-            return HttpResponseRedirect('/account/')
-        if (submit == "ENTER"): 
+        if (submit == "Login"): 
             usname = request.POST.get('username')
             psword = request.POST.get('password')
-            user = authenticate(username = usname, password = psword)
+            user = authenticate(username=usname, password=psword)
             if user is not None:
                 if user.is_active:
-                    login(request,user)
-                    return redirect('/question/')
-                else:
-                    return render(request, 'CourseGuru_App/index.html',{'credentialmismatch': credentialmismatch})
-            try:
-                 lid = user.objects.get(userName = usname, password = psword)
-             
-                 if (lid.id>0):
-                     return HttpResponseRedirect('/question/') 
-            except:
-                 return render(request, 'CourseGuru_App/index.html',{'credentialmismatch': credentialmismatch})
-
-        
+                    login(request, user)
+                    return HttpResponseRedirect('/question/')
+            else:
+                return render(request, 'CourseGuru_App/index.html')
+    
+            #try:
+            #    
+            #    lid = user.objects.get(userName = usname, password = psword)        
+            #    if (lid.id>0):
+            #        return HttpResponseRedirect('/question/') 
+            #except:
+            #    return render(request, 'CourseGuru_App/index.html',{'credentialmismatch': credentialmismatch})      
     else:
-        return render(request,'CourseGuru_App/index.html')
+        newAct = request.GET.get('newAct', '')
+        if newAct == "1":
+            newAct = "Account successfully created"
+            return render(request, 'CourseGuru_App/index.html',{'newAct': newAct}) 
+        return render(request, 'CourseGuru_App/index.html')
     
 
 def account(request):
-
     if request.method == "POST":
-    
-       
         firstname = request.POST.get('firstname')
         lastname = request.POST.get('lastname')
         username = request.POST.get('username')
         psword = request.POST.get('password')
         cpsword = request.POST.get('cpassword')
-        email = request.POST.get('email')
-        stat = request.POST.get('status') 
-         
-         
-        mismatch = 'Password Mismatch'
+
+        stat = request.POST.get('status')       
+       
         if (psword != cpsword):
-            return render(request, 'CourseGuru_App/account.html', {'fname': firstname, 'lname': lastname, 'uname': username, 'email':email, 'status': stat,'msmatch': mismatch})
-        else: 
-            user.object.create(first_name = firstname, last_name = lastname, username = username, password = psword, email = email)
-    return render(request, 'CourseGuru_App/account.html')
+            mismatch = 'Password Mismatch'
+            return render(request, 'CourseGuru_App/account.html', {'msmatch': mismatch})
+        else:
+            if User.objects.filter(username = username).exists():
+                mismatch = "Username taken"
+                return render(request, 'CourseGuru_App/account.html', {'msmatch': mismatch})
+            else:
+                #edit possibly drop user ID from the table or allow it to be null 
+                #user.objects.create(firstName = firstname, lastName = lastname, userName = username, password = psword, status = stat)  
+                newUser = User.objects.create_user(username, 'test@test.com', psword) 
+                newUser.first_name = firstname
+                newUser.last_name = lastname
+                newUser.status = stat
+                newUser.save()
+                return HttpResponseRedirect('/?newAct=1')  
+    else:
+        return render(request, 'CourseGuru_App/account.html')
+
+def genDate():
+    
+    curDate = datetime.datetime.now().strftime("%m-%d-%Y %I:%M %p")
+        
+    return (curDate)
 
 
 # Function to populate Main page
 def question(request):
-    # Passes in new question when the submit button is selected
-    if request.method == "POST":
-
-        nq = request.POST.get('NQ')
-        questionDate = datetime.datetime.now().strftime("%m-%d-%Y %H:%M")
-        questions.objects.create(question = nq, course_id = 1, user_id = 1, date = questionDate)
-#        cbAnswer(nq)
-        #=======================================================================
-        # luisIntent = cbAnswer(nq)
-        # catID = category.objects.get(id=1)
-        # cbAns = botanswers.objects.get(category_id = catID.id)
-        # qid = questions.objects.get(question = nq)
-        # answers.objects.create(answer = cbAns.answer, user_id = 1, question_id = qid.id)
-        #=======================================================================
-#        questions.objects.filter(id=4).update(question=catID.id)
-        
-        #=======================================================================
-        # try:
-        #     r = request.get('ENDPOINTq=%s' % nq, '')
-        #     luisStr = json.loads(r.text)
-        #     luisStr = luisStr['topScoringIntent']['intent']
-        #     questions.objects.filter(id=3).update(question=luisStr)
-        # except Exception as e:
-        #     questions.objects.filter(id=3).update(question='failed')
-        #=======================================================================
-        return HttpResponseRedirect('/question/') 
+    
         #Grabs the questions form the db and orders them by id in desc fashion so the newest are first
-    qData = questions.objects.get_queryset().order_by('id')
+    qData = questions.objects.get_queryset().order_by('pk')
     page = request.GET.get('page', 1)
     
     #Paginator created to limit page display to 10 data items per page
@@ -138,27 +113,43 @@ def question(request):
         fquestions = paginator.page(1)
     except EmptyPage:
         fquestions = paginator.page(paginator.num_pages())
-    return render(request, 'CourseGuru_App/question.html', {'content': fquestions})
+#    return render(request, 'CourseGuru_App/question.html', {'content': fquestions})
+    user = request.user
     
-    return render(request, 'CourseGuru_App/question.html', {'content': qData})
+    return render(request, 'CourseGuru_App/question.html', {'content': fquestions, 'user': user})
 
+def publish(request):
+    # Passes in new question when the submit button is selected
+    if request.method == "POST":
+        if request.GET.get('type') == "Question":
+            ques = request.POST.get('NQ')
+            comm = request.POST.get('NQcom')
+            questionDate = genDate()
+            user = request.user
+            questions.objects.create(question = ques, course_id = 1, user_id = user.id, date = questionDate, comment = comm)
+            cbAnswer(ques)
+            return HttpResponseRedirect('/question/') 
+    return render(request, 'CourseGuru_App/publish.html', {})
+
+def publishAnswer(request):
+    qid = request.GET.get('id', '')
+    qData = questions.objects.get(id = qid)
+    if request.method == "POST":
+        if request.GET.get('type') == "Answer":
+                ans = request.POST.get('NQcom')
+                answerDate = genDate()
+                user = request.user
+                answers.objects.create(answer = ans, user_id = user.id, question_id = qid, date = answerDate)
+                return HttpResponseRedirect('/answer/?id=%s' % qid)
+    return render(request, 'CourseGuru_App/publishAnswer.html', {'Title': qData})
 
 # Function to populate Answers page
 def answer(request):
 #    if request.method=='GET':
     qid = request.GET.get('id', '')
+    user = request.user
     if request.method == "POST":
-        if 'ANS' in request.POST:
-            ans = request.POST.get('ANS')
-            answerDate = datetime.datetime.now().strftime("%m-%d-%Y %H:%M")
-            answers.objects.create(answer = ans, user_id = 1, question_id = qid, date = answerDate)
-            return HttpResponseRedirect('/answer/?id=%s' % qid)
-        elif 'COM' in request.POST:
-            com = request.POST.get('COM')
-            commentDate = datetime.datetime.now().strftime("%m-%d-%Y %H:%M")
-            comments.objects.create(comment = com, question_id = qid, user_id = 1, date = commentDate)
-            return HttpResponseRedirect('/answer/?id=%s' % qid)
-        elif 'voteUp' in request.POST: 
+        if 'voteUp' in request.POST: 
             answerId = request.POST.get('voteUp')
             record = answers.objects.get(id = answerId)
             record.rating = record.rating + 1
@@ -171,15 +162,11 @@ def answer(request):
             record.save()
             return HttpResponseRedirect('/answer/?id=%s' % qid)
         
-        return HttpResponseRedirect('/answer/?id=%s' % qid)
-    
-    aData = answers.objects.filter(question_id = qid, )
+        return HttpResponseRedirect('/answer/?id=%s' % qid)  
+    aData = answers.objects.filter(question_id = qid).order_by('date')
     qData = questions.objects.get(id = qid)
     cData = comments.objects.filter(question_id = qid)
-    reorderData = answers.objects.get_queryset().order_by('-rating')
-    
-    
-    return render(request, 'CourseGuru_App/answer.html', {'answers': aData, 'Title': qData, 'comments': cData, 'reorderData': reorderData})
+    return render(request, 'CourseGuru_App/answer.html', {'answers': aData, 'Title': qData, 'comments': cData})
 
 # returns a good match to entities answer object  
 def getIntentAns(luisIntent, luisEntities):    
@@ -193,7 +180,7 @@ def getIntentAns(luisIntent, luisEntities):
     filtAns = botanswers.objects.filter(category_id = catgry.id)
      
     for m in filtAns:
-        b = m.entities.split(",")
+        b = m.answer.split(" ")
         tempCntMtch = 0
         ttlCnt = len(b)
         for n in b: 
@@ -202,14 +189,39 @@ def getIntentAns(luisIntent, luisEntities):
             if cntAccuracy>count:
                 count = cntAccuracy 
                 answr = botanswers.objects.get(id = m.id)
-    return (answr)                     
+    return (answr)    
+
 
 def chatbot(request):
     return render(request, 'CourseGuru_App/botchat.html',)
 
-#===============================================================================
-# def parse(request):
-#     #Create empty string for text to be extracted into
+def cbAnswer(nq):
+    r = requests.get('https://westus.api.cognitive.microsoft.com/luis/v2.0/apps/6059c365-d88a-412b-8f33-d7393ba3bf9f?subscription-key=c574439a46e64d8cb597879499ccf8f9&verbose=true&timezoneOffset=-300&q=%s' % nq)
+    luisStr = json.loads(r.text)
+    #Grabs intent score of question
+    luisScore = float(luisStr['topScoringIntent']['score'])
+    #Grabs intent of question
+    luisIntent = luisStr['topScoringIntent']['intent']
+    #Grabs entities
+    luisEntity = luisStr['entities']
+    #If intent receives a lower score than 60% or there is no intent, the question does not get answered
+    if luisScore < 0.6 or luisIntent == 'None':
+        return
+    catID = category.objects.get(intent=luisIntent)
+    #Sets cbAns to the first answer it can find matching that category (This needs to be improved)
+    cbAns = botanswers.objects.filter(category_id = catID.id).first()
+    #ID of the latest question created
+    qid = questions.objects.last()
+    answerDate = genDate()
+    answers.objects.create(answer = cbAns.answer, user_id = 38, question_id = qid.id, date = answerDate)
+#    return(intent)
+
+#    ---Canvas code---
+#    url = (urlopen('https://canvas.wayne.edu/api/v1/courses').read()
+#    response = urlopen('https://canvas.wayne.edu/api/v1/courses')
+
+def parse(request):
+    #Create empty string for text to be extracted into
 #     extracted_text = ''
 #     
 #     #When button is clicked we parse the file
@@ -253,28 +265,13 @@ def chatbot(request):
 #             if results is not None:
 #                 info = re.sub('[^0-9a-zA-Z][ ]', '', results.group(1))
 #                 courseinfo.objects.create(keyword_common_name = k.common_name, syllabus_data = info, course_id = courseid[0])
-#     return render(request, 'CourseGuru_App/parse.html')
+
+    return render(request, 'CourseGuru_App/parse.html')
+
 #===============================================================================
-
-def cbAnswer(nq):
-    r = requests.get('ENDPOINT%s' % nq)
-    luisStr = json.loads(r.text)
-    #Grabs intent score of question
-    luisScore = float(luisStr['topScoringIntent']['score'])
-    #Grabs intent of question
-    luisIntent = luisStr['topScoringIntent']['intent']
-    #If intent receives a lower score than 60% or there is no intent, the question does not get answered
-    if luisScore < 0.6 or luisIntent == 'None':
-        return
-    catID = category.objects.get(intent=luisIntent)
-    #Sets cbAns to the first answer it can find matching that category (This needs to be improved)
-    cbAns = botanswers.objects.filter(category_id = catID.id).first()
-    #ID of the latest question created
-    qid = questions.objects.last()
-    answers.objects.create(answer = cbAns.answer, user_id = 1, question_id = qid.id)
-#    return(intent)
-
-#    ---Canvas code---
-#    url = (urlopen('https://canvas.wayne.edu/api/v1/courses').read()
-#    response = urlopen('https://canvas.wayne.edu/api/v1/courses')
-#    data = json.load(response)
+# def fileParser(file):
+#     
+#     
+#     
+#     return(csvFile)
+#===============================================================================

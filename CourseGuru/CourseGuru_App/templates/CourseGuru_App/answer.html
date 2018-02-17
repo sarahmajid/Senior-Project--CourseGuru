@@ -9,109 +9,70 @@
 		<script defer src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"></script>
 	</head>
 	<body>
-		<table width="50%" align="Center" style="background-color: grey;">
-			<tr>
-				<td height="50px" style="text-align: center; font-size: 30px; color: #FFFFFF; font-family: century gothic;">
-					Amesite Chat Responder
-				</td>
-			</tr>
-		</table>
+		<header width="40%" align="center" height="50px" style="line-height: 56px; text-align: center; font-size: 30px; color: #444; font-family: century gothic; font-weight: normal;">
+			Amesite Chat Responder	
+		</header>
 		<br><br>
 
-		<table width="50%" align="Center" style="background-color: grey; border-radius: 10px;" cellspacing="0" cellpadding="0">
-
-			<tr>
-				<td style="text-align: center; padding:10px; font-size: 22px; color: #FFFFFF; font-family: century gothic;">
-					[Course Name] Forum - Answers
-				</td>
-			</tr>
-			<tr>
-				<td height="3px" style="background-color: #AEADAD;"></td>
-			</tr>
-			<tr>
-				<td style="padding:10px; font-size: 20px; color: #FFFFFF; font-family: century gothic;">
-					{{Title.question}}
-				</td>
-			</tr>
-		</table>
-		<br><br>
-		<table  width="24%" style="background-color: grey; border-radius: 10px; float: left; margin-left: 25%; box-shadow: 2.5px 2.5px #333;" cellspacing="0" cellpadding="0">
+		<table width="60%" align="Center">
 			<tr>
 				<td>
+					<a href="/question/" style="cursor: pointer; font-size: 18px; font-family: century gothic; color: #444; text-decoration: none;">< Back</a> 
+					<br><br>
+				</td>
+			</tr>
+			<tr>
+				<td style="padding:10px; font-size: 22px; color: grey; font-family: century gothic;">
+					{{Title.question}}
+					<a href="/publishAnswer/?type=Answer&id={{Title.id}}" style="padding: 2px 10px; background-color: #cecece; float: right; cursor: pointer; font-size: 18px; font-family: century gothic; color: #444; text-decoration: none;">Submit an answer</a>
+				</td>
+			</tr>
+			<tr>
+				<td height="1.5px" style="background-color: #AEADAD;"></td>
+			</tr>
+		</table>
+
+		<table  width="60%" align="Center">
+			<tr>
+				<td style="color: grey; padding:10px 10px 10px 5%; font-family: century gothic;">
 					<br>
-					<form method="POST" action="" style="margin-left: 10px;">
-						<label style="font-size: 16px; color: #FFFFFF; font-family: century gothic;">Enter an answer: </label><br>
-						{% csrf_token %}
-						
-
-						<textarea id="ANS" type="text" name="ANS" rows="4" maxlength="180" style="resize: none; width: 90%;"></textarea>				
-						<br><input type="submit" value="Enter">							
-
-					</form>
+					<div style="font-size: 14px; color: #dfcd1a;">{{Title.user.first_name}} {{Title.user.last_name}}<br><br></div>
+					<div style="font-size: 16px;">{{Title.comment}}</div>
 					<br>
 				</td>
 			</tr>
-			<tr><td> <br><br> </td></tr>
-			{% for a in reorderData %}
+			<tr><td style="border-top: #cecece 1px solid;"> <br> </td></tr>
+			{% for a in answers %}
 			<tr>
-				<td style="border-style:collapse; color: #FFFFFF; padding-bottom: 20px;">	
-					<div style="padding: 5px;">User:</div>
-					<div answer-rating="{{a.rating}}" style="font-size: 20px; border-top: 2px solid #AEADAD; border-bottom: 2px solid #AEADAD; padding: 5px; ">{{a.answer}}</div>
-					<label style="font-size: 12px; color: #FFFFFF; font-family: century gothic;">Was this answer helpful? </label><br>
+				<td style="padding:10px 10px 10px 5%; color: grey; font-family: century gothic;">	
+					<div style="font-size: 14px; color: green; float:left;">{{a.user.first_name}} {{a.user.last_name}}</div>
+					<div style="float: right; font-size: 14px;">Date Added: {{a.date}}</div>
+				</td>
+			</tr>
+			<tr>
+				<td style="padding:10px 10px 10px 5%; color: grey; padding-bottom: 20px; font-family: century gothic;">
+					<div answer-rating="{{a.rating}}" style="font-size: 16px;float: left; width: 80%;">{{a.answer}}</div>
+					<br>
+					
 					<div style="float:right;">
-					<form action="" method="POST">
-					{% csrf_token %}
-					<button name="voteUp" type="submit" value="{{a.id}}" style="margin-left: 10px; margin-top: 2px; margin-bottom: 2px;"><div><i class="fas fa-thumbs-up"></i></div></button>
-					<button name="voteDown" type="submit" value="{{a.id}}" style="margin-right: 10px; margin-top: 2px; margin-bottom: 2px;"><div><i class="fas fa-thumbs-down vote"></i></div></button>
-					</form>
+						<label style="font-size: 12px; color: grey; font-family: century gothic;">Was this answer helpful? </label><br>
+						<form action="" method="POST">
+							{% csrf_token %}
+							<button name="voteUp" type="submit" value="{{a.id}}" style="margin-left: 10px; margin-top: 2px; margin-bottom: 2px;"><div><i class="fas fa-thumbs-up"></i></div></button>
+							<button name="voteDown" type="submit" value="{{a.id}}" style="margin-right: 10px; margin-top: 2px; margin-bottom: 2px;"><div><i class="fas fa-thumbs-down vote"></i></div></button>
+							{{a.rating}}
+						</form>
 					</div>
 					<div id="votingResult" style="float:right;">
-					<span>{{a.rating}}</span>
+					<span></span>
 					</div>
-					<div style="padding: 5px;">Date Added: {{a.date}}</div>
-					<!--<input class="vote" type="submit" name = rating value="Y">
-					<input class="vote" type="submit" name = rating value="N"> -->
 				</td>
 			</tr>
+			<tr><td style="border-top: #cecece 1px solid;"> <br> </td></tr>
 			{% endfor %}
 		</table>
-		<table width="24%" style="background-color: grey; border-radius: 10px; float:right; margin-right: 25%; box-shadow: 2.5px 2.5px #333;" cellspacing="0" cellpadding="0">
-			<tr>
-				<td>
-					<br>
-					<form method="POST" action="" style="margin-left: 10px;">
-						<label style="font-size: 16px; color: #FFFFFF; font-family: century gothic;">Enter a comment: </label><br>
-						{% csrf_token %}
-						
-						<textarea id="COM" type="text" name="COM" rows="4" maxlength="180" style="resize: none; width: 90%;"></textarea>				
-						<br><input type="submit" value="Enter">							
-
-					</form>
-					<br>
-				</td>		
-			</tr>
-			<tr><td> <br><br> </td></tr>
-			{% for c in comments %}
-			<tr>
-				<td style="border-style:collapse; color: #FFFFFF; padding-bottom: 20px;">	
-					<div style="padding: 5px;">User:</div>
-					<div style="font-size: 20px; border-top: 2px solid #AEADAD; border-bottom: 2px solid #AEADAD; padding: 5px; ">{{c.comment}}</div>
-					<div style="padding: 5px;">Date Added: {{c.date}}</div>
-				</td>
-			</tr>
-			{% endfor %}
-		</table>
-<!--		<div id="dialog" title="Basic dialog">
-  		<p>vote completed</p>
-		</div>
--->
 		
-		<iframe style="position:fixed; bottom: 0; right: 0;" src="/chatbot/" height="350px" width="350px"/>
+		<iframe style="position:fixed; bottom: 0; right: 0;" src="/chatbot/" height="35%" width="20%"/>
 
 	</body>
 </html>
-
-<!-- 		{ # for c in answerData # }
- 			<tr>
-				<td style=" padding:10px;">	
-					<a href="/answer/?id={{c.id}}" style="cursor: pointer;">{{c.answer}}</a>	-->
