@@ -26,7 +26,7 @@ from nltk.tokenize import sent_tokenize, word_tokenize
 from nltk.corpus import stopwords
 
 #importing models 
-from CourseGuru_App.models import user
+from CourseGuru_App.models import User
 
 from CourseGuru_App.models import questions
 from CourseGuru_App.models import answers
@@ -57,7 +57,7 @@ def index(request):
             usname = request.POST.get('username')
             psword = request.POST.get('password')
             try:
-                lid = user.objects.get(userName = usname, password = psword)
+                lid = User.objects.get(userName = usname, password = psword)
             
                 if (lid.id>0):
                     return HttpResponseRedirect('/question/') 
@@ -84,7 +84,7 @@ def account(request):
             return render(request, 'CourseGuru_App/account.html', {'fname': firstname, 'lname': lastname, 'uname': username, 'status': stat,'msmatch': mismatch})
         else:
             #edit possibly drop user ID from the table or allow it to be null 
-            user.objects.create(firstName = firstname, lastName = lastname, userName = username, password = psword, status = stat)   
+            User.objects.create(firstName = firstname, lastName = lastname, userName = username, password = psword, status = stat)   
             return HttpResponseRedirect('/')
 #       
 #    usData = 
@@ -260,7 +260,7 @@ def pullInfo(file):
         # NOTES ON NLTK
         # PunkSentenceTokenizer can be trained and used for answering questions 
         #===========================================================
-    keyWords = 'Instructor, Prof., Office, Location, email, hours'
+    keyWords = 'Instructor,Prof.,Office,location,Email,Hours'
     keyList = keyWords.split(",")
 #    keyList = keyWords.split() 
 #    keyL = word_tokenize(keywords)
@@ -271,51 +271,44 @@ def pullInfo(file):
 #    lines = file.readlines()
 
     pdfWords = word_tokenize(file, 'english')
+    pdfSentences = sent_tokenize(file, 'english')
     stopWords = stopwords.words("english")
     cleanText = ['(',')',';',':','[',']','.',',']
     filteredText = [ word for word in pdfWords if not word in stopWords and not word in cleanText]
     profName = 'Nothing Found'
     a = filteredText.index('Prof.')
     profName = filteredText[a+1 : a+3]
+    
+    for c in keyList:
+        z = filteredText.index(c)
+        for w in keyList: 
+            i = 1
+            if filteredText[z+i] == w: 
+                print('nothing') 
+            if filteredText[z+i] != w:
+                noneKeyWords = filteredText[z+i]
+                print(filteredText[z+i])
+            ++i    
     List=''
     content=''
-    profName += ' ' + filteredText[a+2]
-    
-    if (filteredText.index(keyWords[1]) == True):
-        for n in keyList:
-            a = filteredText.index(n)+1
-            for m in keyList:
-                while(filteredText[a] != m):
-                    content += filteredText[a]
-                    ++a
-            List += n 
-
-            
-    print()
-#    courseID = re.search('[A-Z]{3} \d{4}', file)
-#    profName +=' '+filteredText[a+2]
-    
-    #===========================================================================
-    # for n in filteredText:
-    #     if filteredText[n].__eq__('Prof.'):
-    #         profName= filteredText[n+1]
-    #         profName+=  filteredText[n+2]
-    # 
-    #===========================================================================
-
-    
-#    for 
-#    c = pdfWords.split('')
-#    test.split('\n')
-    #===========================================================================
-    # for n in pdfWords:
-    #     c += keyWords.count(n)              
-    #===========================================================================
-    
-#    course = 
-#    print(file.encode("utf-8"))
      
-    return(profName)
+    #===========================================================================
+    # for n in keyList:
+    #     a = filteredText.index(n)    
+    #     if (a != 0):
+    #       #  b = filteredText[a]
+    #         for m in keyList:
+    #             while(filteredText[a] != m):
+    #                 content += filteredText[a]
+    #                 ++a
+    #     List += n + content
+    #===========================================================================
+ 
+#    print(pdfSentences)
+
+    
+     
+    return(noneKeyWords)
 
 
     
