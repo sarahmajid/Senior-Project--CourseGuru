@@ -17,6 +17,7 @@ from pdfminer.layout import LAParams, LTTextBox, LTTextLine
 from pdfminer.converter import PDFPageAggregator
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib.auth.models import User
+from sklearn import svm
 
 
 from CourseGuru_App.models import questions
@@ -168,6 +169,16 @@ def answer(request):
     cData = comments.objects.filter(question_id = qid)
     return render(request, 'CourseGuru_App/answer.html', {'answers': aData, 'Title': qData, 'comments': cData})
 
+
+def getBestAnswer(luisIntent, luisEntities):
+    
+    #initialize the best answer
+    #banswer = ""
+    #If the intent is 
+    
+    
+    
+    
 # returns a good match to entities answer object  
 def getIntentAns(luisIntent, luisEntities):    
 
