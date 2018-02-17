@@ -170,12 +170,21 @@ def answer(request):
     return render(request, 'CourseGuru_App/answer.html', {'answers': aData, 'Title': qData, 'comments': cData})
 
 
-def getBestAnswer(luisIntent, luisEntities):
+#def getBestAnswer(luisIntent, luisEntities):
     
     #initialize the best answer
     #banswer = ""
-    #If the intent is 
     
+    #Look through the and see if the intent matches
+        #if the intent is matched then go through the entities
+    
+        #if the entity matches 
+        
+    #best answer based on rating weights of professor, TA, and student likes
+    #Give weights of professors and TA more than a student
+    #Professors like will be worth more than a TA's like
+        #bestans = x(number of students) + 4y(number of professors) + 2z (number of TA's that liked it post)
+        
     
     
     
