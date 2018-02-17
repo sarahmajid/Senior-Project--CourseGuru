@@ -20,8 +20,6 @@ from django.http.response import HttpResponseRedirect
 #from pdfminer.layout import LAParams, LTTextBox, LTTextLine
 #from pdfminer.converter import PDFPageAggregator
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.contrib.auth.models import User
-from CourseGuru_App.models import UserForm, UserProfileForm
 from django.shortcuts import render_to_response
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login, logout
@@ -46,33 +44,6 @@ from test.test_enum import Answer
 from sqlalchemy.sql.expression import null
 from django.template.context import RequestContext
 
-#===============================================================================
-# class UserFormView(View):
-#     form_class = UserForm
-#     template_name = 'CourseGuru_App/registration.html'
-#     
-#     def get(self, request):
-#         form = self.form_class(None)
-#         return render(request, self.template_name,{'form':form})
-#     def post(self, request):
-#         form = self.form_class(request.POST)
-#         
-#         if form.is_valid():
-#             
-#             user = form.save(commit = False)
-#             username = form.cleaned_data['username']
-#             password = form.cleaned_data['password']
-#             user.set_password(password)
-#             user.save()
-#             
-#             user = authenticate(username=username, password=password)
-#             if user is not None:
-#                 if user.is_active:
-#                     login(request,user)
-#                     return redirect('/question/')
-#         return render(request, self.template_name,{'form':form})
-#===============================================================================
-
 
 #Function to populate Main page
     
@@ -92,15 +63,13 @@ def index(request):
                     return redirect('/question/')
                 else:
                     return render(request, 'CourseGuru_App/index.html',{'credentialmismatch': credentialmismatch})
-            #try:
-            #===================================================================
-            #     lid = user.objects.get(userName = usname, password = psword)
-            # 
-            #     if (lid.id>0):
-            #         return HttpResponseRedirect('/question/') 
-            # except:
-            #     return render(request, 'CourseGuru_App/index.html',{'credentialmismatch': credentialmismatch})
-            #===================================================================
+            try:
+                 lid = user.objects.get(userName = usname, password = psword)
+             
+                 if (lid.id>0):
+                     return HttpResponseRedirect('/question/') 
+            except:
+                 return render(request, 'CourseGuru_App/index.html',{'credentialmismatch': credentialmismatch})
 
         
     else:
@@ -108,53 +77,25 @@ def index(request):
     
 
 def account(request):
-    context = RequestContext(request)
-    registered = False
+
     if request.method == "POST":
-        
-        uform = UserForm(data = request.POST)
-        pform = UserProfileForm(data = request.POST)
-        if uform.is_valid() and pform.is_valid():
-            user = uform.save()
-            pw = user.password
-            user.set_password(pw)
-            user.save()
-            profile = pform.save(commit = False)
-            profile.user = user
-            profile.save()
-            registered = True
-        else:
-            print (uform.errors,pform.errors)
-    else:
-        uform = UserForm()
-        pform = UserProfileForm()
-    return render(request,'CourseGuru_App/account.html', {'uform':uform, 'pform':pform, 'registered':registered}, context)
+    
        
-#===============================================================================
-#         firstname = request.POST.get('firstname')
-#         lastname = request.POST.get('lastname')
-#         username = request.POST.get('username')
-#         psword = request.POST.get('password')
-#         cpsword = request.POST.get('cpassword')
-#         email = request.POST.get('email')
-#         stat = request.POST.get('status') 
-#         
-#         
-#         mismatch = 'Password Mismatch'
-#         if (psword != cpsword):
-#             return render(request, 'CourseGuru_App/account.html', {'fname': firstname, 'lname': lastname, 'uname': username, 'email':email, 'status': stat,'msmatch': mismatch})
-#         else:
-#             #edit possibly drop user ID from the table or allow it to be null 
-#              
-#             #user_profile.save(commit = False)
-#              
-#             user.object.create(first_name = firstname, last_name = lastname, username = username, password = psword, email = email)
-#  
-# #        return HttpResponseRedirect('/index/')
-# #       
-# #    usData = 
-#     return render(request, 'CourseGuru_App/account.html')
-#===============================================================================
+        firstname = request.POST.get('firstname')
+        lastname = request.POST.get('lastname')
+        username = request.POST.get('username')
+        psword = request.POST.get('password')
+        cpsword = request.POST.get('cpassword')
+        email = request.POST.get('email')
+        stat = request.POST.get('status') 
+         
+         
+        mismatch = 'Password Mismatch'
+        if (psword != cpsword):
+            return render(request, 'CourseGuru_App/account.html', {'fname': firstname, 'lname': lastname, 'uname': username, 'email':email, 'status': stat,'msmatch': mismatch})
+        else: 
+            user.object.create(first_name = firstname, last_name = lastname, username = username, password = psword, email = email)
+    return render(request, 'CourseGuru_App/account.html')
 
 
 # Function to populate Main page

@@ -1,22 +1,10 @@
-
-
 <!DOCTYPE HTML>
 <html>
 	<head>
 		<title> Amesite Chat Responder </title>
 	</head>
 	<body>
-	{% if registered %}
-        <a href="index">Chat Responder</a> says: thank you for registering.
-	{% else %}
-        <form id="user_form" method="post" action="/account/" enctype="multipart/form-data">
-                {% csrf_token %}
-                {{ uform.as_p }}
-                {{ pform.as_p }}
-                <input type="submit" name="submit" value="submit" />
-        </form>
-	{% endif %}
-		<!-- <table width="40%" align="Center" style="background-color: grey;">
+		<table width="40%" align="Center" style="background-color: grey;">
 			<tr>
 				<td height="50px" style="text-align: center; font-size: 30px; color: #FFFFFF; font-family: century gothic;">
 					Amesite Chat Responder
@@ -80,4 +68,4 @@
 	</body>
 </html>
 
-		<a href="/answer/?id={{c.id}}" style="cursor: pointer;">{{c.question}}</a>	 -->
+		<a href="/answer/?id={{c.id}}" style="cursor: pointer;">{{c.question}}</a>
