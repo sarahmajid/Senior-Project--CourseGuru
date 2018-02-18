@@ -11,10 +11,12 @@ import datetime
 #===============================================================================
 from django.shortcuts import render
 from django.http.response import HttpResponseRedirect
-from pdfminer.pdfparser import PDFParser, PDFDocument
-from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
-from pdfminer.layout import LAParams, LTTextBox, LTTextLine
-from pdfminer.converter import PDFPageAggregator
+#===============================================================================
+# from pdfminer.pdfparser import PDFParser, PDFDocument
+# from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
+# from pdfminer.layout import LAParams, LTTextBox, LTTextLine
+# from pdfminer.converter import PDFPageAggregator
+#===============================================================================
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib.auth.models import User
 
@@ -30,6 +32,8 @@ from CourseGuru_App.models import course
 from CourseGuru_App.models import category
 from CourseGuru_App.models import botanswers
 from CourseGuru_App.models import comments
+
+from CourseGuru_App.luisRun import teachLuis
 
 
 from test.test_enum import Answer
@@ -143,6 +147,7 @@ def publish(request):
                 user = request.user
                 questions.objects.create(question = ques, course_id = 1, user_id = user.id, date = questionDate, comment = comm)
                 cbAnswer(ques)
+                #teachLuis(ques, "Name")
                 return HttpResponseRedirect('/question/') 
         return render(request, 'CourseGuru_App/publish.html', {})
     else:
@@ -206,17 +211,30 @@ def getIntentAns(luisIntent, luisEntities):
     filtAns = botanswers.objects.filter(category_id = catgry.id)
      
     for m in filtAns:
-        b = m.answer.split(" ")
-        tempCntMtch = 0
-        ttlCnt = len(b)
-        for n in b: 
-            #if the word in the answer is in the list of entities then increment by 1
-            if luisEntities.count(n) > 0:
-                tempCntMtch += 1
-            cntAccuracy = (tempCntMtch/ttlCnt)
-            if cntAccuracy>count:
-                count = cntAccuracy 
-                answr = m.answer
+        Match = 0
+        ansLen = len(m.answer)
+        for ent in entitiesList:
+            print(ent)
+            if ent in m.answer:
+                Match += 1
+        Accuracy = (Match/ansLen)
+        if Accuracy>count:
+            count = Accuracy
+            answr = m.answer
+            
+        #=======================================================================
+        # b = m.answer.split(" ")
+        # tempCntMtch = 0
+        # ttlCnt = len(b)
+        # for n in b: 
+        #     #if the word in the answer is in the list of entities then increment by 1
+        #     if luisEntities.count(n) > 0:
+        #         tempCntMtch += 1
+        #     cntAccuracy = (tempCntMtch/ttlCnt)
+        #     if cntAccuracy>count:
+        #         count = cntAccuracy 
+        #         answr = m.answer
+        #=======================================================================
     #if answr == "":
         #answr = (botanswers.objects.filter(category_id = catgry.id).first()).answer
     return (answr)    
@@ -235,7 +253,14 @@ def cbAnswer(nq):
     #Grabs entities
     if not luisStr['entities']:
         return
-    luisEntities = luisStr['entities'][0]['entity']
+    luisEntities = ""
+    z = 0
+    for x in luisStr['entities']:
+        if z == 0:
+            luisEntities += luisStr['entities'][z]['entity']
+        else:
+            luisEntities += ',' + luisStr['entities'][z]['entity']
+        z += 1
     #If intent receives a lower score than 75% or there is no intent, the question does not get answered
     if luisScore < 0.75 or luisIntent == 'None':
         return
