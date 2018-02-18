@@ -19,7 +19,7 @@ from django.shortcuts import render
 from django.http.response import HttpResponseRedirect
 from pdfminer.pdfparser import PDFParser, PDFDocument
 from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
-from pdfminer.layout import LAParams, LTTextBox, LTTextLine
+from pdfminer.layout import LAParams, LTTextBox, LTTextLine, LTTextBoxHorizontal
 from pdfminer.converter import PDFPageAggregator
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from nltk.tokenize import sent_tokenize, word_tokenize
@@ -42,6 +42,8 @@ from test.test_enum import Answer
 from PyPDF2.generic import PdfObject
 from PyPDF2 import pdf
 from django.template.context_processors import request
+from test.test_decimal import file
+from pickle import INST
 #from sqlalchemy.sql.expression import null
 
 
@@ -237,8 +239,8 @@ def pdfToText(request):
             interpreter.process_page(page)
             layout = device.get_result()
             for lt_obj in layout:
-                if isinstance(lt_obj, LTTextBox) or isinstance(lt_obj, LTTextLine):
-                    extracted_text += lt_obj.get_text()
+                if isinstance(lt_obj, LTTextBoxHorizontal):
+                    extracted_text += lt_obj.get_text() 
         test = pullInfo(extracted_text)   
         f.close() 
     
@@ -255,42 +257,115 @@ def pdfToText(request):
     return render(request, 'CourseGuru_App/parse.html', {'convText' : test})
 
 #===============================================================================
+
+#will need a more robust way
 def pullInfo(file):
+
+    fileList = file.split('\n')
+    print(fileList)
+    
+    instInfo = pullInfoAccrdCat("Instructor", "Teaching assistant", fileList)
+    taInfo = pullInfoAccrdCat("Teaching assistant", "Course Description", fileList)
+    courseDisc = pullInfoAccrdCat("Course Description", "Credit Hours", fileList)
+    credHours = pullInfoAccrdCat("Credit Hours", "Prequisite", fileList)
+    prequisite = pullInfoAccrdCat("Prequisite", "Co-requisites", fileList)
+
+
+#For testing purposes      
+    print("\n")
+    print(instInfo)
+    print(taInfo)
+    print(courseDisc)
+    print(credHours)
+    print(prequisite)
+     
         #=======================================================================
         # NOTES ON NLTK
         # PunkSentenceTokenizer can be trained and used for answering questions 
         #===========================================================
-    keyWords = 'Instructor,Prof.,Office,location,Email,Hours'
-    keyList = keyWords.split(",")
+#    with open(r"C:/Users/Andriy Marynovskyy/Desktop/CourseGuru/Senior-Project--CourseGuru/docParser/Ex2.txt", 'r') as e:
+#        lines = e.readlines()
+#    lines = [x.strip() for x in lines]
+#===============================================================================
+#     for s in fileList:
+#         if ("Instructor" in s):
+#             position = fileList.index(s)
+#             while "Teaching assistant" not in fileList[position]:
+#                 instInfo += fileList[position]
+#                 position += 1
+# 
+#         elif("Teaching assistant" in s):
+#             position = fileList.index(s)
+#             while "Course Description" not in fileList[position]:
+#                 taInfo += fileList[position]
+#                 position += 1
+#                 
+# #            while "Teaching assitent" not in 
+#===============================================================================
+    
+    
+#    keyWords = 'Instructor,Prof.,teacher'
+#    keyList = keyWords.split(",")
 #    keyList = keyWords.split() 
 #    keyL = word_tokenize(keywords)
-
+   
 #    print(stopWords)
 #    testTok = ' '
 #    course, prof, officeL, officeH, phone, email = ''
 #    lines = file.readlines()
+   
+#===============================================================================
+#     pdfWords = word_tokenize(file, 'english')
+#     pdfSentences = sent_tokenize(file, 'english')
+#     stopWords = stopwords.words("english")
+#     cleanText = ['(',')',';',':','[',']','.',',']
+#     filteredText = [ word for word in pdfSentences if not word in stopWords and not word in cleanText]
+#     profName = 'Nothing Found'
+# #    filteredText.index('Prof.')
+#     #profName = filteredText[a+1 : a+3]
+#     nonKeyWords= []
+#     print(pdfSentences)       
+#     instructorInfo='' 
+#     taInfo=''
+#     print(filteredText)
+# #    instCat = filteredText.index('Instructor: \n')
+# #    taCat = filteredText.index('Teaching assistants: \n')
+#     n=0
+#  
+#               
+#     print(pdfSentences)     
+#     
+#     
+#     
+#     for c in filteredText:
+#         if "Instructor" in c:
+#             a = filteredText.index('Instructor') + 1
+#             while  filteredText[a] != 'Teaching' and filteredText[a+1] != 'assistants':
+#                 instructorInfo += filteredText[a]
+#                 a+=1
+#       
+#         elif c == 'Teaching' and c.next == 'assistants':
+#             while  filteredText[a] != 'Course' and filteredText[a] != 'Description':
+#                 taInfo += filteredText[a]
+#                 a+=1
+#                   
+#         else:
+#             "Nice Try"        
+#      
+#===============================================================================
 
-    pdfWords = word_tokenize(file, 'english')
-    pdfSentences = sent_tokenize(file, 'english')
-    stopWords = stopwords.words("english")
-    cleanText = ['(',')',';',':','[',']','.',',']
-    filteredText = [ word for word in pdfWords if not word in stopWords and not word in cleanText]
-    profName = 'Nothing Found'
-    a = filteredText.index('Prof.')
-    profName = filteredText[a+1 : a+3]
-    
-    for c in keyList:
-        z = filteredText.index(c)
-        for w in keyList: 
-            i = 1
-            if filteredText[z+i] == w: 
-                print('nothing') 
-            if filteredText[z+i] != w:
-                noneKeyWords = filteredText[z+i]
-                print(filteredText[z+i])
-            ++i    
-    List=''
-    content=''
+                  
+   #=======================================================================
+    # z = filteredText.index(c)
+    # i = 1
+    # for w in keyList: 
+    #     if filteredText[z+i] == w: 
+    #         print('nothing') 
+    #     if filteredText[z+i] != w:
+    #         nonKeyWords += filteredText[z+i]
+    #         print(filteredText[z+i])
+    #     ++i    
+    #=======================================================================
      
     #===========================================================================
     # for n in keyList:
@@ -305,13 +380,28 @@ def pullInfo(file):
     #===========================================================================
  
 #    print(pdfSentences)
-
+#    print(file.encode("utf-8"))
     
      
-    return(noneKeyWords)
+    return(fileList)
 
+def pullInfoAccrdCat(startWord, endWord, list):
+#could possibly use keywords to set the start and end words    
+    
+    infoList = ''
+    
+    for s in list:
+        if (startWord in s):
+            position = list.index(s)
+            while endWord not in list[position]:
+                if list[position] in infoList:
+                    break
+                infoList += list[position]                
+                position += 1
 
     
+    return(infoList)
+
 
 def chatbot(request):
     return render(request, 'CourseGuru_App/botchat.html',)
