@@ -263,124 +263,21 @@ def pullInfo(file):
 
     fileList = file.split('\n')
     print(fileList)
+    print()
     
-    instInfo = pullInfoAccrdCat("Instructor", "Teaching assistant", fileList)
-    taInfo = pullInfoAccrdCat("Teaching assistant", "Course Description", fileList)
-    courseDisc = pullInfoAccrdCat("Course Description", "Credit Hours", fileList)
-    credHours = pullInfoAccrdCat("Credit Hours", "Prequisite", fileList)
-    prequisite = pullInfoAccrdCat("Prequisite", "Co-requisites", fileList)
+    keyWord = keywords.objects.all()
+    
+    for n in keyWord:
+        if n.intent in fileList:
+            position = fileList.index(n.intent)
+            for s in keyWord:
+                if s != n:
+                    while s.intent not in fileList[position]:
+                        print(fileList[position])
+
+        
 
 
-#For testing purposes      
-    print("\n")
-    print(instInfo)
-    print(taInfo)
-    print(courseDisc)
-    print(credHours)
-    print(prequisite)
-     
-        #=======================================================================
-        # NOTES ON NLTK
-        # PunkSentenceTokenizer can be trained and used for answering questions 
-        #===========================================================
-#    with open(r"C:/Users/Andriy Marynovskyy/Desktop/CourseGuru/Senior-Project--CourseGuru/docParser/Ex2.txt", 'r') as e:
-#        lines = e.readlines()
-#    lines = [x.strip() for x in lines]
-#===============================================================================
-#     for s in fileList:
-#         if ("Instructor" in s):
-#             position = fileList.index(s)
-#             while "Teaching assistant" not in fileList[position]:
-#                 instInfo += fileList[position]
-#                 position += 1
-# 
-#         elif("Teaching assistant" in s):
-#             position = fileList.index(s)
-#             while "Course Description" not in fileList[position]:
-#                 taInfo += fileList[position]
-#                 position += 1
-#                 
-# #            while "Teaching assitent" not in 
-#===============================================================================
-    
-    
-#    keyWords = 'Instructor,Prof.,teacher'
-#    keyList = keyWords.split(",")
-#    keyList = keyWords.split() 
-#    keyL = word_tokenize(keywords)
-   
-#    print(stopWords)
-#    testTok = ' '
-#    course, prof, officeL, officeH, phone, email = ''
-#    lines = file.readlines()
-   
-#===============================================================================
-#     pdfWords = word_tokenize(file, 'english')
-#     pdfSentences = sent_tokenize(file, 'english')
-#     stopWords = stopwords.words("english")
-#     cleanText = ['(',')',';',':','[',']','.',',']
-#     filteredText = [ word for word in pdfSentences if not word in stopWords and not word in cleanText]
-#     profName = 'Nothing Found'
-# #    filteredText.index('Prof.')
-#     #profName = filteredText[a+1 : a+3]
-#     nonKeyWords= []
-#     print(pdfSentences)       
-#     instructorInfo='' 
-#     taInfo=''
-#     print(filteredText)
-# #    instCat = filteredText.index('Instructor: \n')
-# #    taCat = filteredText.index('Teaching assistants: \n')
-#     n=0
-#  
-#               
-#     print(pdfSentences)     
-#     
-#     
-#     
-#     for c in filteredText:
-#         if "Instructor" in c:
-#             a = filteredText.index('Instructor') + 1
-#             while  filteredText[a] != 'Teaching' and filteredText[a+1] != 'assistants':
-#                 instructorInfo += filteredText[a]
-#                 a+=1
-#       
-#         elif c == 'Teaching' and c.next == 'assistants':
-#             while  filteredText[a] != 'Course' and filteredText[a] != 'Description':
-#                 taInfo += filteredText[a]
-#                 a+=1
-#                   
-#         else:
-#             "Nice Try"        
-#      
-#===============================================================================
-
-                  
-   #=======================================================================
-    # z = filteredText.index(c)
-    # i = 1
-    # for w in keyList: 
-    #     if filteredText[z+i] == w: 
-    #         print('nothing') 
-    #     if filteredText[z+i] != w:
-    #         nonKeyWords += filteredText[z+i]
-    #         print(filteredText[z+i])
-    #     ++i    
-    #=======================================================================
-     
-    #===========================================================================
-    # for n in keyList:
-    #     a = filteredText.index(n)    
-    #     if (a != 0):
-    #       #  b = filteredText[a]
-    #         for m in keyList:
-    #             while(filteredText[a] != m):
-    #                 content += filteredText[a]
-    #                 ++a
-    #     List += n + content
-    #===========================================================================
- 
-#    print(pdfSentences)
-#    print(file.encode("utf-8"))
     
      
     return(fileList)
