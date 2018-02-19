@@ -9,7 +9,7 @@ import datetime
 # from django.http import HttpResponse
 # from django.template import loader
 #===============================================================================
-from django.shortcuts import render
+from django.shortcuts import render, _get_queryset
 from django.http.response import HttpResponseRedirect
 #===============================================================================
 # from pdfminer.pdfparser import PDFParser, PDFDocument
@@ -32,6 +32,7 @@ from CourseGuru_App.models import course
 from CourseGuru_App.models import category
 from CourseGuru_App.models import botanswers
 from CourseGuru_App.models import comments
+from CourseGuru_App.models import courseusers
 
 from CourseGuru_App.luisRun import teachLuis
 
@@ -102,6 +103,13 @@ def account(request):
     else:
         return render(request, 'CourseGuru_App/account.html')
 
+def courses(request):
+    if request.user.is_authenticated:
+        curUser = request.user
+        courseList = courseusers.objects.filter(user_id = curUser.id)
+        return render(request, 'CourseGuru_App/courses.html', {'courses': courseList})
+    else:
+        return HttpResponseRedirect('/')
 def genDate():
     
     curDate = datetime.datetime.now().strftime("%m-%d-%Y %I:%M %p")
@@ -113,9 +121,10 @@ def genDate():
 def question(request):
     if request.user.is_authenticated:
             #Grabs the questions form the db and orders them by id in desc fashion so the newest are first
-        qData = questions.objects.get_queryset().order_by('pk')
+        cid = request.GET.get('id', '')
+        qData = questions.objects.get_queryset().filter(course_id = cid).order_by('-pk')
         page = request.GET.get('page', 1)
-        
+        cName = course.objects.get(id = cid)
         if request.method == "POST":
             if request.POST.get('Logout') == "Logout":
                 logout(request)
@@ -132,39 +141,53 @@ def question(request):
     #    return render(request, 'CourseGuru_App/question.html', {'content': fquestions})
         user = request.user
         
-        return render(request, 'CourseGuru_App/question.html', {'content': fquestions, 'user': user})
+        return render(request, 'CourseGuru_App/question.html', {'content': fquestions, 'user': user, 'courseID': cid, 'courseName': cName})
     else:
         return HttpResponseRedirect('/')
 
 def publish(request):
     if request.user.is_authenticated:
+        cid = request.GET.get('cid', '')
         # Passes in new question when the submit button is selected
         if request.method == "POST":
-            if request.GET.get('type') == "Question":
-                ques = request.POST.get('NQ')
-                comm = request.POST.get('NQcom')
-                questionDate = genDate()
-                user = request.user
-                questions.objects.create(question = ques, course_id = 1, user_id = user.id, date = questionDate, comment = comm)
-                cbAnswer(ques)
-                #teachLuis(ques, "Name")
-                return HttpResponseRedirect('/question/') 
-        return render(request, 'CourseGuru_App/publish.html', {})
+            ques = request.POST.get('NQ')
+            comm = request.POST.get('NQcom')
+            questionDate = genDate()
+            user = request.user
+            questions.objects.create(question = ques, course_id = cid, user_id = user.id, date = questionDate, comment = comm)
+            cbAnswer(ques)
+            #teachLuis(ques, "Name")
+            return HttpResponseRedirect('/question/?id=%s' % cid) 
+        return render(request, 'CourseGuru_App/publish.html', {'courseID': cid})
     else:
         return HttpResponseRedirect('/')
 
 def publishAnswer(request):
     if request.user.is_authenticated:
         qid = request.GET.get('id', '')
+        cid = request.GET.get('cid', '')
         qData = questions.objects.get(id = qid)
         if request.method == "POST":
-            if request.GET.get('type') == "Answer":
-                    ans = request.POST.get('NQcom')
-                    answerDate = genDate()
-                    user = request.user
-                    answers.objects.create(answer = ans, user_id = user.id, question_id = qid, date = answerDate)
-                    return HttpResponseRedirect('/answer/?id=%s' % qid)
-        return render(request, 'CourseGuru_App/publishAnswer.html', {'Title': qData})
+            ans = request.POST.get('NQcom')
+            answerDate = genDate()
+            user = request.user
+            answers.objects.create(answer = ans, user_id = user.id, question_id = qid, date = answerDate)
+            return HttpResponseRedirect('/answer/?id=%s&cid=%s' % (qid, cid))
+        return render(request, 'CourseGuru_App/publishAnswer.html', {'Title': qData, 'courseID': cid, 'quesID': qid})
+    else:
+        return HttpResponseRedirect('/')
+
+def publishCourse(request):
+    if request.user.is_authenticated:
+        if request.method == "POST":
+            newCourse = request.POST.get('NC')
+            cType = request.POST.get('cType')
+            user = request.user
+            course.objects.create(courseName = newCourse, courseType = cType, user_id = user.id)
+            cid = course.objects.last()
+            courseusers.objects.create(user_id = user.id, course_id = cid.id)
+            return HttpResponseRedirect('/courses/')
+        return render(request, 'CourseGuru_App/publishCourse.html')
     else:
         return HttpResponseRedirect('/')
 
@@ -173,6 +196,7 @@ def answer(request):
     if request.user.is_authenticated:
     #    if request.method=='GET':
         qid = request.GET.get('id', '')
+        cid = request.GET.get('cid', '')
         user = request.user
         if request.method == "POST":
             if request.POST.get('Logout') == "Logout":
@@ -183,19 +207,20 @@ def answer(request):
                 record = answers.objects.get(id = answerId)
                 record.rating = record.rating + 1
                 record.save()
-                return HttpResponseRedirect('/answer/?id=%s' % qid)
+                return HttpResponseRedirect('/answer/?id=%s&cid=%s' % qid, cid)
             elif 'voteDown' in request.POST: 
                 answerId = request.POST.get('voteDown')
                 record = answers.objects.get(id = answerId)
                 record.rating = record.rating - 1
                 record.save()
-                return HttpResponseRedirect('/answer/?id=%s' % qid)
+                return HttpResponseRedirect('/answer/?id=%s&cid=%s' % qid, cid)
             
             return HttpResponseRedirect('/answer/?id=%s' % qid)  
-        aData = answers.objects.filter(question_id = qid).order_by('date')
+        aData = answers.objects.filter(question_id = qid).order_by('pk')
+        ansCt = aData.count()
         qData = questions.objects.get(id = qid)
         cData = comments.objects.filter(question_id = qid)
-        return render(request, 'CourseGuru_App/answer.html', {'answers': aData, 'Title': qData, 'comments': cData})
+        return render(request, 'CourseGuru_App/answer.html', {'answers': aData, 'numAnswers': ansCt, 'Title': qData, 'comments': cData, 'courseID': cid})
     else:
         return HttpResponseRedirect('/')
 
@@ -256,10 +281,13 @@ def cbAnswer(nq):
     luisEntities = ""
     z = 0
     for x in luisStr['entities']:
+        newEnt = luisStr['entities'][z]['entity']
+        if luisStr['entities'][z]['type'] == "Role" and newEnt.endswith('s'):
+            newEnt = newEnt[:-1]
         if z == 0:
-            luisEntities += luisStr['entities'][z]['entity']
+            luisEntities += newEnt
         else:
-            luisEntities += ',' + luisStr['entities'][z]['entity']
+            luisEntities += ',' + newEnt
         z += 1
     #If intent receives a lower score than 75% or there is no intent, the question does not get answered
     if luisScore < 0.75 or luisIntent == 'None':

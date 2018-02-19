@@ -12,6 +12,30 @@
 			 width:20%;
 			 border: black 1.5px solid;			 
 			 }
+			 
+			 .question-hyperlink {
+			 color: #07C;
+			 }
+			 
+			 .question-hyperlink:visited {
+			 color: #005999;
+			 }
+			 
+			 .question-hyperlink:hover {
+			 color: red;
+			 }
+			 
+			 .btn {
+			 	text-decoration: none;
+			 	cursor: pointer; 
+			 	font-size: 18px; 
+			 	font-family: century gothic; 
+			 	color: #444;
+			 }
+			 
+			 .btn:hover {
+			 	text-decoration: underline;
+			 }
 		 </style>
 	</head>
 	<body>    
@@ -21,20 +45,23 @@
 		<br>
 		<table width="60%" align="Center" style="border-spacing: 0;">
 			<tr>
-				<td align="right" style="font-size: 18px; font-family: century gothic; color: #444;">
-					Hi {{user.get_short_name}}!
-					<br>
-					<form method="POST" action=""> 
-						{% csrf_token %}
-						<input type="submit" name="Logout" value="Logout" style="font-family: century gothic; color: #444; cursor: pointer; font-size: 16px; background-color: transparent; box-shadow: none; border: 0;">
-					</form>
-					<br><br>
+				<td>
+					<a class="btn" href="/courses/">< Course Selection</a> 
+					<div align="right" style="float: right; font-size: 18px; font-family: century gothic; color: #444;">
+						Hi {{user.get_short_name}}!
+						<br>
+						<form method="POST" action=""> 
+							{% csrf_token %}
+							<input class="btn" type="submit" name="Logout" value="Logout" style="font-size: 16px; background-color: transparent; box-shadow: none; border: 0;">
+						</form>
+					</div>
+					<br><br><br><br>
 				</td>
 			</tr>
 			<tr>
 				<td style="padding:5px; font-size: 22px; color: #444; font-family: century gothic;">
-					[Course Name] - Questions
-					<a href="/publish/?type=Question" style="padding: 2px 10px; background-color: #cecece; float: right; cursor: pointer; font-size: 18px; font-family: century gothic; color: #444; text-decoration: none;">Ask a question</a>
+					{{courseName.courseName}} - Questions
+					<a href="/publish/?cid={{courseID}}" style="padding: 2px 10px; background-color: #cecece; float: right; cursor: pointer; font-size: 18px; font-family: century gothic; color: #444; text-decoration: none;">Ask a question</a>
 				</td>
 			</tr>
 			<tr>
@@ -47,12 +74,13 @@
 			{% for c in content %}
 			<tr>
 				{% if forloop.counter|divisibleby:2 %}
-				<td style=" padding:10px; border-bottom: 2px solid #AEADAD; background-color: #EAECEE;">	
+				<td style=" padding:15px; border-bottom: 2px solid #AEADAD; background-color: #EAECEE;">	
 				{% else %}
-				<td style=" padding:10px; border-bottom: 2px solid #AEADAD;">	
+				<td style=" padding:15px; border-bottom: 2px solid #AEADAD;">	
 				{% endif %}				
-					<a href="/answer/?id={{c.id}}" style="cursor: pointer; font-size: 24px; font-family: century gothic; text-decoration: none;">{{c.question}}</a>	
-					<font style="color: grey; float: right; font-family: century gothic;"><b>User: </b> {{c.user.username}} <br><b>Date Added:</b> {{c.date}}</font> 	
+					<a class="question-hyperlink" href="/answer/?id={{c.id}}&cid={{courseID}}" style="cursor: pointer; font-size: 24px; font-family: century gothic; text-decoration: none;">{{c.question}}</a>	
+					<br>
+					<font style="font-size: 14px; color: green; font-family: century gothic;">{{c.user.first_name}} {{c.user.last_name}} <font style="color: grey;">asked on {{c.date}}</font></font> 	
 				</td>			
 			</tr>
 			{% endfor %}

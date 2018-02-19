@@ -10,6 +10,8 @@ urlpatterns = [
     path('parse/', views.parse, name='parse'),
     path('publish/', views.publish, name='publish'),
     path('publishAnswer/', views.publishAnswer, name='publishAnswer'),
+    path('publishCourse/', views.publishCourse, name='publishCourse'),
     path('chatbot/', views.chatbot, name='chatbot'),
+    path('courses/', views.courses, name='courses'),
 
 ]

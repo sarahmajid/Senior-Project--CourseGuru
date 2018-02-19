@@ -16,13 +16,17 @@ from django.dispatch import receiver
 #     status = models.CharField(max_length=18)
 #===============================================================================
     
-status = models.CharField(max_length=18)
+status = models.CharField(max_length=18, default='Student')
 status.contribute_to_class(User, 'status')
 
 class course(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     courseName = models.CharField(max_length=50)
-    courseType = models.CharField(max_length=8)
+    courseType = models.CharField(max_length=30)
+    
+class courseusers(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    course = models.ForeignKey(course, on_delete=models.CASCADE)    
      
 class questions(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)

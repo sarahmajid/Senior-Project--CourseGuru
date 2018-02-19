@@ -27,7 +27,7 @@
 		<table width="60%" align="Center">
 			<tr>
 				<td>
-					<a href="/question/" style="cursor: pointer; font-size: 18px; font-family: century gothic; color: #444; text-decoration: none;">< Back</a> 
+					<a href="/question/?id={{courseID}}" style="cursor: pointer; font-size: 18px; font-family: century gothic; color: #444; text-decoration: none;">< Back</a> 
 					<div align="right" style="float: right; font-size: 18px; font-family: century gothic; color: #444;">
 						Hi {{user.get_short_name}}!
 						<br>
@@ -40,9 +40,9 @@
 				</td>
 			</tr>
 			<tr>
-				<td style="padding:10px; font-size: 26px; color: grey; font-family: century gothic;">
+				<td style="padding:10px; font-size: 26px; color: #444; font-family: century gothic;">
 					{{Title.question}}
-					<a href="/publishAnswer/?type=Answer&id={{Title.id}}" style="padding: 2px 10px; background-color: #cecece; float: right; cursor: pointer; font-size: 18px; font-family: century gothic; color: #444; text-decoration: none;">Submit an answer</a>
+					<a href="/publishAnswer/?id={{Title.id}}&cid={{courseID}}" style="padding: 2px 10px; background-color: #cecece; float: right; cursor: pointer; font-size: 18px; font-family: century gothic; color: #444; text-decoration: none;">Submit an answer</a>
 				</td>
 			</tr>
 			<tr>
@@ -68,6 +68,12 @@
 				</td>
 			</tr>
 			<tr><td style="border-top: #AEADAD 3px solid;"> <br> </td></tr>
+			<tr>
+				<td style="color: #444; font-size: 22px; padding:10px; font-family: century gothic;">
+					<u>{{numAnswers}} Answers</u>
+					<br><br>
+				</td>
+			</tr>
 			{% for a in answers %}
 			<tr>
 				<td style="padding:10px 10px 10px 5%; color: grey; background-color: #EAECEE; font-family: century gothic;">
