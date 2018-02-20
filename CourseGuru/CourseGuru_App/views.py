@@ -298,21 +298,11 @@ def pullInfo(file):
 
     return(pdfWords)
 
-def pullInfoAccrdCat(startWord, endWord, list):
+def generateQuestion(text):
     #could possibly use keywords to set the start and end words    
-    infoList = ''
+    question = ""
     
-    for s in list:
-        if (startWord in s):
-            position = list.index(s)
-            while endWord not in list[position]:
-                if list[position] in infoList:
-                    break
-                infoList += list[position]                
-                position += 1
-
-    
-    return(infoList)
+    return(question)
 
 
 def chatbot(request):
