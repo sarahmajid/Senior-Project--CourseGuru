@@ -262,25 +262,90 @@ def pdfToText(request):
 def pullInfo(file):
 
     fileList = file.split('\n')
-    print(fileList)
-    print()
+#   print(fileList)
+#    print()
     
-    keyWord = keywords.objects.all()
-    
-    for n in keyWord:
-        if n.intent in fileList:
-            position = fileList.index(n.intent)
-            for s in keyWord:
-                if s != n:
-                    while s.intent not in fileList[position]:
-                        print(fileList[position])
+    pdfWords = word_tokenize(file, 'english')
+#    print(pdfWords)
+    keyWordObj = courseinfo.objects.all()
 
+    infoList = ''
+    key1 = ''
+    key2 = ''
+    #===========================================================================
+    # for n in file:
+    #     for k in keyWord:
+    #         if k.intent in n:
+    #             if key1 == '':
+    #                 key1 = file.index()    
+    #===========================================================================
+    
+    keyWords = []
+    keyPositions = []
+    keyWordPositions = []
+    
+    pdfWords = word_tokenize(file, 'english')
+#    print(type(pdfWords))
+    for n in keyWordObj:
+        keyWords.append(n.intent)
+    i=0    
+    while i<len(pdfWords)-1:
+        for n in keyWords:
+            temp = pdfWords[i] + " " + pdfWords[i+1]
+            if pdfWords[i] == n or temp == n:
+                keyPositions.append(i)
+                keyWordPositions.append(n)
+        i+=1
         
-
-
+#    print(keyPositions)
+#    print(keyWordPositions)
     
+    i=0
+    
+    print(pdfWords)
+
+    while i <len(keyPositions)-1:
+        print(pdfWords[keyPositions[i]:keyPositions[i+1]])
+        i+=1
+         
+      
+        
+                 
+    #print(keyWords)
+
+    #===========================================================================
+    # for k in keyWord:
+    #     if k.intent in pdfWords:
+    #         content = re.search(k.intent+"(.*)", file, re.IGNORECASE)
+    #         info = re.sub('[^0-9a-zA-Z][ ]', '', content.group(1))
+    #         print(info)
+    #===========================================================================
+            
+#             position = list.index(k.intent)
+#===============================================================================
+            
+            
+        
+                
+                
+ 
+            
+    
+    
+    
+    
+    
+    #===========================================================================
+    # for n in keyWord:
+    #     if n.intent in fileList:
+    #         position = fileList.index(n.intent)
+    #         for s in keyWord:
+    #             if s != n:
+    #                 while s.intent not in fileList[position]:
+    #                     print(fileList[position])
+    #===========================================================================
      
-    return(fileList)
+    return(pdfWords)
 
 def pullInfoAccrdCat(startWord, endWord, list):
 #could possibly use keywords to set the start and end words    
