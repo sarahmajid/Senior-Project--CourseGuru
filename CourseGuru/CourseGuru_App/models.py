@@ -58,7 +58,7 @@ class courseinfo(models.Model):
     fkCourseId = models.ForeignKey(course, on_delete=models.CASCADE)
     intent = models.CharField(max_length=50)
     entities = models.CharField(max_length=200)    
-    infoData = models.CharField(max_length=50)
+    infoData = models.TextField()
     courseId = models.CharField(max_length = 15)
 
     
