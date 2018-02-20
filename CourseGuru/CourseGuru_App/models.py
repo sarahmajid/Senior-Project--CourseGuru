@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+
 #from email.policy import default
 
 # Create your models here.
@@ -46,6 +47,11 @@ class answers(models.Model):
 
     class meta:
         ordering = ['rating']
+ 
+class userratings(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    answer = models.ForeignKey(answers, on_delete=models.CASCADE)
+    rating = models.SmallIntegerField(default=1)
  
 class comments(models.Model):
     #edit variable below

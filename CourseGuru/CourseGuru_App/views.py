@@ -33,6 +33,9 @@ from CourseGuru_App.models import category
 from CourseGuru_App.models import botanswers
 from CourseGuru_App.models import comments
 from CourseGuru_App.models import courseusers
+from CourseGuru_App.models import userratings
+
+from psqlextra.query import ConflictAction
 
 from CourseGuru_App.luisRun import teachLuis
 
@@ -43,7 +46,7 @@ from django.contrib.auth import authenticate, login, logout
 #Function to populate Main page
 def index(request):
     if request.user.is_authenticated:
-        return HttpResponseRedirect('/question/')
+        return HttpResponseRedirect('/courses/')
     else:
         credentialmismatch = 'Incorrect username or password'
         if request.method == "POST":
@@ -55,9 +58,9 @@ def index(request):
                 if user is not None:
                     if user.is_active:
                         login(request, user)
-                        return HttpResponseRedirect('/question/')
+                        return HttpResponseRedirect('/courses/')
                 else:
-                    return render(request, 'CourseGuru_App/index.html')
+                    return render(request, 'CourseGuru_App/index.html', {'credentialmismatch': credentialmismatch})
         
                 #try:
                 #    
@@ -105,8 +108,15 @@ def account(request):
 
 def courses(request):
     if request.user.is_authenticated:
+        if request.method == "POST":
+            if request.POST.get('Logout') == "Logout":
+                logout(request)
+                return HttpResponseRedirect('/')
         curUser = request.user
-        courseList = courseusers.objects.filter(user_id = curUser.id)
+        if curUser.status == "Teacher":
+            courseList = course.objects.filter(user_id = curUser.id)
+        else:
+            courseList = courseusers.objects.filter(user_id = curUser.id)
         return render(request, 'CourseGuru_App/courses.html', {'courses': courseList})
     else:
         return HttpResponseRedirect('/')
@@ -116,6 +126,29 @@ def genDate():
         
     return (curDate)
 
+def roster(request):
+    if request.user.is_authenticated:
+        cid = request.GET.get('cid', '')
+        if request.method == "POST":
+            if request.POST.get('Logout') == "Logout":
+                logout(request)
+                return HttpResponseRedirect('/')
+            newUser = request.POST.get('newUser')
+            if User.objects.filter(username = newUser).exists():
+                addUser = User.objects.get(username = newUser)
+                if courseusers.objects.filter(user_id = addUser.id, course_id = cid).exists():
+                    credentialmismatch = "User is already in the course"
+                    return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'credentialmismatch': credentialmismatch})
+                else:
+                    userAdded = "User has been successfully added to the course"
+                    courseusers.objects.create(user_id = addUser.id, course_id = cid)
+                    return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'userAdded': userAdded})
+            else:
+                credentialmismatch = "Username does not exist"
+                return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'credentialmismatch': credentialmismatch})
+        return render(request, 'CourseGuru_App/roster.html', {'courseID': cid})
+    else:
+        return HttpResponseRedirect('/')
 
 # Function to populate Main page
 def question(request):
@@ -150,6 +183,9 @@ def publish(request):
         cid = request.GET.get('cid', '')
         # Passes in new question when the submit button is selected
         if request.method == "POST":
+            if request.POST.get('Logout') == "Logout":
+                logout(request)
+                return HttpResponseRedirect('/')
             ques = request.POST.get('NQ')
             comm = request.POST.get('NQcom')
             questionDate = genDate()
@@ -168,6 +204,9 @@ def publishAnswer(request):
         cid = request.GET.get('cid', '')
         qData = questions.objects.get(id = qid)
         if request.method == "POST":
+            if request.POST.get('Logout') == "Logout":
+                logout(request)
+                return HttpResponseRedirect('/')
             ans = request.POST.get('NQcom')
             answerDate = genDate()
             user = request.user
@@ -180,6 +219,9 @@ def publishAnswer(request):
 def publishCourse(request):
     if request.user.is_authenticated:
         if request.method == "POST":
+            if request.POST.get('Logout') == "Logout":
+                logout(request)
+                return HttpResponseRedirect('/')
             newCourse = request.POST.get('NC')
             cType = request.POST.get('cType')
             user = request.user
@@ -202,20 +244,18 @@ def answer(request):
             if request.POST.get('Logout') == "Logout":
                 logout(request)
                 return HttpResponseRedirect('/')
+            
             if 'voteUp' in request.POST: 
                 answerId = request.POST.get('voteUp')
-                record = answers.objects.get(id = answerId)
-                record.rating = record.rating + 1
-                record.save()
-                return HttpResponseRedirect('/answer/?id=%s&cid=%s' % qid, cid)
+                voting(1, answerId, user)
+                return HttpResponseRedirect('/answer/?id=%s&cid=%s' % (qid, cid))
+            
             elif 'voteDown' in request.POST: 
                 answerId = request.POST.get('voteDown')
-                record = answers.objects.get(id = answerId)
-                record.rating = record.rating - 1
-                record.save()
-                return HttpResponseRedirect('/answer/?id=%s&cid=%s' % qid, cid)
+                voting(0, answerId, user)
+                return HttpResponseRedirect('/answer/?id=%s&cid=%s' % (qid, cid))
             
-            return HttpResponseRedirect('/answer/?id=%s' % qid)  
+            return HttpResponseRedirect('/answer/?id=%s&cid=%s' % (qid, cid)) 
         aData = answers.objects.filter(question_id = qid).order_by('pk')
         ansCt = aData.count()
         qData = questions.objects.get(id = qid)
@@ -223,6 +263,19 @@ def answer(request):
         return render(request, 'CourseGuru_App/answer.html', {'answers': aData, 'numAnswers': ansCt, 'Title': qData, 'comments': cData, 'courseID': cid})
     else:
         return HttpResponseRedirect('/')
+    
+def voting(rate, answerId, user):
+    if userratings.objects.filter(user_id = user.id, answer_id = answerId).exists():
+        newRate = userratings.objects.get(user_id = user.id, answer_id = answerId)
+        newRate.rating = rate
+        newRate.save()
+    else:
+        userratings.objects.create(user_id = user.id, answer_id = answerId, rating = rate)    
+    uprateCt = userratings.objects.filter(answer_id = answerId, rating = 1).count()
+    downrateCt = userratings.objects.filter(answer_id = answerId, rating = 0).count()
+    record = answers.objects.get(id = answerId)
+    record.rating = (uprateCt - downrateCt)
+    record.save()
 
 # returns a good match to entities answer object  
 def getIntentAns(luisIntent, luisEntities):    

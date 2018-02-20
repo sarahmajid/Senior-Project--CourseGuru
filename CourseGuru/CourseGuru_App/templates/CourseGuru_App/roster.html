@@ -25,7 +25,7 @@
 		<table width="60%" align="Center">
 			<tr>
 				<td>
-					<a href="/courses/" class="btn">< Back</a> 
+					<a href="/question/?id={{courseID}}" class="btn">< Back</a> 
 					<div align="right" style="float: right; font-size: 18px; font-family: century gothic; color: #444;">
 						Hi {{user.get_short_name}}!
 						<br>
@@ -39,7 +39,7 @@
 			</tr>
 			<tr>
 				<td style="padding:5px; font-size: 22px; color: #444; font-family: century gothic;">
-					Create a New Course
+					Roster
 				</td>
 			</tr>
 			<tr>
@@ -51,20 +51,17 @@
 			<tr>
 				<td style="padding: 10px;">
 					<form method="POST" action="" style="">
-						<label style="font-size: 16px; color: grey; font-family: century gothic;">Course Name: </label><br>
+						<h3 style="font-size: 16px; color: red; font-family: century gothic;">{{credentialmismatch}}</h3>
+						
+						<div style="font-size: 16px; color: grey; font-family: century gothic;"><b>Add a student or teaching assistant to this course</b></div>
+						<br>
+						<label style="font-size: 16px; color: grey; font-family: century gothic;">Student/TA Username: </label><br>
 						{% csrf_token %}
-						<input type="text" name="NC" required="required" maxlength="30" style="width: 50%;"></input>
+						<input type="text" name="newUser" required="required" maxlength="30" style="width: 50%;"></input>	
+						<br>
+						<h3 style="font-size: 16px; color: green; font-family: century gothic;">{{userAdded}}</h3>
 						<br><br>
-						<label style="font-size: 16px; color: grey; font-family: century gothic;">Course Type: </label><br>
-						{% csrf_token %}
-						<select name="cType" required="required" >
-							<option>{{status}}</option>
-							<option value="MATH">Math</option>
-							<option value="SCIENCE">Science</option>
-							<option value="COMPUTER SCIENCE">Computer Science</option>
-						</select>
-						<br><br><br>
-						<input type="submit" name="submit" value="Publish" style="cursor: pointer; font-size: 16px; color: #444; background-color: #cecece; font-family: century gothic; box-shadow: none; border: 0; padding: 5px 10px;">				
+						<input type="submit" name="submit" value="Submit" style="cursor: pointer; font-size: 16px; color: #444; background-color: #cecece; font-family: century gothic; box-shadow: none; border: 0; padding: 5px 10px;">				
 					</form>
 					<br>
 				</td>

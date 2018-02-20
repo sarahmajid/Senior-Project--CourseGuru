@@ -3,6 +3,19 @@
 <html>
 	<head>
 		<title> Amesite Chat Responder </title>
+		<style>
+			.btn {
+			 	text-decoration: none;
+			 	cursor: pointer; 
+			 	font-size: 18px; 
+			 	font-family: century gothic; 
+			 	color: #444;
+			 }
+			 
+			 .btn:hover {
+			 	text-decoration: underline;
+			 }
+		</style>
 	</head>
 	<body>    
 		<header width="60%" align="center" height="50px" style="line-height: 56px; text-align: center; font-size: 30px; color: #444; font-family: century gothic; font-weight: normal;">
@@ -12,13 +25,13 @@
 		<table width="60%" align="Center">
 			<tr>
 				<td>
-					<a href="/question/?id={{courseID}}" style="cursor: pointer; font-size: 18px; font-family: century gothic; color: #444; text-decoration: none;">< Back</a> 
+					<a href="/question/?id={{courseID}}" class="btn">< Back</a> 
 					<div align="right" style="float: right; font-size: 18px; font-family: century gothic; color: #444;">
 						Hi {{user.get_short_name}}!
 						<br>
 						<form method="POST" action=""> 
 							{% csrf_token %}
-							<input type="submit" name="Logout" value="Logout" style="font-family: century gothic; color: #444; cursor: pointer; font-size: 16px; background-color: transparent; box-shadow: none; border: 0;">
+							<input class="btn" type="submit" name="Logout" value="Logout" style="font-size: 16px; background-color: transparent; box-shadow: none; border: 0;">
 						</form>
 					</div>
 					<br><br><br><br>

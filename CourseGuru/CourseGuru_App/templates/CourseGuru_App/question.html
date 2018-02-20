@@ -3,7 +3,13 @@
 <html>
 	<head>
 		<title> Amesite Chat Responder </title>
+		<meta name="viewport" content="width=device-width" />
 		<style>
+			body {
+			 	
+			 	padding: 0;
+			 	height: 100%;
+			 }
 			.LiveChat{
 			 position:fixed;
 			 bottom:0;
@@ -36,6 +42,43 @@
 			 .btn:hover {
 			 	text-decoration: underline;
 			 }
+			 
+			 .side-panel {
+			 	width: 17%;
+			 	height: 100%;
+			 	border: solid 2px;
+			 	padding: 0;
+			 	position:fixed;
+			 	z-index: 1;
+			    top: 0;
+			    left: 0;
+			    background-color: #EAECEE;
+			    font-size: 24px; 
+			 	font-family: century gothic; 
+			 	color: #444;
+			 }
+			 
+			 .side-panel-button {
+			 	word-wrap: break-word; 
+			 	border: solid 2px; 
+			 	border-radius: 5px; 
+			 	padding: 5px 15%; 
+			 	text-align: center; 
+			 	text-decoration: none;
+			 	color: black;
+			 }
+			 .side-panel-button:hover {
+			 	color: blue;
+
+			 }
+			 
+			@media screen and (max-width : 1204px){
+			  .side-panel
+			  {
+			    font-size:16px;
+			  }
+			}
+			 
 		 </style>
 	</head>
 	<body>    
@@ -43,7 +86,28 @@
 			Amesite Chat Responder	
 		</header>
 		<br>
-		<table width="60%" align="Center" style="border-spacing: 0;">
+		<div class="side-panel">
+			<table width="100%" style="border-spacing: 0;">
+				<tr>
+					<td width="100%" style="border-bottom: solid 2px; padding: 10px 0;">
+						<div style="text-align: center;">{{courseName.courseName}}</div>
+					</td>
+				</tr>
+				<tr>
+					<td width="100%" align="center" style=" padding: 35px 0;">
+						<a class="side-panel-button" href="/roster/?cid={{courseID}}" style=" ">Roster</a>
+					</td>
+				</tr>
+			</table>
+		</div>
+		<table width="20%" style="float:left;">
+			<tr>
+				<td>
+					
+				</td>
+			</tr>
+		</table>
+		<table width="60%" align="Center" style="border-spacing: 0; float:left;">
 			<tr>
 				<td>
 					<a class="btn" href="/courses/">< Course Selection</a> 
@@ -85,10 +149,21 @@
 			</tr>
 			{% endfor %}
 		</table>
+		<table width="20%" style="float:left;">
+			<tr>
+				<td>
+					
+				</td>
+			</tr>
+		</table>
 		
 		<style>
 			#page-menu {
 				text-align: center;
+				color: grey;
+				font-family: century gothic;
+				font-size: 16px;
+				clear: both;
 			}
 			
 			ul#horiz-list {
@@ -98,25 +173,32 @@
 			ul#horiz-list li{
 				display: inline;
 			}
+			.nonactive{
+				color: #07C;
+			}
+			.nonactive:visited{
+				color: #07C;
+			}
+						
 		</style>
 		
 		{% if content.has_other_pages %}
 			<div id="page-menu">
 				<ul id="horiz-list" class="pagination">
 					{% if content.has_previous %}
-						<li><a href="?page={{ content.previous_page_number }}">&laquo;</a></li>
+						<li><a class="nonactive" href="?id={{courseID}}&page={{ content.previous_page_number }}">&laquo;</a></li>
 					{% else %}
 						<li class="disabled"><span>&laquo;</span></li>
 					{% endif %}
 					{% for i in content.paginator.page_range %}
 						{% if content.number == i %}
-							<li class="active"><span>{{ i }} <span class="sr-only"></span></span></li>
+							<li class="active"><span>&nbsp;{{ i }}&nbsp;<span class="sr-only"></span></span></li>
 						{% else %}
-							<li><a href="?page={{ i }}">{{ i }}</a></li>
+							<li>&nbsp;<a class="nonactive" href="?id={{courseID}}&page={{ i }}">{{ i }}</a>&nbsp;</li>
 						{% endif %}			
 					{% endfor %}
 					{% if content.has_next %}
-						<li><a href="?page={{ content.next_page_number }}">&raquo;</a></li>
+						<li><a class="nonactive" href="?id={{courseID}}&page={{ content.next_page_number }}">&raquo;</a></li>
 					{% else %}
 						<li class="disabled"><span>&raquo;</span></li>
 					{% endif %}

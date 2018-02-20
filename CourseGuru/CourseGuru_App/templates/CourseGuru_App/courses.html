@@ -37,7 +37,9 @@
 			<tr>
 				<td colspan="3" style="padding:5px; font-size: 22px; color: #444; font-family: century gothic;">
 					Course Selection
+					{% if user.status == "Teacher" %}
 					<a href="/publishCourse/" style="float: right; padding: 2px 10px; background-color: #cecece; cursor: pointer; font-size: 18px; font-family: century gothic; color: #444; text-decoration: none;">Create a New Course</a>
+					{% endif %}
 				</td>
 			</tr>
 			<tr>
@@ -46,8 +48,12 @@
 			
 			{% for c in courses %}
 			<tr>
-				<td align="left" style="padding:50px 10px 10px 10px; border-bottom: 1px solid #AEADAD; ">				
+				<td align="left" style="padding:50px 10px 10px 10px; border-bottom: 1px solid #AEADAD; ">	
+					{% if user.status == "Teacher" %}
+					<a href="/question/?id={{c.id}}" style="cursor: pointer; font-size: 24px; font-family: century gothic; text-decoration: none;">{{c.courseName}}</a>	
+					{% else %}			
 					<a href="/question/?id={{c.course.id}}" style="cursor: pointer; font-size: 24px; font-family: century gothic; text-decoration: none;">{{c.course.courseName}}</a>	
+					{% endif %}
 					<th>
 				</td>	
 				<td width="50%"></td>
