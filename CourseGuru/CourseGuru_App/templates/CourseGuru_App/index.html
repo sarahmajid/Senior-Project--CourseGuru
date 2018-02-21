@@ -6,18 +6,15 @@
 		<title> Amesite Chat Responder </title>		
 	</head>
 	<body>    
-		<table width="40%" align="Center" style="background-color: grey;">
-			<tr>
-				<td height="50px" style="text-align: center; font-size: 30px; color: #FFFFFF; font-family: century gothic;">
-					Amesite Chat Responder
-				</td>
-			</tr>
-		</table>
+		<header width="40%" align="center" height="50px" style="line-height: 56px; text-align: center; font-size: 30px; color: #444; font-family: century gothic; font-weight: normal;">
+			Amesite Chat Responder	
+		</header>
+		
 		<br><br>
-		<table width="40%" align="Center" style="background-color: grey; border-radius: 10px;">
+		<table width="40%" align="Center">
 			<tr>
-				<td style="text-align: center; padding:10px; font-size: 22px; color: #FFFFFF; font-family: century gothic;">
-					Please Login
+				<td style="padding:10px; font-size: 26px; color: #444; font-family: century gothic;">
+					Login
 				</td>
 			</tr>
 			<tr>
@@ -25,24 +22,26 @@
 			</tr>
 			<tr>
 				<td>
-					<form method="POST" action="" style="margin: 0 10%;">
-						<label style="font-size: 16px; color: #FFFFFF; font-family: century gothic;">Username: </label><br>
+					<form method="POST" action="" style="padding: 10px;">
+						<h3 style="font-size: 16px; color: red; font-family: century gothic;">{{credentialmismatch}}</h3>
+						<h3 style="font-size: 16px; color: green; font-family: century gothic;">{{newAct}}</h3>
+						<label style="font-size: 16px; color: grey; font-family: century gothic;">Username: </label><br>
 						{% csrf_token %}
-						<textarea id="username" type="text" name="username" rows="1" maxlength="20" style="resize: none; width: 40%;"></textarea><br>
-						<label style="font-size: 16px; color: #FFFFFF; font-family: century gothic;">Password: </label><br>
-						{% csrf_token %}
-						<input id="password" type="password" name="password" rows="1" maxlength="20" style="resize: none; width: 40%;"></input><br>						
-						
-						<input type="submit" name="submit" value="ENTER"><h3 style="font-size: 16px; color: red; font-family: century gothic;">{{credentialmismatch}}</h3>		
 
-						<!--  <button name="CA" type="button" >CREATE ACCOUNT</button>-->
-						<input type="submit" name= "submit" value="CREATE ACCOUNT">
+						<input id="username" type="text" required="required" name="username" maxlength="20" style="width: 100%;"></input>
+						<br><br>
+						<label style="font-size: 16px; color: grey; font-family: century gothic;">Password: </label><br>
+						{% csrf_token %}
+						<input id="password" type="password" required="required" name="password" maxlength="20" style=" width: 100%;"></input><br>						
+						<br>
+						<input type="submit" name="submit" value="Login" style="cursor: pointer; font-size: 16px; color: #444; background-color: #cecece; font-family: century gothic; box-shadow: none; border: 0; padding: 5px 10px;">
+						<br><br><br>
+						<a href="/account/" style="cursor: pointer; font-size: 16px; font-family: century gothic; color: grey; text-decoration: none;">Create an account</a>
 					</form>
 					<br>
 				</td>
 			</tr>
 		</table>
-		<iframe style="position:fixed; bottom: 0; right: 0;" src="/chatbot/" height="35%" width="20%"/>
 	</body>
 </html>
 

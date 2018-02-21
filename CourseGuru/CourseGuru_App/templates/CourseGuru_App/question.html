@@ -3,52 +3,169 @@
 <html>
 	<head>
 		<title> Amesite Chat Responder </title>
+		<meta name="viewport" content="width=device-width" />
+		<style>
+			body {
+			 	
+			 	padding: 0;
+			 	height: 100%;
+			 }
+			.LiveChat{
+			 position:fixed;
+			 bottom:0;
+			 right:0;
+			 height:35%;
+			 width:20%;
+			 border: black 1.5px solid;			 
+			 }
+			 
+			 .question-hyperlink {
+			 color: #07C;
+			 }
+			 
+			 .question-hyperlink:visited {
+			 color: #005999;
+			 }
+			 
+			 .question-hyperlink:hover {
+			 color: red;
+			 }
+			 
+			 .btn {
+			 	text-decoration: none;
+			 	cursor: pointer; 
+			 	font-size: 18px; 
+			 	font-family: century gothic; 
+			 	color: #444;
+			 }
+			 
+			 .btn:hover {
+			 	text-decoration: underline;
+			 }
+			 
+			 .side-panel {
+			 	width: 17%;
+			 	height: 100%;
+			 	border: solid 2px;
+			 	padding: 0;
+			 	position:fixed;
+			 	z-index: 1;
+			    top: 0;
+			    left: 0;
+			    background-color: #EAECEE;
+			    font-size: 24px; 
+			 	font-family: century gothic; 
+			 	color: #444;
+			 }
+			 
+			 .side-panel-button {
+			 	word-wrap: break-word; 
+			 	border: solid 2px; 
+			 	border-radius: 5px; 
+			 	padding: 5px 15%; 
+			 	text-align: center; 
+			 	text-decoration: none;
+			 	color: black;
+			 }
+			 .side-panel-button:hover {
+			 	color: blue;
+
+			 }
+			 
+			@media screen and (max-width : 1204px){
+			  .side-panel
+			  {
+			    font-size:16px;
+			  }
+			}
+			 
+		 </style>
 	</head>
 	<body>    
-		<table width="40%" align="Center" style="background-color: grey;">
+		<header width="60%" align="center" height="50px" style="line-height: 56px; text-align: center; font-size: 30px; color: #444; font-family: century gothic; font-weight: normal;">
+			Amesite Chat Responder	
+		</header>
+		<br>
+		<div class="side-panel">
+			<table width="100%" style="border-spacing: 0;">
+				<tr>
+					<td width="100%" style="border-bottom: solid 2px; padding: 10px 0;">
+						<div style="text-align: center;">{{courseName.courseName}}</div>
+					</td>
+				</tr>
+				{% if user.status == "Teacher" %}
+				<tr>
+					<td width="100%" align="center" style=" padding: 35px 0;">
+						<a class="side-panel-button" href="/roster/?cid={{courseID}}" style=" ">Roster</a>
+					</td>
+				</tr>
+				{% endif %}
+			</table>
+		</div>
+		<table width="20%" style="float:left;">
 			<tr>
-				<td height="50px" style="text-align: center; font-size: 30px; color: #FFFFFF; font-family: century gothic;">
-					Amesite Chat Responder
+				<td>
+					
 				</td>
 			</tr>
 		</table>
-		<br><br>
-		<table class="table table bordered" width="40%" align="Center" style="background-color: grey; border-radius: 10px;">
+		<table width="60%" align="Center" style="border-spacing: 0; float:left;">
 			<tr>
-				<td style="text-align: center; padding:10px; font-size: 22px; color: #FFFFFF; font-family: century gothic;">
-					[Course Name] Forum - Questions
+				<td>
+					<a class="btn" href="/courses/">< Course Selection</a> 
+					<div align="right" style="float: right; font-size: 18px; font-family: century gothic; color: #444;">
+						Hi {{user.get_short_name}}!
+						<br>
+						<form method="POST" action=""> 
+							{% csrf_token %}
+							<input class="btn" type="submit" name="Logout" value="Logout" style="font-size: 16px; background-color: transparent; box-shadow: none; border: 0;">
+						</form>
+					</div>
+					<br><br><br><br>
+				</td>
+			</tr>
+			<tr>
+				<td style="padding:5px; font-size: 22px; color: #444; font-family: century gothic;">
+					{{courseName.courseName}} - Questions
+					<a href="/publish/?cid={{courseID}}" style="padding: 2px 10px; background-color: #cecece; float: right; cursor: pointer; font-size: 18px; font-family: century gothic; color: #444; text-decoration: none;">Ask a question</a>
 				</td>
 			</tr>
 			<tr>
 				<td height="3px" style="background-color: #AEADAD;"></td>
 			</tr>
 			<tr>
-				<td>
-					<form method="POST" action="" style="margin: 0 10%;">
-						<label style="font-size: 16px; color: #FFFFFF; font-family: century gothic;">Ask a new question: </label><br>
-						{% csrf_token %}
-						<textarea id="NQ" type="text" name="NQ" rows="4" maxlength="180" style="resize: none; width: 100%;"></textarea>
-						<br><input type="submit" value="Enter">				
-					</form>
-					<br>
-				</td>
+				<td><br></td>
 			</tr>
+
 			{% for c in content %}
 			<tr>
-				<td style=" padding:10px; border-top: 2px solid #AEADAD;">	
-					<font style="color: #FFFFFF">User:</font> 				
+				{% if forloop.counter|divisibleby:2 %}
+				<td style=" padding:15px; border-bottom: 2px solid #AEADAD; background-color: #EAECEE;">	
+				{% else %}
+				<td style=" padding:15px; border-bottom: 2px solid #AEADAD;">	
+				{% endif %}				
+					<a class="question-hyperlink" href="/answer/?id={{c.id}}&cid={{courseID}}" style="cursor: pointer; font-size: 24px; font-family: century gothic; text-decoration: none;">{{c.question}}</a>	
 					<br>
-					<a href="/answer/?id={{c.id}}" style="cursor: pointer; font-size: 20px;">{{c.question}}</a>	
-					<br>Date Added: {{c.date}}
-
-				</td>
+					<font style="font-size: 14px; color: green; font-family: century gothic;">{{c.user.first_name}} {{c.user.last_name}} <font style="color: grey;">asked on {{c.date}}</font></font> 	
+				</td>			
 			</tr>
 			{% endfor %}
+		</table>
+		<table width="20%" style="float:left;">
+			<tr>
+				<td>
+					
+				</td>
+			</tr>
 		</table>
 		
 		<style>
 			#page-menu {
 				text-align: center;
+				color: grey;
+				font-family: century gothic;
+				font-size: 16px;
+				clear: both;
 			}
 			
 			ul#horiz-list {
@@ -58,32 +175,56 @@
 			ul#horiz-list li{
 				display: inline;
 			}
-		</style>
-		
+			.nonactive{
+				color: #07C;
+			}
+			.nonactive:visited{
+				color: #07C;
+			}
+						
+		</style>		
 		{% if content.has_other_pages %}
 			<div id="page-menu">
 				<ul id="horiz-list" class="pagination">
 					{% if content.has_previous %}
-						<li><a href="?page={{ content.previous_page_number }}">&laquo;</a></li>
+						<li><a class="nonactive" href="?id={{courseID}}&page={{ content.previous_page_number }}">&laquo;</a></li>
 					{% else %}
 						<li class="disabled"><span>&laquo;</span></li>
 					{% endif %}
 					{% for i in content.paginator.page_range %}
 						{% if content.number == i %}
-							<li class="active"><span>{{ i }} <span class="sr-only"></span></span></li>
+
+							<li class="active"><span>&nbsp;{{ i }}&nbsp;<span class="sr-only"></span></span></li>
 						{% else %}
-							<li><a href="?page={{ i }}">{{ i }}</a></li>
+							<li>&nbsp;<a class="nonactive" href="?id={{courseID}}&page={{ i }}">{{ i }}</a>&nbsp;</li>
 						{% endif %}			
 					{% endfor %}
 					{% if content.has_next %}
-						<li><a href="?page={{ content.next_page_number }}">&raquo;</a></li>
+						<li><a class="nonactive" href="?id={{courseID}}&page={{ content.next_page_number }}">&raquo;</a></li>
 					{% else %}
 						<li class="disabled"><span>&raquo;</span></li>
 					{% endif %}
 				</ul>
 			</div>
 		{% endif %}
-		<iframe style="position:fixed; bottom: 0; right: 0;" src="/chatbot/" height="35%" width="20%"/>
+		<!-- <iframe style="position:fixed; bottom: 0; right: 0;" src="/chatbot/" height="35%" width="20%"/> -->
+		<div class="LiveChat">
+			<table width="95%" height="70%" style="margin: 5px; border: solid 1px;">
+				<tr>
+					<td style="width: 100%; whitespace: nowrap; display: inline-block; overflow-y: scroll;">
+						<div id="CWindow" style="height: 160px;">
+							<p></p>
+						</div>
+					</td>
+				</tr>
+			</table>
+			
+			<div id="message" style="margin: 5px; bottom: 0; width: 95%;">
+				<textarea id="inp" type="text" name="cb" rows="3" maxlength="180" style="height: 20%; resize: none; width: 100%;"></textarea>
+			</div>
+		</div>
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+		<script src="{% static 'js/style.js' %}"></script>
 	</body>
 </html>
 <!--		<a href="/answer/?id={{c.id}}" style="cursor: pointer;">{{c.question}}</a>	-->

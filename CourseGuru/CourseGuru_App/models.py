@@ -2,18 +2,33 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+
 #from email.policy import default
 
 # Create your models here.
 #database set up in django
 
-status = models.CharField(max_length=18)
+#===============================================================================
+# class user(models.Model):
+#     first_name = models.CharField(max_length=30)
+#     last_name = models.CharField(max_length=50)
+#     #get rid of userId its auto gen by django 
+#     username = models.CharField(max_length=20)
+#     password = models.CharField(max_length=20)
+#     status = models.CharField(max_length=18)
+#===============================================================================
+    
+status = models.CharField(max_length=18, default='Student')
 status.contribute_to_class(User, 'status')
 
 class course(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     courseName = models.CharField(max_length=50)
-    courseType = models.CharField(max_length=8)
+    courseType = models.CharField(max_length=30)
+    
+class courseusers(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    course = models.ForeignKey(course, on_delete=models.CASCADE)    
      
 class questions(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -33,6 +48,11 @@ class answers(models.Model):
 
     class meta:
         ordering = ['rating']
+ 
+class userratings(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    answer = models.ForeignKey(answers, on_delete=models.CASCADE)
+    rating = models.SmallIntegerField(default=1)
  
 class comments(models.Model):
     #edit variable below

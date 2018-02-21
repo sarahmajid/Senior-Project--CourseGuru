@@ -1,0 +1,102 @@
+<!DOCTYPE HTML>
+{% load staticfiles %}
+<html>
+	<head>
+		<title> Amesite Chat Responder </title>
+		<style>
+			.course-hyperlink {
+				 color: #07C;
+				 }
+				 
+				 .question-hyperlink:visited {
+				 color: #005999;
+				 }
+				 
+				 .question-hyperlink:hover {
+				 color: red;
+				 }
+		</style>
+	</head>
+	<body>    
+		<header width="60%" align="center" height="50px" style="line-height: 56px; text-align: center; font-size: 30px; color: #444; font-family: century gothic; font-weight: normal;">
+			Amesite Chat Responder	
+		</header>
+		<br>
+		<table width="60%" align="Center" style="border-spacing: 0;">
+			<tr>
+				<td colspan="3" align="right" style="font-size: 18px; font-family: century gothic; color: #444;">
+					Hi {{user.get_short_name}}!
+					<br>
+					<form method="POST" action=""> 
+						{% csrf_token %}
+						<input type="submit" name="Logout" value="Logout" style="font-family: century gothic; color: #444; cursor: pointer; font-size: 16px; background-color: transparent; box-shadow: none; border: 0;">
+					</form>
+					<br><br>
+				</td>
+			</tr>
+			<tr>
+				<td colspan="3" style="padding:5px; font-size: 22px; color: #444; font-family: century gothic;">
+					Course Selection
+					{% if user.status == "Teacher" %}
+					<a href="/publishCourse/" style="float: right; padding: 2px 10px; background-color: #cecece; cursor: pointer; font-size: 18px; font-family: century gothic; color: #444; text-decoration: none;">Create a New Course</a>
+					{% endif %}
+				</td>
+			</tr>
+			<tr>
+				<td height="3px" style="background-color: #AEADAD;" colspan="3"></td>
+			</tr>			
+			
+			{% for c in courses %}
+			<tr>
+				<td align="left" style="padding:50px 10px 10px 10px; border-bottom: 1px solid #AEADAD; ">	
+					{% if user.status == "Teacher" %}
+					<a href="/question/?id={{c.id}}" style="cursor: pointer; font-size: 24px; font-family: century gothic; text-decoration: none;">{{c.courseName}}</a>	
+					{% else %}			
+					<a href="/question/?id={{c.course.id}}" style="cursor: pointer; font-size: 24px; font-family: century gothic; text-decoration: none;">{{c.course.courseName}}</a>	
+					{% endif %}
+					<th>
+				</td>	
+				<td width="50%"></td>
+			</tr>
+			{% endfor %}
+		</table>
+		<br><br><br>
+		<style>
+			#page-menu {
+				text-align: center;
+			}
+			
+			ul#horiz-list {
+				display: inline-block;
+				text-align: left;
+			}
+			ul#horiz-list li{
+				display: inline;
+			}
+		</style>
+		
+		{% if content.has_other_pages %}
+			<div id="page-menu">
+				<ul id="horiz-list" class="pagination">
+					{% if content.has_previous %}
+						<li><a href="?page={{ content.previous_page_number }}">&laquo;</a></li>
+					{% else %}
+						<li class="disabled"><span>&laquo;</span></li>
+					{% endif %}
+					{% for i in content.paginator.page_range %}
+						{% if content.number == i %}
+							<li class="active"><span>{{ i }} <span class="sr-only"></span></span></li>
+						{% else %}
+							<li><a href="?page={{ i }}">{{ i }}</a></li>
+						{% endif %}			
+					{% endfor %}
+					{% if content.has_next %}
+						<li><a href="?page={{ content.next_page_number }}">&raquo;</a></li>
+					{% else %}
+						<li class="disabled"><span>&raquo;</span></li>
+					{% endif %}
+				</ul>
+			</div>
+		{% endif %}
+	</body>
+</html>
