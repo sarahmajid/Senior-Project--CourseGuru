@@ -91,7 +91,7 @@
 					{% if a.user.id == 38 %}	
 					<div style="font-size: 16px; color: blue; float:left;">{{a.user.first_name}} {{a.user.last_name}}</div>
 					{% elif a.user.status == "Teacher" %}
-					<div style="font-size: 16px; color: #dfcd1a; float:left;">{{a.user.first_name}} {{a.user.last_name}} <font style="color: grey;">[Instructor]</font></div>
+					<div style="font-size: 16px; color: green; float:left;">{{a.user.first_name}} {{a.user.last_name}} <font style="color: grey;">[Instructor]</font></div>
 					{% else %}
 					<div style="font-size: 16px; color: green; float:left;">{{a.user.first_name}} {{a.user.last_name}}</div>
 					{% endif %}

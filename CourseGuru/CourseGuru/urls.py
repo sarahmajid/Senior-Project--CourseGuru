@@ -17,6 +17,7 @@ from django.urls import include, path
 from django.contrib import admin
 
 
+
 urlpatterns = [
     path('', include('CourseGuru_App.urls')),
     path('/account/', include('CourseGuru_App.urls')),
@@ -30,4 +31,4 @@ urlpatterns = [
     path('/courses/', include('CourseGuru_App.urls')),  
     path('/roster/', include('CourseGuru_App.urls')), 
     path('admin/', admin.site.urls),
-]
+    ]

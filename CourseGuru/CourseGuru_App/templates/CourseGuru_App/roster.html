@@ -62,7 +62,15 @@
 						<h3 style="font-size: 16px; color: green; font-family: century gothic;">{{userAdded}}</h3>
 						<br><br>
 						<input type="submit" name="submit" value="Submit" style="cursor: pointer; font-size: 16px; color: #444; background-color: #cecece; font-family: century gothic; box-shadow: none; border: 0; padding: 5px 10px;">				
+						
+						<form method="POST" action="">
+						{% csrf_token %}
+						<input name='CSV' label= 'CSV' type='file'>
+						<br>
+						<input type="submit" name="submit" value="ADD STUDENTS" style="cursor: pointer; font-size: 16px; color: #444; background-color: #cecece; font-family: century gothic; box-shadow: none; border: 0; padding: 5px 10px;">	
+						</form>					
 					</form>
+				
 					<br>
 				</td>
 			</tr>

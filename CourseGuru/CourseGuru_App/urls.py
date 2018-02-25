@@ -1,5 +1,7 @@
 from django.urls import path
+from django.urls import include
 from . import views
+from django.contrib.auth.views import password_reset, password_reset_done, password_reset_confirm, password_reset_complete 
 
 urlpatterns = [
 #    path('', views.index, name='index'),
@@ -8,6 +10,12 @@ urlpatterns = [
     path('question/', views.question, name='question'),
     path('answer/', views.answer, name='answer'),
     path('parse/', views.pdfToText, name='parse'),
+    
+    path('reset-password/', password_reset, {'template_name': 'CourseGuru_App/passwordReset.html'}),
+    path('reset-password/done/', password_reset_done,  {'template_name': 'CourseGuru_App/emailedPassMessage.html'}, name='password_reset_done'),
+    path('reset-password/confirm/<uidb64>/<token>/', password_reset_confirm,  {'template_name': 'CourseGuru_App/newPassword.html'}, name='password_reset_confirm'),
+    path('reset-password/complete/', password_reset_complete, {'template_name': 'CourseGuru_App/passwordResetComplete.html'}, name='password_reset_complete'),
+    
     path('publish/', views.publish, name='publish'),
     path('publishAnswer/', views.publishAnswer, name='publishAnswer'),
     path('publishCourse/', views.publishCourse, name='publishCourse'),
