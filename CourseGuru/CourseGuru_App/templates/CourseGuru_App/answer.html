@@ -7,6 +7,8 @@
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 		<script src="https://code.jquery.com/ui/1.12.0/jquery-ui.js" integrity="sha256-0YPKAwZP7Mp3ALMRVB2i8GXeEndvCq3eSl/WsAl1Ryk=" crossorigin="anonymous"></script>
 		<script defer src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"></script>
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 		<style>
 			.LiveChat{
 			 position:fixed;
@@ -27,6 +29,26 @@
 			 .btn:hover {
 			 	text-decoration: underline;
 			 }
+			 
+			 /* width */
+			::-webkit-scrollbar {
+			    width: 10px;
+			}
+			
+			/* Track */
+			::-webkit-scrollbar-track {
+			    background: #f1f1f1; 
+			}
+			 
+			/* Handle */
+			::-webkit-scrollbar-thumb {
+			    background: #888; 
+			}
+			
+			/* Handle on hover */
+			::-webkit-scrollbar-thumb:hover {
+			    background: #555; 
+			}
 		 </style>
 	</head>
 	<body>
@@ -104,12 +126,18 @@
 					<br>
 					
 					<div style="float:right;">
-						<label style="font-size: 12px; color: grey; font-family: century gothic;">Was this answer helpful? </label><br>
-						<form action="" method="POST">
+						
+						<form action="" method="POST" style="display: inline;">
 							{% csrf_token %}
+							
+							<label style="font-size: 12px; color: grey; font-family: century gothic;">Was this answer helpful? </label><br>
 							<button name="voteUp" type="submit" value="{{a.id}}" style="border-radius: 5px; cursor: pointer;"><div><i class="fas fa-thumbs-up"></i></div></button>
 							<button name="voteDown" type="submit" value="{{a.id}}" style="border-radius: 5px; cursor: pointer;"><div><i class="fas fa-thumbs-down vote"></i></div></button>
 							&nbsp;{{a.rating}}
+							{% if user.id == a.user.id %}
+							<br><br>
+							<button type="submit" class="btn btn-danger" name="delAns" value="{{a.id}}" >Delete</button>
+							{% endif %}
 						</form>
 					</div>
 					<div id="votingResult" style="float:right;">
@@ -123,19 +151,15 @@
 		
 		<!--  <iframe style="position:fixed; bottom: 0; right: 0;" src="/chatbot/" height="35%" width="20%"/> -->
 		<div class="LiveChat">
-			<table width="100%" style="margin: 5px;">
-				<tr>
-					<td style="width: 95%; border: solid 1px; whitespace: nowrap; display: inline-block; overflow-y: scroll;">
-						<div id="CWindow" style="height: 160px;">
-							<p></p>
-						</div>
-					</td>
-				</tr>
-			</table>
+			<tr>
+				<div id="CWindow" align="center" style="width: 100%; height: 80%; whitespace: nowrap; display: inline-block; overflow-y: auto;">
+						<p></p>
+				</div>
+
+				<div align="center" style="bottom: 5%; position: absolute; width:100%;">	
+					<input type="text" class="form-control" id="inp" name="cb" maxlength="180" style="width: 90%; height: 15%;">
+				</div>
 			
-			<div id="message" style="margin: 10px 5px; bottom: 0; width: 95%;">
-				<textarea id="inp" type="text" name="cb" rows="4" maxlength="180" style="valign: top; resize: none; width: 100%;"></textarea>
-			</div>
 		</div>
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
 		<script src="{% static 'js/style.js' %}"></script>

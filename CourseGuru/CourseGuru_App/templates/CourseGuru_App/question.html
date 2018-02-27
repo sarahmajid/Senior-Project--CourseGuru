@@ -4,6 +4,11 @@
 	<head>
 		<title> Amesite Chat Responder </title>
 		<meta name="viewport" content="width=device-width" />
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+		<script src="https://code.jquery.com/ui/1.12.0/jquery-ui.js" integrity="sha256-0YPKAwZP7Mp3ALMRVB2i8GXeEndvCq3eSl/WsAl1Ryk=" crossorigin="anonymous"></script>
+		<script defer src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"></script>
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+		
 		<style>
 			body {
 			 	
@@ -16,7 +21,8 @@
 			 right:0;
 			 height:35%;
 			 width:20%;
-			 border: black 1.5px solid;			 
+			 border: black 1.5px solid;		
+			 table-layout:fixed;	 
 			 }
 			 
 			 .question-hyperlink {
@@ -78,7 +84,32 @@
 			    font-size:16px;
 			  }
 			}
+			
+			
+			/* width */
+			::-webkit-scrollbar {
+			    width: 10px;
+			}
+			
+			/* Track */
+			::-webkit-scrollbar-track {
+			    background: #f1f1f1; 
+			}
 			 
+			/* Handle */
+			::-webkit-scrollbar-thumb {
+			    background: #888; 
+			}
+			
+			/* Handle on hover */
+			::-webkit-scrollbar-thumb:hover {
+			    background: #555; 
+			}
+			 
+			.btn-danger {
+				float: right;
+				font-weight: bold;
+			}
 		 </style>
 	</head>
 	<body>    
@@ -103,7 +134,7 @@
 		<table width="20%" style="float:left;">
 			<tr>
 				<td>
-					
+					 .
 				</td>
 			</tr>
 		</table>
@@ -143,6 +174,12 @@
 				<td style=" padding:15px; border-bottom: 2px solid #AEADAD;">	
 				{% endif %}				
 					<a class="question-hyperlink" href="/answer/?id={{c.id}}&cid={{courseID}}" style="cursor: pointer; font-size: 24px; font-family: century gothic; text-decoration: none;">{{c.question}}</a>	
+					{% if user.id == c.user.id %}
+					<form method="POST" action="" margin="0" style="display: inline;">
+						{% csrf_token %}
+						<button type="submit" class="btn btn-danger" name="del" value="{{c.id}}" >Delete</button>
+					</form>
+					{% endif %}
 					<br>
 					<font style="font-size: 14px; color: green; font-family: century gothic;">{{c.user.first_name}} {{c.user.last_name}} <font style="color: grey;">asked on {{c.date}}</font></font> 	
 				</td>			
@@ -206,21 +243,19 @@
 			</div>
 		{% endif %}
 		<!-- <iframe style="position:fixed; bottom: 0; right: 0;" src="/chatbot/" height="35%" width="20%"/> -->
-		<div class="LiveChat">
-			<table width="95%" height="70%" style="margin: 5px; border: solid 1px;">
+		
+			<div class="LiveChat">
 				<tr>
-					<td style="width: 100%; whitespace: nowrap; display: inline-block; overflow-y: scroll;">
-						<div id="CWindow" style="height: 160px;">
+					<div id="CWindow" align="center" style="width: 100%; height: 80%; whitespace: nowrap; display: inline-block; overflow-y: auto;">
 							<p></p>
-						</div>
-					</td>
-				</tr>
-			</table>
-			
-			<div id="message" style="margin: 5px; bottom: 0; width: 95%;">
-				<textarea id="inp" type="text" name="cb" rows="3" maxlength="180" style="height: 20%; resize: none; width: 100%;"></textarea>
+					</div>
+
+					<div align="center" style="bottom: 5%; position: absolute; width:100%;">	
+					<input type="text" class="form-control" id="inp" name="cb" maxlength="180" style="width: 90%; height: 15%;">
+				</div>
+				
 			</div>
-		</div>
+	
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
 		<script src="{% static 'js/style.js' %}"></script>
 	</body>

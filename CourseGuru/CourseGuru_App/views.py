@@ -35,9 +35,10 @@ from CourseGuru_App.models import comments
 from CourseGuru_App.models import courseusers
 from CourseGuru_App.models import userratings
 
-from psqlextra.query import ConflictAction
+#from psqlextra.query import ConflictAction
 
 from CourseGuru_App.luisRun import teachLuis
+from CourseGuru_App.natLang import reformQuery
 
 
 from test.test_enum import Answer
@@ -162,6 +163,16 @@ def question(request):
             if request.POST.get('Logout') == "Logout":
                 logout(request)
                 return HttpResponseRedirect('/')
+            elif 'del' in request.POST:
+                qid = request.POST.get('del')
+                tempAns = answers.objects.filter(question_id = qid)
+                for x in tempAns:
+                    if userratings.objects.filter(answer_id = x.id).exists():
+                        userratings.objects.filter(answer_id = x.id).delete()
+                if answers.objects.filter(question_id = qid).exists():
+                    answers.objects.filter(question_id = qid).delete()
+                if questions.objects.filter(id = qid).exists():
+                    questions.objects.filter(id = qid).delete()
         
         #Paginator created to limit page display to 10 data items per page
         paginator = Paginator(qData, 10)
@@ -255,6 +266,13 @@ def answer(request):
                 voting(0, answerId, user)
                 return HttpResponseRedirect('/answer/?id=%s&cid=%s' % (qid, cid))
             
+            elif 'delAns' in request.POST:
+                aid = request.POST.get('delAns')
+                if userratings.objects.filter(answer_id = aid).exists():
+                    userratings.objects.filter(answer_id = aid).delete()
+                if answers.objects.filter(id = aid).exists():
+                    answers.objects.filter(id = aid).delete()
+            
             return HttpResponseRedirect('/answer/?id=%s&cid=%s' % (qid, cid)) 
         aData = answers.objects.filter(question_id = qid).order_by('pk')
         ansCt = aData.count()
@@ -290,10 +308,12 @@ def getIntentAns(luisIntent, luisEntities):
      
     for m in filtAns:
         Match = 0
-        ansLen = len(m.answer)
+        #testing, change entities name to something else later
+        ansLen = len(m.entities)
         for ent in entitiesList:
             print(ent)
-            if ent in m.answer:
+            #testing, change entities name to something else later
+            if ent in m.entities:
                 Match += 1
         Accuracy = (Match/ansLen)
         if Accuracy>count:
@@ -355,8 +375,10 @@ def cbAnswer(nq):
     if entAnswer == "":
         return
     
+    botAns = reformQuery(nq) + entAnswer
+    
     answerDate = genDate()
-    answers.objects.create(answer = entAnswer, user_id = 38, question_id = qid.id, date = answerDate)
+    answers.objects.create(answer = botAns, user_id = 38, question_id = qid.id, date = answerDate)
 #    return(intent)
 
 #    ---Canvas code---

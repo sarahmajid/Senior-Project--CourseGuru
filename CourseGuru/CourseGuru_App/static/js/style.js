@@ -10,8 +10,8 @@ $(document).ready(function() {
 /*	$('#submit').click(function(){ */
 	$('#inp').keydown(function(e) {
 		if(e.which == 13) {
-			var input = $('textarea').val();
-			$('textarea').val('');
+			var input = $('input#inp').val();
+			$('input').val('');
 			var history = $('#CWindow').html();		
 			$('#CWindow').html(history + '<p>' + input + '</p>');
 		}
