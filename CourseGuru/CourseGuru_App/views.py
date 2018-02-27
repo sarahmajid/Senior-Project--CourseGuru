@@ -5,6 +5,7 @@ import requests
 import datetime
 import PyPDF2 
 import nltk 
+import csv 
 
 #===============================================================================
 # from sqlalchemy.sql.expression import null, except_
@@ -147,24 +148,37 @@ def genDate():
 def roster(request):
     if request.user.is_authenticated:
         cid = request.GET.get('cid', '')
+        studentList = courseusers.objects.filter(course_id=cid)
         if request.method == "POST":
             if request.POST.get('Logout') == "Logout":
                 logout(request)
                 return HttpResponseRedirect('/')
-            newUser = request.POST.get('newUser')
-            if User.objects.filter(username = newUser).exists():
-                addUser = User.objects.get(username = newUser)
-                if courseusers.objects.filter(user_id = addUser.id, course_id = cid).exists():
-                    credentialmismatch = "User is already in the course"
-                    return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'credentialmismatch': credentialmismatch})
+            if 'newUser' in request.POST:
+                print('newUser post')
+                newUser = request.POST.get('newUser')
+                if User.objects.filter(username = newUser).exists():
+                    addUser = User.objects.get(username = newUser)
+                    if courseusers.objects.filter(user_id = addUser.id, course_id = cid).exists():
+                        credentialmismatch = "User is already in the course"
+                        return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'credentialmismatch': credentialmismatch, 'studentList': studentList})
+                    else:
+                        userAdded = "User has been successfully added to the course"
+                        courseusers.objects.create(user_id = addUser.id, course_id = cid)
+                        return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'userAdded': userAdded, 'studentList': studentList})
                 else:
-                    userAdded = "User has been successfully added to the course"
-                    courseusers.objects.create(user_id = addUser.id, course_id = cid)
-                    return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'userAdded': userAdded})
-            else:
-                credentialmismatch = "Username does not exist"
-                return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'credentialmismatch': credentialmismatch})
-        return render(request, 'CourseGuru_App/roster.html', {'courseID': cid})
+                    credentialmismatch = "Username does not exist"
+                    return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'credentialmismatch': credentialmismatch, 'studentList': studentList})
+                print("Before elif")
+            elif 'CSV' in request.POST:
+                print("csv post")
+                csv = request.FILES.get("CSV").file.read()
+                f = tempfile.TemporaryFile('r+b')
+                f.write(csv)
+                return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'studentList': studentList})
+                    
+#        studentList=User.objects.filter(id = courseusers.user_id)
+        print("ran page")
+        return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'studentList': studentList})
     else:
         return HttpResponseRedirect('/')
 
@@ -338,12 +352,12 @@ def pdfToText(request):
 #    Create empty string for text to be extracted into
     extracted_text = '' 
     test = ''
-     #When button is clicked we parse the file
+    #When button is clicked we parse the file
     if request.method == "POST":
         #Sets myfile to the selected file on page and reads it
         myfile = request.FILES.get("syllabusFile").file.read()
             
-         #Create tempfile in read and write binary mode
+        #Create tempfile in read and write binary mode
         f = tempfile.TemporaryFile('r+b')
         f.write(myfile)
 
@@ -358,11 +372,11 @@ def pdfToText(request):
         #sets parameters for analysis 
         laparams = LAParams()
             
-         #Required to define seperation of text within pdf
+        #Required to define seperation of text within pdf
         laparams.char_margin = 1
         laparams.word_margin = 1
             
-         #Device takes LAPrams and uses them to parse individual pdf objects
+        #Device takes LAPrams and uses them to parse individual pdf objects
         device = PDFPageAggregator(rsrcmgr, laparams=laparams)
         interpreter = PDFPageInterpreter(rsrcmgr, device)
             
@@ -374,17 +388,6 @@ def pdfToText(request):
                     extracted_text += lt_obj.get_text() 
         test = pullInfo(extracted_text)   
         f.close() 
-    
-        #=======================================================================
-        # courseid = re.search('[A-Z]{3} \d{4}', extracted_text, re.MULTILINE)
-        # f.close()
-        # kData = keywords.objects.all()
-        # for k in kData:
-        #     results = re.search(k.word + "(.*)", extracted_text, re.MULTILINE)
-        #     if results is not None:
-        #         info = re.sub('[^0-9a-zA-Z][ ]', '', results.group(1))
-        #         courseinfo.objects.create(keyword_common_name = k.common_name, syllabus_data = info, course_id = courseid[0])
-        #=======================================================================
     return render(request, 'CourseGuru_App/parse.html', {'convText' : test})
 
 #===============================================================================
@@ -393,18 +396,16 @@ def pdfToText(request):
 def pullInfo(file):
 
     keyWordObj = courseinfo.objects.all()
-
     keyWords = []
     #parallel arrays to store the keywords found and their positions 
     keyPositions = []
     keyWordPositions = []
-    
     pdfWords = word_tokenize(file, 'english')
     
     for n in keyWordObj:
-        keyWords.append(n.intent)
-        
-    # finding all the key word positions         
+        keyWords.append(n.intent)    
+    # finding all the key word positions 
+            
     i=0    
     while i<len(pdfWords)-1:
         for n in keyWords:
@@ -412,11 +413,10 @@ def pullInfo(file):
             if pdfWords[i] == n or temp == n:
                 keyPositions.append(i)
                 keyWordPositions.append(n)
-        i+=1
-        
+        i+=1   
+           
     #to end of file    
     keyPositions.append(len(pdfWords))
-
     # loops through the key positions and puts data into appropriate rows according to intent name 
     i=0
     while i <len(keyPositions)-1:      
@@ -428,13 +428,6 @@ def pullInfo(file):
         i+=1
 
     return(pdfWords)
-
-def generateQuestion(text):
-    #could possibly use keywords to set the start and end words    
-    question = ""
-    
-    return(question)
-
 
 def chatbot(request):
     return render(request, 'CourseGuru_App/botchat.html',)
@@ -462,12 +455,7 @@ def cbAnswer(nq):
         z += 1
     #If intent receives a lower score than 75% or there is no intent, the question does not get answered
     if luisScore < 0.75 or luisIntent == 'None':
-        return
-    #---catID = category.objects.get(intent=luisIntent)
-    #Sets cbAns to the first answer it can find matching that category (This needs to be improved)
-    #---cbAns = botanswers.objects.filter(category_id = catID.id).first()
-    #ID of the latest question created
-    qid = questions.objects.last()
+        return    qid = questions.objects.last()
     
     entAnswer = getIntentAns(luisIntent, luisEntities)
     if entAnswer == "":
@@ -476,9 +464,5 @@ def cbAnswer(nq):
     answerDate = genDate()
     answers.objects.create(answer = entAnswer, user_id = 38, question_id = qid.id, date = answerDate)
 #    return(intent)
-
-#    ---Canvas code---
-#    url = (urlopen('https://canvas.wayne.edu/api/v1/courses').read()
-#    response = urlopen('https://canvas.wayne.edu/api/v1/courses')
 
 
