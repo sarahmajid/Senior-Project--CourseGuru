@@ -6,7 +6,7 @@ import datetime
 import PyPDF2 
 import nltk 
 import csv 
-
+from io import StringIO
 #===============================================================================
 # from sqlalchemy.sql.expression import null, except_
 # from urllib.request import urlopen
@@ -62,6 +62,10 @@ from CourseGuru_App.models import userratings
 from CourseGuru_App.luisRun import teachLuis
 from test.test_enum import Answer
 from django.contrib.auth import authenticate, login, logout
+from pdfminer.pslexer import delimiter
+from builtins import str
+from django.template.defaultfilters import last
+from _ast import Str
 
 #Function to populate Main page
 def index(request):
@@ -154,7 +158,6 @@ def roster(request):
                 logout(request)
                 return HttpResponseRedirect('/')
             if 'newUser' in request.POST:
-                print('newUser post')
                 newUser = request.POST.get('newUser')
                 if User.objects.filter(username = newUser).exists():
                     addUser = User.objects.get(username = newUser)
@@ -168,16 +171,48 @@ def roster(request):
                 else:
                     credentialmismatch = "Username does not exist"
                     return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'credentialmismatch': credentialmismatch, 'studentList': studentList})
-                print("Before elif")
-            elif 'CSV' in request.POST:
-                print("csv post")
-                csv = request.FILES.get("CSV").file.read()
-                f = tempfile.TemporaryFile('r+b')
-                f.write(csv)
-                return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'studentList': studentList})
-                    
-#        studentList=User.objects.filter(id = courseusers.user_id)
-        print("ran page")
+             
+            elif request.method == 'POST' and request.FILES['csvFile']:
+                #decoding the file for reading 
+                csvF = request.FILES['csvFile'].read().decode()
+                
+                #===============================================================
+                # reader = csv.reader(csvF)
+                # str(reader)
+                # print(reader)
+                #===============================================================
+                str(csvF)
+                reader = csvF.split('\r\n')
+                
+                #variable initialization 
+                str1 = "The following "
+                str2 = " users were not added to the course because the usernames do not exist: "
+                notAddedUsernames =""
+                strNotAdded = ""
+                notAddedUsers = []
+                numUserNotAdded=0
+                i=1
+                #Read csv string and and use data accordingly
+                while i<len(reader):
+                    if User.objects.filter(username = reader[i]).exists():
+                        addUser = User.objects.get(username = reader[i])
+                        if courseusers.objects.filter(user_id = addUser.id, course_id = cid).exists():
+                            i+=1
+                        else: 
+                            courseusers.objects.create(user_id = addUser.id, course_id = cid)
+                            i+=1
+                    else: 
+                        notAddedUsers.append(reader[i]) 
+                        numUserNotAdded+=1   
+                        i+=1 
+                strNotAdded = str1 + str(numUserNotAdded) + str2
+                notAddedUsers.remove('')
+                for n in notAddedUsers:
+                    if n != notAddedUsers[len(notAddedUsers)-1]:
+                        strNotAdded += n + ", "
+                    else:
+                        strNotAdded += "and " + n +"."
+                return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'studentList': studentList, 'notAdded': strNotAdded})
         return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'studentList': studentList})
     else:
         return HttpResponseRedirect('/')
@@ -421,12 +456,9 @@ def pullInfo(file):
     i=0
     while i <len(keyPositions)-1:      
         intent = keyWordObj.get(intent = keyWordPositions[i])
-#        print(intent.intent)
-#        print(keyWordPositions[i])
         intent.infoData=(pdfWords[keyPositions[i]:keyPositions[i+1]])
         intent.save()
         i+=1
-
     return(pdfWords)
 
 def chatbot(request):
