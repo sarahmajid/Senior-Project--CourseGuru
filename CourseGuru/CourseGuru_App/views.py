@@ -6,7 +6,7 @@ import datetime
 import PyPDF2 
 import nltk 
 import csv 
-from io import StringIO
+import codecs
 #===============================================================================
 # from sqlalchemy.sql.expression import null, except_
 # from urllib.request import urlopen
@@ -172,47 +172,49 @@ def roster(request):
                     credentialmismatch = "Username does not exist"
                     return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'credentialmismatch': credentialmismatch, 'studentList': studentList})
              
+       
             elif request.method == 'POST' and request.FILES['csvFile']:
                 #decoding the file for reading 
                 csvF = request.FILES['csvFile'].read().decode()
+                sniffer = csv.Sniffer().sniff(csvF)
                 
-                #===============================================================
-                # reader = csv.reader(csvF)
-                # str(reader)
-                # print(reader)
-                #===============================================================
-                str(csvF)
-                reader = csvF.split('\r\n')
-                
-                #variable initialization 
-                str1 = "The following "
-                str2 = " users were not added to the course because the usernames do not exist: "
-                notAddedUsernames =""
-                strNotAdded = ""
-                notAddedUsers = []
-                numUserNotAdded=0
-                i=1
-                #Read csv string and and use data accordingly
-                while i<len(reader):
-                    if User.objects.filter(username = reader[i]).exists():
-                        addUser = User.objects.get(username = reader[i])
-                        if courseusers.objects.filter(user_id = addUser.id, course_id = cid).exists():
-                            i+=1
-                        else: 
-                            courseusers.objects.create(user_id = addUser.id, course_id = cid)
-                            i+=1
-                    else: 
-                        notAddedUsers.append(reader[i]) 
-                        numUserNotAdded+=1   
-                        i+=1 
-                strNotAdded = str1 + str(numUserNotAdded) + str2
-                notAddedUsers.remove('')
-                for n in notAddedUsers:
-                    if n != notAddedUsers[len(notAddedUsers)-1]:
-                        strNotAdded += n + ", "
-                    else:
-                        strNotAdded += "and " + n +"."
-                return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'studentList': studentList, 'notAdded': strNotAdded})
+                reader = csv.reader(csvF, delimiter=sniffer.delimiter)
+                for n in reader:
+                    print(n)
+                #reader = csv.reader(csvF)
+                #str(csvF)
+                #reader = csvF.split(sniffer.delimiter)
+
+        #         
+        #         #variable initialization 
+        #         str1 = "The following "
+        #         str2 = " users were not added to the course because the usernames do not exist: "
+        #         notAddedUsernames =""
+        #         strNotAdded = ""
+        #         notAddedUsers = []
+        #         numUserNotAdded=0
+        #         i=1
+        #         #Read csv string and and use data accordingly
+        #         while i<len(reader):
+        #             if User.objects.filter(username = reader[i]).exists():
+        #                 addUser = User.objects.get(username = reader[i])
+        #                 if courseusers.objects.filter(user_id = addUser.id, course_id = cid).exists():
+        #                     i+=1
+        #                 else: 
+        #                     courseusers.objects.create(user_id = addUser.id, course_id = cid)
+        #                     i+=1
+        #             else: 
+        #                 notAddedUsers.append(reader[i]) 
+        #                 numUserNotAdded+=1   
+        #                 i+=1 
+        #         strNotAdded = str1 + str(numUserNotAdded) + str2
+        #         notAddedUsers.remove('')
+        #         for n in notAddedUsers:
+        #             if n != notAddedUsers[len(notAddedUsers)-1]:
+        #                 strNotAdded += n + ", "
+        #             else:
+        #                 strNotAdded += "and " + n +"."
+        #         return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'studentList': studentList, 'notAdded': strNotAdded})
         return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'studentList': studentList})
     else:
         return HttpResponseRedirect('/')
