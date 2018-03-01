@@ -3,6 +3,12 @@
 <html>
 	<head>
 		<title> Amesite Chat Responder </title>
+		<meta name="viewport" content="width=device-width" />
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+		<script src="https://code.jquery.com/ui/1.12.0/jquery-ui.js" integrity="sha256-0YPKAwZP7Mp3ALMRVB2i8GXeEndvCq3eSl/WsAl1Ryk=" crossorigin="anonymous"></script>
+		<script defer src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"></script>
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	
 		<style>
 			.course-hyperlink {
 				 color: #07C;
@@ -15,6 +21,11 @@
 				 .question-hyperlink:hover {
 				 color: red;
 				 }
+				 
+				 .btn-danger {
+					float: right;
+					font-weight: bold;
+				}
 		</style>
 	</head>
 	<body>    
@@ -51,6 +62,10 @@
 				<td align="left" style="padding:50px 10px 10px 10px; border-bottom: 1px solid #AEADAD; ">	
 					{% if user.status == "Teacher" %}
 					<a href="/question/?id={{c.id}}" style="cursor: pointer; font-size: 24px; font-family: century gothic; text-decoration: none;">{{c.courseName}}</a>	
+					<form method="POST" action="" margin="0" style="display: inline;">
+						{% csrf_token %}
+						<button type="submit" class="btn btn-danger" name="del" value="{{c.id}}" >Delete</button>
+					</form>
 					{% else %}			
 					<a href="/question/?id={{c.course.id}}" style="cursor: pointer; font-size: 24px; font-family: century gothic; text-decoration: none;">{{c.course.courseName}}</a>	
 					{% endif %}

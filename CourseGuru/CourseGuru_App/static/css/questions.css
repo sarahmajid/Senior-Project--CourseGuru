@@ -1,0 +1,165 @@
+/* The Header */
+ .head-right {
+ 	float: right;  
+ 	font-family: century gothic; 
+ 	font-size: 18px; 
+ 	color: #444;
+ }
+ 
+ .head-btn {
+ 	text-decoration: none;
+ 	cursor: pointer; 
+ 	font-size: 18px; 
+ 	font-family: century gothic; 
+ 	color: #444;
+ 	background-color: transparent;
+ 	box-shadow: none; 
+ 	border: 0;
+ }
+ 
+ .head-btn:hover {
+ 	text-decoration: underline;
+ }
+
+/* The sidenav */
+.sidenav {
+  height: 100%;
+  width: 17%;
+  position: fixed;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  background-color: #EAECEE;
+  font-size: 24px;
+  font-family: century gothic;
+  overflow-x: hidden;
+  padding-top: 20px;
+}
+
+/* Page content */
+.main {
+  margin-left: 200px; /* Same as the width of the sidenav */
+}
+
+body {
+ 	padding: 0;
+ 	height: 100%;
+ }
+ 
+ .question-hyperlink {
+ color: #07C;
+ }
+ 
+ .question-hyperlink:visited {
+ color: #005999;
+ }
+ 
+ .question-hyperlink:hover {
+ color: red;
+ }
+ 
+
+ 
+ .side-panel-button {
+ 	word-wrap: break-word; 
+ 	border: solid 2px; 
+ 	border-radius: 5px; 
+ 	padding: 5px 15%; 
+ 	text-align: center; 
+ 	text-decoration: none;
+ 	color: black;
+ }
+ .side-panel-button:hover {
+ 	color: blue;
+
+ }
+ 
+@media screen and (max-width : 1204px){
+  .side-panel
+  {
+    font-size:16px;
+  }
+}
+
+
+/* width */
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+    background: #f1f1f1; 
+}
+ 
+/* Handle */
+::-webkit-scrollbar-thumb {
+    background: #888; 
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+    background: #555; 
+}
+ 
+.btn-danger {
+	float: right;
+	font-weight: bold;
+	color: white;
+}
+
+/* CHAT WINDOW */
+.LiveChat{
+ position:fixed;
+ bottom:0;
+ right:0;
+ height:35%;
+ width:20%;
+ border: black 1.5px solid;		
+ table-layout:fixed;	 
+ }
+ 
+#CWindow {
+  	text-align: center;
+ 	width: 100%; 
+ 	height: 80%; 
+ 	whitespace: nowrap; 
+ 	display: inline-block; 
+ 	overflow-y: auto;	
+ }
+ }
+ 
+#InpArea {
+ 	bottom: 5%; 
+ 	position: absolute; 
+ 	width:100%;
+}
+
+.LiveChat .Form {
+	width: 90%;
+	margin: 0 5%; 
+}
+
+
+/* PAGINATOR */
+#page-menu {
+	text-align: center;
+	color: grey;
+	font-family: century gothic;
+	font-size: 16px;
+	clear: both;
+}
+
+ul#horiz-list {
+	display: inline-block;
+	text-align: left;
+}
+ul#horiz-list li{
+	display: inline;
+}
+.nonactive{
+	color: #07C;
+}
+.nonactive:visited{
+	color: #07C;
+}

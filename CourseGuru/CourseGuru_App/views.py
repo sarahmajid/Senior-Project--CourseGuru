@@ -22,8 +22,6 @@ from django.contrib.auth.models import User
 
 
 #importing models 
-#from CourseGuru_App.models import user
-
 from CourseGuru_App.models import questions
 from CourseGuru_App.models import answers
 from CourseGuru_App.models import keywords
@@ -113,6 +111,21 @@ def courses(request):
             if request.POST.get('Logout') == "Logout":
                 logout(request)
                 return HttpResponseRedirect('/')
+            elif 'del' in request.POST:
+                #Deletes the course selected and all questions, answers, and ratings associated with it
+                cid = request.POST.get('del')
+                tempQues = questions.objects.filter(course_id = cid)
+                for x in tempQues:
+                    tempAns = answers.objects.filter(question_id = x.id)
+                    for y in tempAns:
+                        if userratings.objects.filter(answer_id = y.id).exists():
+                            userratings.objects.filter(answer_id = y.id).delete()
+                    if answers.objects.filter(question_id = x.id).exists():
+                        answers.objects.filter(question_id = x.id).delete()
+                if questions.objects.filter(course_id = cid).exists():
+                    questions.objects.filter(course_id = cid).delete()
+                if course.objects.filter(id = cid).exists():
+                    course.objects.filter(id = cid).delete()
         curUser = request.user
         if curUser.status == "Teacher":
             courseList = course.objects.filter(user_id = curUser.id)

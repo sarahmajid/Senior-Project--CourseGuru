@@ -7,15 +7,6 @@ from django.dispatch import receiver
 
 # Create your models here.
 #database set up in django
-#===============================================================================
-# class user(models.Model):
-#     first_name = models.CharField(max_length=30)
-#     last_name = models.CharField(max_length=50)
-#     #get rid of userId its auto gen by django 
-#     username = models.CharField(max_length=20)
-#     password = models.CharField(max_length=20)
-#     status = models.CharField(max_length=18)
-#===============================================================================
     
 status = models.CharField(max_length=18, default='Student')
 status.contribute_to_class(User, 'status')

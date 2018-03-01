@@ -4,9 +4,11 @@
 	<head>
 		<title> Amesite Chat Responder </title>
 		<!-- <link rel="stylesheet" href="{# static 'css/answers.css' #}"> -->
+		<meta name="viewport" content="width=device-width" />
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 		<script src="https://code.jquery.com/ui/1.12.0/jquery-ui.js" integrity="sha256-0YPKAwZP7Mp3ALMRVB2i8GXeEndvCq3eSl/WsAl1Ryk=" crossorigin="anonymous"></script>
 		<script defer src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"></script>
+		
 		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 		<style>
@@ -48,6 +50,10 @@
 			/* Handle on hover */
 			::-webkit-scrollbar-thumb:hover {
 			    background: #555; 
+			}
+			.btn-danger {
+				font-weight: bold;
+				color: white;
 			}
 		 </style>
 	</head>
@@ -122,27 +128,19 @@
 			</tr>
 			<tr>
 				<td style="padding:10px 10px 10px 5%; color: grey; padding-bottom: 20px; font-family: century gothic;">
-					<div answer-rating="{{a.rating}}" style="font-size: 18px;float: left; width: 80%;">{{a.answer}}</div>
-					<br>
-					
-					<div style="float:right;">
-						
-						<form action="" method="POST" style="display: inline;">
+					<div style="font-size: 18px;float: left; width: 80%;">{{a.answer}}</div>
+						<form action="" method="POST" style="float: right; display: inline;">
 							{% csrf_token %}
-							
+							{% if user.id == a.user.id %}
+							<button type="submit" class="btn btn-danger" name="delAns" value="{{a.id}}" >Delete</button>
+							{% else %}
 							<label style="font-size: 12px; color: grey; font-family: century gothic;">Was this answer helpful? </label><br>
 							<button name="voteUp" type="submit" value="{{a.id}}" style="border-radius: 5px; cursor: pointer;"><div><i class="fas fa-thumbs-up"></i></div></button>
 							<button name="voteDown" type="submit" value="{{a.id}}" style="border-radius: 5px; cursor: pointer;"><div><i class="fas fa-thumbs-down vote"></i></div></button>
-							&nbsp;{{a.rating}}
-							{% if user.id == a.user.id %}
-							<br><br>
-							<button type="submit" class="btn btn-danger" name="delAns" value="{{a.id}}" >Delete</button>
+							&nbsp;{{a.rating}}	
+							<br>				
 							{% endif %}
 						</form>
-					</div>
-					<div id="votingResult" style="float:right;">
-					<span></span>
-					</div>
 				</td>
 			</tr>
 			<tr><td style="border-top: #cecece 1px solid;"> <br> </td></tr>
