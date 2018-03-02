@@ -233,7 +233,10 @@ def question(request):
             if request.POST.get('Logout') == "Logout":
                 logout(request)
                 return HttpResponseRedirect('/')
-        
+            if request.POST.get('query'):
+                query = request.POST.get('query')
+                if query: 
+                    qData = qData.filter(question__icontains=query)
         #Paginator created to limit page display to 10 data items per page
         paginator = Paginator(qData, 10)
         try:
@@ -311,11 +314,18 @@ def answer(request):
         qid = request.GET.get('id', '')
         cid = request.GET.get('cid', '')
         user = request.user
+        aData = answers.objects.filter(question_id = qid).order_by('pk')
+        ansCt = aData.count()
+        qData = questions.objects.get(id = qid)
+        cData = comments.objects.filter(question_id = qid)
         if request.method == "POST":
             if request.POST.get('Logout') == "Logout":
                 logout(request)
                 return HttpResponseRedirect('/')
-            
+            if request.POST.get('query'):
+                query = request.POST.get('query')
+                if query: 
+                    aData = aData.filter(answer__icontains=query)
             if 'voteUp' in request.POST: 
                 answerId = request.POST.get('voteUp')
                 voting(1, answerId, user)
@@ -326,11 +336,7 @@ def answer(request):
                 voting(0, answerId, user)
                 return HttpResponseRedirect('/answer/?id=%s&cid=%s' % (qid, cid))
             
-            return HttpResponseRedirect('/answer/?id=%s&cid=%s' % (qid, cid)) 
-        aData = answers.objects.filter(question_id = qid).order_by('pk')
-        ansCt = aData.count()
-        qData = questions.objects.get(id = qid)
-        cData = comments.objects.filter(question_id = qid)
+#            return HttpResponseRedirect('/answer/?id=%s&cid=%s' % (qid, cid))        
         return render(request, 'CourseGuru_App/answer.html', {'answers': aData, 'numAnswers': ansCt, 'Title': qData, 'comments': cData, 'courseID': cid})
     else:
         return HttpResponseRedirect('/')
