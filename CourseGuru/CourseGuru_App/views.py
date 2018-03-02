@@ -6,7 +6,7 @@ import datetime
 import PyPDF2 
 import nltk 
 import csv 
-import codecs
+import io
 #===============================================================================
 # from sqlalchemy.sql.expression import null, except_
 # from urllib.request import urlopen
@@ -66,6 +66,7 @@ from pdfminer.pslexer import delimiter
 from builtins import str
 from django.template.defaultfilters import last
 from _ast import Str
+from string import ascii_lowercase
 
 #Function to populate Main page
 def index(request):
@@ -175,46 +176,47 @@ def roster(request):
        
             elif request.method == 'POST' and request.FILES['csvFile']:
                 #decoding the file for reading 
-                csvF = request.FILES['csvFile'].read().decode()
-                sniffer = csv.Sniffer().sniff(csvF)
+                csvF = request.FILES['csvFile'].read().decode('utf-8')
+                #sniffing for the delimiter in csv
+                sniffer = csv.Sniffer().sniff(csvF)         
+                #reading csv using DictReader     
+                reader = csv.DictReader(((io.StringIO(csvF))), delimiter=sniffer.delimiter)   
+                #converts all field names to lowercase
+                reader.fieldnames = [header.strip().lower() for header in reader.fieldnames]
+                        
+                #variable initialization 
+                str1 = "The following "
+                str2 = " users were not added to the course because the usernames do not exist: "
+                strNotAdded = ""
+                notAddedUsers = []
+                numUserNotAdded=0
                 
-                reader = csv.reader(csvF, delimiter=sniffer.delimiter)
+                #Adds students according to the csv content. If DictReader is changed code below must be edited.            
                 for n in reader:
-                    print(n)
-                #reader = csv.reader(csvF)
-                #str(csvF)
-                #reader = csvF.split(sniffer.delimiter)
-
-        #         
-        #         #variable initialization 
-        #         str1 = "The following "
-        #         str2 = " users were not added to the course because the usernames do not exist: "
-        #         notAddedUsernames =""
-        #         strNotAdded = ""
-        #         notAddedUsers = []
-        #         numUserNotAdded=0
-        #         i=1
-        #         #Read csv string and and use data accordingly
-        #         while i<len(reader):
-        #             if User.objects.filter(username = reader[i]).exists():
-        #                 addUser = User.objects.get(username = reader[i])
-        #                 if courseusers.objects.filter(user_id = addUser.id, course_id = cid).exists():
-        #                     i+=1
-        #                 else: 
-        #                     courseusers.objects.create(user_id = addUser.id, course_id = cid)
-        #                     i+=1
-        #             else: 
-        #                 notAddedUsers.append(reader[i]) 
-        #                 numUserNotAdded+=1   
-        #                 i+=1 
-        #         strNotAdded = str1 + str(numUserNotAdded) + str2
-        #         notAddedUsers.remove('')
-        #         for n in notAddedUsers:
-        #             if n != notAddedUsers[len(notAddedUsers)-1]:
-        #                 strNotAdded += n + ", "
-        #             else:
-        #                 strNotAdded += "and " + n +"."
-        #         return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'studentList': studentList, 'notAdded': strNotAdded})
+                    if(User.objects.filter(username = n['username'])):
+                        addUser = User.objects.get(username = n['username'])
+                        if (courseusers.objects.filter(user_id = addUser.id, course_id = cid).exists()==False):
+                            courseusers.objects.create(user_id = addUser.id, course_id = cid)
+                    else: 
+                        notAddedUsers.append(n['username']) 
+                        numUserNotAdded+=1   
+                        strNotAdded = str1 + str(numUserNotAdded) + str2
+                #creates a list of none existing users.         
+                if(len(notAddedUsers)>0):
+                    for n in notAddedUsers:
+                        if n != notAddedUsers[len(notAddedUsers)-1]:
+                            strNotAdded += n + ", "
+                        else:
+                            if (len(notAddedUsers)==1):
+                                strNotAdded += n + "."
+                                return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'studentList': studentList, 'notAdded': strNotAdded})
+                            else:
+                                strNotAdded += "and " + n +"."
+                                return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'studentList': studentList, 'notAdded': strNotAdded})
+                
+            else:
+                credentialmismatch = "Username does not exist"
+                return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'credentialmismatch': credentialmismatch})
         return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'studentList': studentList})
     else:
         return HttpResponseRedirect('/')
@@ -498,5 +500,4 @@ def cbAnswer(nq):
     answerDate = genDate()
     answers.objects.create(answer = entAnswer, user_id = 38, question_id = qid.id, date = answerDate)
 #    return(intent)
-
 
