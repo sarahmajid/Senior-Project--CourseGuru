@@ -1,0 +1,22 @@
+.basic-btn {
+	color: #444; 
+	background-color: #cecece; 
+	font-family: century gothic; 
+	box-shadow: none; 
+}
+
+.basic-btn:hover {
+	background-color: #A9A9A9;
+}
+
+#login-btn {
+	padding: 5px 15px;
+	font-size: 16px; 
+	border-radius: 0; 
+}
+
+#publish-btn {
+	padding: 5px 15px;
+	font-size: 18px; 
+	border-radius: 0; 
+}

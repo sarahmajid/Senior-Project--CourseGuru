@@ -1,4 +1,11 @@
 /* The Header */
+.head-table {
+	width: 60%;
+	align: center; 
+	border-spacing: 0; 
+	float:left;
+}
+
  .head-right {
  	float: right;  
  	font-family: century gothic; 

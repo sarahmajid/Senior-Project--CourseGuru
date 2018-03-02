@@ -4,6 +4,7 @@
 	<head>
 		<title> Amesite Chat Responder </title>
 		<link rel="stylesheet" href="{% static 'css/questions.css' %}">
+		<link rel="stylesheet" href="{% static 'css/index.css' %}">
 		<meta name="viewport" content="width=device-width" />
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 		<script src="https://code.jquery.com/ui/1.12.0/jquery-ui.js" integrity="sha256-0YPKAwZP7Mp3ALMRVB2i8GXeEndvCq3eSl/WsAl1Ryk=" crossorigin="anonymous"></script>
@@ -24,7 +25,7 @@
 				</tr>
 				<tr>
 					<td width="100%" align="center" style=" padding: 35px 0;">
-						<a class="side-panel-button" href="/roster/?cid={{courseID}}" style=" ">Roster</a>
+						<a class="side-panel-button" href="/roster/?cid={{courseID}}">Roster</a>
 					</td>
 				</tr>
 			</table>
@@ -36,7 +37,7 @@
 				</td>
 			</tr>
 		</table>
-		<table width="60%" align="Center" style="border-spacing: 0; float:left;">
+		<table class="head-table">
 			<tr>
 				<td>
 					<a class="head-btn" href="/courses/">< Course Selection</a> 
@@ -50,24 +51,23 @@
 					</div>
 					<br><br><br><br>
 				</td>
-			</tr>
+			</tr>	
 			<tr>
 				<td style="padding:5px; font-size: 22px; color: #444; font-family: century gothic;">
 					{{courseName.courseName}} - Questions
-					<a href="/publish/?cid={{courseID}}" style="padding: 2px 10px; background-color: #cecece; float: right; cursor: pointer; font-size: 18px; font-family: century gothic; color: #444; text-decoration: none;">Ask a question</a>
+					<a href="/publish/?cid={{courseID}}" class="btn basic-btn" id="publish-btn" style="float: right;">Ask a question</a>
 				</td>
 			</tr>
 			<tr>
 				<td height="3px" style="background-color: #AEADAD;"></td>
-			</tr>
-			<tr>
-				<td><br></td>
-			</tr>
-
+			</tr>	
+			</table>
+			
+			<table width="60%" align="Center" class="table-striped" style="border-spacing: 0; ">
 			{% for c in content %}
 			<tr>
 				{% if forloop.counter|divisibleby:2 %}
-				<td style=" padding:15px; border-bottom: 2px solid #AEADAD; background-color: #EAECEE;">	
+				<td style=" padding:15px; border-bottom: 2px solid #AEADAD; ">	
 				{% else %}
 				<td style=" padding:15px; border-bottom: 2px solid #AEADAD;">	
 				{% endif %}				
