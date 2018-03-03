@@ -13,7 +13,7 @@ import io
 # from django.http import HttpResponse
 # from django.template import loader
 #===============================================================================
-from django.shortcuts import render
+from django.shortcuts import render, _get_queryset
 from django.http.response import HttpResponseRedirect
 from pdfminer.pdfparser import PDFParser, PDFDocument
 from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
@@ -38,8 +38,6 @@ from django.contrib.auth.models import User
 
 
 #importing models 
-#from CourseGuru_App.models import user
-
 from CourseGuru_App.models import questions
 from CourseGuru_App.models import answers
 from CourseGuru_App.models import keywords
@@ -48,14 +46,21 @@ from CourseGuru_App.models import course
 from CourseGuru_App.models import category
 from CourseGuru_App.models import botanswers
 from CourseGuru_App.models import comments
+from CourseGuru_App.models import courseusers
+from CourseGuru_App.models import userratings
 
-from test.test_enum import Answer
 from PyPDF2.generic import PdfObject
 from PyPDF2 import pdf
 from django.template.context_processors import request
 from test.test_decimal import file
 from pickle import INST
 #from sqlalchemy.sql.expression import null
+#from psqlextra.query import ConflictAction
+from CourseGuru_App.luisRun import teachLuis
+from CourseGuru_App.natLang import reformQuery
+from test.test_enum import Answer
+from django.contrib.auth import authenticate, login, logout
+from django.http import HttpResponse
 
 from CourseGuru_App.models import courseusers
 from CourseGuru_App.models import userratings
@@ -124,6 +129,7 @@ def account(request):
             if User.objects.filter(username = username).exists():
                 mismatch = "Username taken"
                 return render(request, 'CourseGuru_App/account.html', {'msmatch': mismatch,'fname': firstname, 'lname': lastname, 'status': stat})
+
             else:
                 #edit possibly drop user ID from the table or allow it to be null 
                 #user.objects.create(firstName = firstname, lastName = lastname, userName = username, password = psword, status = stat)  
@@ -142,6 +148,21 @@ def courses(request):
             if request.POST.get('Logout') == "Logout":
                 logout(request)
                 return HttpResponseRedirect('/')
+            elif 'del' in request.POST:
+                #Deletes the course selected and all questions, answers, and ratings associated with it
+                cid = request.POST.get('del')
+                tempQues = questions.objects.filter(course_id = cid)
+                for x in tempQues:
+                    tempAns = answers.objects.filter(question_id = x.id)
+                    for y in tempAns:
+                        if userratings.objects.filter(answer_id = y.id).exists():
+                            userratings.objects.filter(answer_id = y.id).delete()
+                    if answers.objects.filter(question_id = x.id).exists():
+                        answers.objects.filter(question_id = x.id).delete()
+                if questions.objects.filter(course_id = cid).exists():
+                    questions.objects.filter(course_id = cid).delete()
+                if course.objects.filter(id = cid).exists():
+                    course.objects.filter(id = cid).delete()
         curUser = request.user
         if curUser.status == "Teacher":
             courseList = course.objects.filter(user_id = curUser.id)
@@ -155,7 +176,6 @@ def genDate():
     curDate = datetime.datetime.now().strftime("%m-%d-%Y %I:%M %p")
 
     return (curDate)
-
 def roster(request):
     if request.user.is_authenticated:
         cid = request.GET.get('cid', '')
@@ -243,7 +263,17 @@ def question(request):
             if request.POST.get('Logout') == "Logout":
                 logout(request)
                 return HttpResponseRedirect('/')
-            if request.POST.get('query'):
+            elif 'del' in request.POST:
+                qid = request.POST.get('del')
+                tempAns = answers.objects.filter(question_id = qid)
+                for x in tempAns:
+                    if userratings.objects.filter(answer_id = x.id).exists():
+                        userratings.objects.filter(answer_id = x.id).delete()
+                if answers.objects.filter(question_id = qid).exists():
+                    answers.objects.filter(question_id = qid).delete()
+                if questions.objects.filter(id = qid).exists():
+                    questions.objects.filter(id = qid).delete()
+        if request.POST.get('query'):
                 query = request.POST.get('query')
                 if query: 
                     qData = qData.filter(question__icontains=query)
@@ -270,11 +300,14 @@ def publish(request):
             if request.POST.get('Logout') == "Logout":
                 logout(request)
                 return HttpResponseRedirect('/')
-            
             ques = request.POST.get('NQ')
             comm = request.POST.get('NQcom')
             questionDate = genDate()
             user = request.user
+            
+            newQ = questions.objects.create(question = ques, course_id = cid, user_id = user.id, date = questionDate, comment = comm)
+            botAns = cbAnswer(ques)
+            answerDate = genDate()
             #Simple solution MUST BE CHANGED!!!!!
             syllabus="Syllabus"
             other="Other"
@@ -291,10 +324,10 @@ def publish(request):
                 questions.objects.create(question = ques, course_id = cid, user_id = user.id, date = questionDate, comment = comm, category=syllabus)
             else:
                 questions.objects.create(question = ques, course_id = cid, user_id = user.id, date = questionDate, comment = comm, category=other)
-            cbAnswer(ques)
-            
+            if botAns is not None:
+                answers.objects.create(answer = botAns, user_id = 38, question_id = newQ.id, date = answerDate)
             #teachLuis(ques, "Name")
-            return HttpResponseRedirect('/question/?id=%s' % cid) 
+            return HttpResponseRedirect('/answer/?id=%s&cid=%s' % (newQ.id, cid)) 
         return render(request, 'CourseGuru_App/publish.html', {'courseID': cid})
     else:
         return HttpResponseRedirect('/')
@@ -304,6 +337,7 @@ def publishAnswer(request):
         qid = request.GET.get('id', '')
         cid = request.GET.get('cid', '')
         qData = questions.objects.get(id = qid)
+
         if request.method == "POST":
             if request.POST.get('Logout') == "Logout":
                 logout(request)
@@ -345,6 +379,7 @@ def answer(request):
         ansCt = aData.count()
         qData = questions.objects.get(id = qid)
         cData = comments.objects.filter(question_id = qid)
+
         if request.method == "POST":
             if request.POST.get('Logout') == "Logout":
                 logout(request)
@@ -364,6 +399,24 @@ def answer(request):
                 return HttpResponseRedirect('/answer/?id=%s&cid=%s' % (qid, cid))
             
 #            return HttpResponseRedirect('/answer/?id=%s&cid=%s' % (qid, cid))        
+            elif 'delAns' in request.POST:
+                aid = request.POST.get('delAns')
+                if userratings.objects.filter(answer_id = aid).exists():
+                    userratings.objects.filter(answer_id = aid).delete()
+                if answers.objects.filter(id = aid).exists():
+                    answers.objects.filter(id = aid).delete()
+            
+            elif 'delQues' in request.POST:
+                tempAns = answers.objects.filter(question_id = qid)
+                for x in tempAns:
+                    if userratings.objects.filter(answer_id = x.id).exists():
+                        userratings.objects.filter(answer_id = x.id).delete()
+                if answers.objects.filter(question_id = qid).exists():
+                    answers.objects.filter(question_id = qid).delete()
+                if questions.objects.filter(id = qid).exists():
+                    questions.objects.filter(id = qid).delete()
+                return HttpResponseRedirect('/question/?id=%s' % cid)   
+            return HttpResponseRedirect('/answer/?id=%s&cid=%s' % (qid, cid)) 
         return render(request, 'CourseGuru_App/answer.html', {'answers': aData, 'numAnswers': ansCt, 'Title': qData, 'comments': cData, 'courseID': cid})
     else:
         return HttpResponseRedirect('/')
@@ -393,10 +446,12 @@ def getIntentAns(luisIntent, luisEntities):
      
     for m in filtAns:
         Match = 0
-        ansLen = len(m.answer)
+        #testing, change entities name to something else later
+        ansLen = len(m.entities)
         for ent in entitiesList:
             print(ent)
-            if ent in m.answer:
+            #testing, change entities name to something else later
+            if ent in m.entities:
                 Match += 1
         Accuracy = (Match/ansLen)
         if Accuracy>count:
@@ -497,8 +552,7 @@ def pullInfo(file):
         intent.save()
         i+=1
     return(pdfWords)
-
-def chatbot(request):
+def chatbot(request):
     return render(request, 'CourseGuru_App/botchat.html',)
 
 def cbAnswer(nq):
@@ -509,6 +563,8 @@ def cbAnswer(nq):
     #Grabs intent of question
     luisIntent = luisStr['topScoringIntent']['intent']
     #Grabs entities
+    if luisIntent == 'Greetings':
+        return('Hello, how can I help you?')
     if not luisStr['entities']:
         return
     luisEntities = ""
@@ -524,13 +580,22 @@ def cbAnswer(nq):
         z += 1
     #If intent receives a lower score than 75% or there is no intent, the question does not get answered
     if luisScore < 0.75 or luisIntent == 'None':
-        return    qid = questions.objects.last()
+        return
+    #---catID = category.objects.get(intent=luisIntent)
+    #Sets cbAns to the first answer it can find matching that category (This needs to be improved)
+    #---cbAns = botanswers.objects.filter(category_id = catID.id).first()
+    #ID of the latest question created
+    #qid = questions.objects.last()
     
     entAnswer = getIntentAns(luisIntent, luisEntities)
     if entAnswer == "":
         return
-    
-    answerDate = genDate()
-    answers.objects.create(answer = entAnswer, user_id = 38, question_id = qid.id, date = answerDate)
-#    return(intent)
+    botAns = reformQuery(nq) + entAnswer
+    return(botAns)
 
+
+def chatAnswer(request):
+    question = request.GET.get('question')
+    botAns = cbAnswer(question)
+    return HttpResponse(botAns)
+    

@@ -4,6 +4,12 @@
 <html>
 	<head>
 		<title> Amesite Chat Responder </title>		
+		<link rel="stylesheet" href="{% static 'css/index.css' %}">
+		<meta name="viewport" content="width=device-width" />
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+		<script src="https://code.jquery.com/ui/1.12.0/jquery-ui.js" integrity="sha256-0YPKAwZP7Mp3ALMRVB2i8GXeEndvCq3eSl/WsAl1Ryk=" crossorigin="anonymous"></script>
+		<script defer src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"></script>
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 	</head>
 	<body>    
 		<header width="40%" align="center" height="50px" style="line-height: 56px; text-align: center; font-size: 30px; color: #444; font-family: century gothic; font-weight: normal;">
@@ -25,16 +31,15 @@
 					<form method="POST" action="" style="padding: 10px;">
 						<h3 style="font-size: 16px; color: red; font-family: century gothic;">{{credentialmismatch}}</h3>
 						<h3 style="font-size: 16px; color: green; font-family: century gothic;">{{newAct}}</h3>
-						<label style="font-size: 16px; color: grey; font-family: century gothic;">Username: </label><br>
+						<label for="usr" style="font-size: 16px; color: grey; font-family: century gothic;">Username: </label><br>
 						{% csrf_token %}
-
-						<input id="username" type="text" required="required" name="username" maxlength="20" style="width: 100%;"></input>
-						<br><br>
+						<input id="usr" class="form-control" type="text" required="required" name="username" maxlength="20" style="width: 100%;"></input>
+						<br>
 						<label style="font-size: 16px; color: grey; font-family: century gothic;">Password: </label><br>
 						{% csrf_token %}
-						<input id="password" type="password" required="required" name="password" maxlength="20" style=" width: 100%;"></input><br>						
+						<input id="password" class="form-control" type="password" required="required" name="password" maxlength="20" style=" width: 100%;"></input><br>						
 						<br>
-						<input type="submit" name="submit" value="Login" style="cursor: pointer; font-size: 16px; color: #444; background-color: #cecece; font-family: century gothic; box-shadow: none; border: 0; padding: 5px 10px;">
+						<input type="submit" name="submit" class="btn basic-btn" id="login-btn" value="Login">
 						<br><br><br>
 						<a href="/account/" style="cursor: pointer; font-size: 16px; font-family: century gothic; color: grey; text-decoration: none;">Create an account</a>
 						<br>
