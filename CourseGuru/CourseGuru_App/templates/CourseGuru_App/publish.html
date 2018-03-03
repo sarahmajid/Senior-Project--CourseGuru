@@ -1,0 +1,95 @@
+<!DOCTYPE HTML>
+{% load staticfiles %}
+<html>
+	<head>
+		<title> Amesite Chat Responder </title>
+		<link rel="stylesheet" href="{% static 'css/questions.css' %}">
+		<link rel="stylesheet" href="{% static 'css/index.css' %}">
+		<meta name="viewport" content="width=device-width" />
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+		<script src="https://code.jquery.com/ui/1.12.0/jquery-ui.js" integrity="sha256-0YPKAwZP7Mp3ALMRVB2i8GXeEndvCq3eSl/WsAl1Ryk=" crossorigin="anonymous"></script>
+		<script defer src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"></script>
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	</head>
+	<body>    
+		<header width="60%" align="center" height="50px" style="line-height: 56px; text-align: center; font-size: 30px; color: #444; font-family: century gothic; font-weight: normal;">
+			Amesite Chat Responder	 
+		</header>
+		<br>
+		
+		<div id="mySidenav" class="sidenav">
+			<div style="padding: 15px;  border-bottom: 3px solid #1b2e4b; background-color: #223A5E; ">
+				<h1>
+					Amesite Chat Responder
+				</h1>
+			</div>
+			<ul>
+				<li>
+					<a class="side-panel-button" href="/question/?id={{courseID}}"><i id="arrow-left"></i>Back to Questions</a> 
+				</li>
+				<li>
+					<a class="side-panel-button" href="/roster/?cid={{courseID}}">Class Roster</a>
+				</li>
+			</ul>
+			
+			<div class="LiveChat">	
+				<h4 class="LiveChat-head">Amesite Chatbot</h4>	
+				<div id="CWindow">
+				
+				</div>
+				<div id="InpArea">	
+					<input type="text" class="form-control Form" id="inp" name="cb" maxlength="180">
+				</div>
+			</div>
+		</div>
+		
+		<table class="head-table">
+			<tr>
+				<td>
+					<div class="dropdown">
+						<button onclick="profileFunc()" class="dropbtn">Hi {{user.get_short_name}}! <i id="arrow-down"></i></button>
+						  <div id="profileDropdown" class="profile-content">
+						    <form method="POST" action=""> 
+								{% csrf_token %}
+								<button class="head-btn" type="submit" name="Logout" value="Logout" style=" ">Logout</button>
+							</form>
+						  </div>
+					</div>
+					<br><br><br><br><br>
+				</td>
+			</tr>	
+			<tr>
+				<td style="padding:5px; font-size: 26px; color: #444; font-family: century gothic;">
+					Publish a question
+				</td>
+			</tr>
+			<tr>
+				<td height="3px" style="background-color: #AEADAD;"></td>
+			</tr>	
+		</table>
+		
+		<table width="70%" align="Center" style="border-spacing: 0;  float:left; margin-left: 20%;">
+			<tr>
+				<td style="padding: 10px;">
+					<form method="POST" action="" style="">
+						<br>
+						<label style="font-size: 16px; color: grey; font-family: century gothic;">Title: </label><br>
+						{% csrf_token %}
+						<input type="text" name="NQ" class="form-control"  rows="4" required="required" maxlength="180" style="resize: none; width: 50%;"></input>
+						<br><br>
+						<label style="font-size: 16px; color: grey; font-family: century gothic;">Comment: </label><br>
+						{% csrf_token %}
+						<textarea type="text" name="NQcom" class="form-control"  rows="4" required="required" maxlength="180" style="resize: none; width: 50%;"></textarea>
+						<br><br>
+						<button type="submit" name="submit" class="btn basic-btn" id="login-btn" value="Publish" >Publish</button>			
+					</form>
+					<br>
+				</td>
+			</tr>
+
+		</table>
+		
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+		<script src="{% static 'js/style.js' %}"></script>
+	</body>
+</html>

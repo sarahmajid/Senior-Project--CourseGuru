@@ -1,0 +1,121 @@
+/* The Header */
+.head-table {
+	width: 70%;
+	border-spacing: 0; 
+	float:left;
+	margin-left: 20%;
+}
+
+.precourse-table {
+	width: 60%;
+	border-spacing: 0; 
+	float:left;
+	margin-left: 20%;
+}
+
+#back-btn {
+	font-size: 18px;
+	margin: -10px;
+	padding: 0;
+}
+
+ .head-right {
+ 	float: right;  
+ 	font-family: century gothic; 
+ 	font-size: 18px; 
+ 	color: #444;
+ }
+ 
+ .head-btn {
+ 	text-decoration: none;
+ 	cursor: pointer; 
+ 	font-size: 16px; 
+ 	font-family: century gothic; 
+ 	color: #444;
+ 	background-color: transparent;
+ 	box-shadow: none; 
+ 	border: 0;
+ 	display: block;
+ 	width: 100%;
+ 	text-align: left;
+ 	padding: 5px;
+ 	margin-top: 10px;
+ 	font-weight: bold;
+ }
+ 
+ .head-btn:hover {
+ 	background-color: #EAECEE;
+ }
+
+
+
+/* Page content */
+body {
+ 	padding: 0;
+ 	height: 100%;
+ }
+ 
+ .question-hyperlink {
+	 color: #07C;
+	 cursor: pointer;
+	 font-size: large; 
+	 font-family: century gothic; 
+	 text-decoration: none;
+ }
+ 
+ .question-hyperlink:visited {
+	 color: #005999;
+ }
+ 
+ .question-hyperlink:hover {
+	 text-decoration: none;
+	 color: red;
+ }
+ 
+ .course-hyperlink {
+ 	color: #07C;
+ }
+ 
+.btn-danger {
+	float: right;
+	font-weight: bold;
+	color: white;
+}
+
+
+#ThreadDel {
+	margin-right: 10px;
+	border-radius: 0; 
+	font-size: 18px;
+	border: 0;
+	color: #444;
+}
+
+.select-short {
+	max-width: 25%;
+}
+
+
+
+/* PAGINATOR */
+#page-menu {
+	text-align: center;
+	color: grey;
+	font-family: century gothic;
+	font-size: 16px;
+	clear: both;
+}
+
+ul#horiz-list {
+	display: inline-block;
+	text-align: left;
+}
+ul#horiz-list li{
+	display: inline;
+}
+.nonactive{
+	color: #07C;
+}
+.nonactive:visited{
+	color: #07C;
+}

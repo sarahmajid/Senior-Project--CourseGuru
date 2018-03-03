@@ -1,0 +1,110 @@
+<!DOCTYPE HTML>
+{% load staticfiles %}
+<html>
+	<head>
+		<title> Amesite Chat Responder </title>
+		<link rel="stylesheet" href="{% static 'css/questions.css' %}">
+		<link rel="stylesheet" href="{% static 'css/index.css' %}">
+		<meta name="viewport" content="width=device-width" />
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+		<script src="https://code.jquery.com/ui/1.12.0/jquery-ui.js" integrity="sha256-0YPKAwZP7Mp3ALMRVB2i8GXeEndvCq3eSl/WsAl1Ryk=" crossorigin="anonymous"></script>
+		<script defer src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"></script>
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	</head>
+	<body>    
+		<header width="60%" align="center" height="50px" style="line-height: 56px; text-align: center; font-size: 30px; color: #444; font-family: century gothic; font-weight: normal;">
+			Amesite Chat Responder	
+		</header>
+		<br>
+		
+		<table class="precourse-table">
+			<tr>
+				<td>
+					<div class="dropdown">
+						<button onclick="profileFunc()" class="dropbtn">Hi {{user.get_short_name}}! <i id="arrow-down"></i></button>
+						  <div id="profileDropdown" class="profile-content">
+						    <form method="POST" action=""> 
+								{% csrf_token %}
+								<button class="head-btn" type="submit" name="Logout" value="Logout" style=" ">Logout</button>
+							</form>
+						  </div>
+					</div>
+					<br><br><br><br><br>
+				</td>
+			</tr>	
+			<tr>
+				<td style="padding:5px; font-size: 26px; color: #444; font-family: century gothic;">
+					Course Selection
+					{% if user.status == "Teacher" %}
+					<a href="/publishCourse/"  class="btn basic-btn" id="publish-btn" style="float: right;">Create a New Course</a>
+					{% endif %}
+				</td>
+			</tr>
+			<tr>
+				<td height="3px" style="background-color: #AEADAD;"></td>
+			</tr>	
+		</table>
+				
+		
+		<table width="60%" align="Center" style="border-spacing: 0;">
+			{% for c in courses %}
+			<tr>
+				<td align="left" style="padding:50px 10px 10px 10px; border-bottom: 1px solid #AEADAD; ">	
+					{% if user.status == "Teacher" %}
+					<a href="/question/?id={{c.id}}" style="cursor: pointer; font-size: 24px; font-family: century gothic; text-decoration: none;">{{c.courseName}}</a>	
+					<form method="POST" action="" margin="0" style="display: inline;">
+						{% csrf_token %}
+						<button type="submit" class="btn btn-danger" name="del" value="{{c.id}}" >Delete</button>
+					</form>
+					{% else %}			
+					<a href="/question/?id={{c.course.id}}" style="cursor: pointer; font-size: 24px; font-family: century gothic; text-decoration: none;">{{c.course.courseName}}</a>	
+					{% endif %}
+					<th>
+				</td>	
+				<td width="50%"></td>
+			</tr>
+			{% endfor %}
+		</table>
+		<br><br><br>
+		<style>
+			#page-menu {
+				text-align: center;
+			}
+			
+			ul#horiz-list {
+				display: inline-block;
+				text-align: left;
+			}
+			ul#horiz-list li{
+				display: inline;
+			}
+		</style>
+		
+		{% if content.has_other_pages %}
+			<div id="page-menu">
+				<ul id="horiz-list" class="pagination">
+					{% if content.has_previous %}
+						<li><a href="?page={{ content.previous_page_number }}">&laquo;</a></li>
+					{% else %}
+						<li class="disabled"><span>&laquo;</span></li>
+					{% endif %}
+					{% for i in content.paginator.page_range %}
+						{% if content.number == i %}
+							<li class="active"><span>{{ i }} <span class="sr-only"></span></span></li>
+						{% else %}
+							<li><a href="?page={{ i }}">{{ i }}</a></li>
+						{% endif %}			
+					{% endfor %}
+					{% if content.has_next %}
+						<li><a href="?page={{ content.next_page_number }}">&raquo;</a></li>
+					{% else %}
+						<li class="disabled"><span>&raquo;</span></li>
+					{% endif %}
+				</ul>
+			</div>
+		{% endif %}
+		
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+		<script src="{% static 'js/style.js' %}"></script>
+	</body>
+</html>
