@@ -113,17 +113,17 @@ def account(request):
         passRegCheck = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)"
         if (psword != cpsword):
             mismatch = 'Password Mismatch'
-            return render(request, 'CourseGuru_App/account.html', {'msmatch': mismatch})
+            return render(request, 'CourseGuru_App/account.html', {'msmatch': mismatch, 'fname': firstname, 'lname': lastname, 'status': stat})
         else:
             if (len(psword)<8): 
                 mismatch = 'Your password must be at least 8 characters long.'
-                return render(request, 'CourseGuru_App/account.html', {'msmatch': mismatch})
+                return render(request, 'CourseGuru_App/account.html', {'msmatch': mismatch,'fname': firstname, 'lname': lastname, 'status': stat})
             if ((re.search(passRegCheck, psword))==None):
                 mismatch = "Your password must contain one uppercase character, one lowercase character, and at least one number!"
-                return render(request, 'CourseGuru_App/account.html', {'msmatch': mismatch})
+                return render(request, 'CourseGuru_App/account.html', {'msmatch': mismatch,'fname': firstname, 'lname': lastname, 'status': stat})
             if User.objects.filter(username = username).exists():
                 mismatch = "Username taken"
-                return render(request, 'CourseGuru_App/account.html', {'msmatch': mismatch})
+                return render(request, 'CourseGuru_App/account.html', {'msmatch': mismatch,'fname': firstname, 'lname': lastname, 'status': stat})
             else:
                 #edit possibly drop user ID from the table or allow it to be null 
                 #user.objects.create(firstName = firstname, lastName = lastname, userName = username, password = psword, status = stat)  
