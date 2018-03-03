@@ -110,11 +110,17 @@ def account(request):
         psword = request.POST.get('password')
         cpsword = request.POST.get('cpassword')
         stat = request.POST.get('status')       
-        
+        passRegCheck = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)"
         if (psword != cpsword):
             mismatch = 'Password Mismatch'
             return render(request, 'CourseGuru_App/account.html', {'msmatch': mismatch})
         else:
+            if (len(psword)<8): 
+                mismatch = 'Your password must be at least 8 characters long.'
+                return render(request, 'CourseGuru_App/account.html', {'msmatch': mismatch})
+            if ((re.search(passRegCheck, psword))==None):
+                mismatch = "Your password must contain one uppercase character, one lowercase character, and at least one number!"
+                return render(request, 'CourseGuru_App/account.html', {'msmatch': mismatch})
             if User.objects.filter(username = username).exists():
                 mismatch = "Username taken"
                 return render(request, 'CourseGuru_App/account.html', {'msmatch': mismatch})
