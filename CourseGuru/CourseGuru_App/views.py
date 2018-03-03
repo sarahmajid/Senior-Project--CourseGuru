@@ -41,6 +41,7 @@ from CourseGuru_App.natLang import reformQuery
 
 from test.test_enum import Answer
 from django.contrib.auth import authenticate, login, logout
+from django.http import HttpResponse
 
 #Function to populate Main page
 def index(request):
@@ -214,10 +215,13 @@ def publish(request):
             comm = request.POST.get('NQcom')
             questionDate = genDate()
             user = request.user
-            questions.objects.create(question = ques, course_id = cid, user_id = user.id, date = questionDate, comment = comm)
-            cbAnswer(ques)
+            newQ = questions.objects.create(question = ques, course_id = cid, user_id = user.id, date = questionDate, comment = comm)
+            botAns = cbAnswer(ques)
+            answerDate = genDate()
+            if botAns is not None:
+                answers.objects.create(answer = botAns, user_id = 38, question_id = newQ.id, date = answerDate)
             #teachLuis(ques, "Name")
-            return HttpResponseRedirect('/question/?id=%s' % cid) 
+            return HttpResponseRedirect('/answer/?id=%s&cid=%s' % (newQ.id, cid)) 
         return render(request, 'CourseGuru_App/publish.html', {'courseID': cid})
     else:
         return HttpResponseRedirect('/')
@@ -285,6 +289,17 @@ def answer(request):
                     userratings.objects.filter(answer_id = aid).delete()
                 if answers.objects.filter(id = aid).exists():
                     answers.objects.filter(id = aid).delete()
+            
+            elif 'delQues' in request.POST:
+                tempAns = answers.objects.filter(question_id = qid)
+                for x in tempAns:
+                    if userratings.objects.filter(answer_id = x.id).exists():
+                        userratings.objects.filter(answer_id = x.id).delete()
+                if answers.objects.filter(question_id = qid).exists():
+                    answers.objects.filter(question_id = qid).delete()
+                if questions.objects.filter(id = qid).exists():
+                    questions.objects.filter(id = qid).delete()
+                return HttpResponseRedirect('/question/?id=%s' % cid) 
             
             return HttpResponseRedirect('/answer/?id=%s&cid=%s' % (qid, cid)) 
         aData = answers.objects.filter(question_id = qid).order_by('pk')
@@ -362,6 +377,8 @@ def cbAnswer(nq):
     #Grabs intent of question
     luisIntent = luisStr['topScoringIntent']['intent']
     #Grabs entities
+    if luisIntent == 'Greetings':
+        return('Hello')
     if not luisStr['entities']:
         return
     luisEntities = ""
@@ -382,21 +399,20 @@ def cbAnswer(nq):
     #Sets cbAns to the first answer it can find matching that category (This needs to be improved)
     #---cbAns = botanswers.objects.filter(category_id = catID.id).first()
     #ID of the latest question created
-    qid = questions.objects.last()
+    #qid = questions.objects.last()
     
     entAnswer = getIntentAns(luisIntent, luisEntities)
     if entAnswer == "":
         return
-    
     botAns = reformQuery(nq) + entAnswer
-    
-    answerDate = genDate()
-    answers.objects.create(answer = botAns, user_id = 38, question_id = qid.id, date = answerDate)
-#    return(intent)
+    return(botAns)
 
-#    ---Canvas code---
-#    url = (urlopen('https://canvas.wayne.edu/api/v1/courses').read()
-#    response = urlopen('https://canvas.wayne.edu/api/v1/courses')
+
+def chatAnswer(request):
+    question = request.GET.get('question')
+    botAns = cbAnswer(question)
+    return HttpResponse(botAns)
+    
 
 def parse(request):
     #Create empty string for text to be extracted into
