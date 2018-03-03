@@ -378,7 +378,7 @@ def cbAnswer(nq):
     luisIntent = luisStr['topScoringIntent']['intent']
     #Grabs entities
     if luisIntent == 'Greetings':
-        return('Hello')
+        return('Hello, how can I help you?')
     if not luisStr['entities']:
         return
     luisEntities = ""
