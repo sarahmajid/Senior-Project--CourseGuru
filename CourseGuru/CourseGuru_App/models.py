@@ -36,6 +36,7 @@ class questions(models.Model):
     question = models.CharField(max_length=200)
     date = models.CharField(max_length=20)
     comment = models.CharField(max_length=400)
+    category = models.CharField(max_length=20)
  
 class answers(models.Model):   
     #edit variable below

@@ -76,7 +76,7 @@
 					<h3 style="font-size: 16px; color: red; font-family: century gothic;">{{notAdded}}</h3>
 					<br>
 					
-					<table style="width:100%; border: 1px solid black; border-collapse: collapse " >
+					<table style="width:100%; border-collapse: collapse " >
   					<tr>
   					<th style="border: 1px solid black" >Username</th>
     				<th style="border: 1px solid black" >Firstname</th>
@@ -90,6 +90,13 @@
 		    				<td style="border: 1px solid black" >{{c.user.first_name}}</td>
 		    				<td style="border: 1px solid black" >{{c.user.last_name}}</td> 
 		    				<td style="border: 1px solid black" >{{c.user.email}}</td>
+		    				<td style="border: none">
+		    				<form method="POST" action=""> 
+							{% csrf_token %}
+							<input type="hidden" name="delete" value={{c.id}}>
+							<input type="submit" value="DELETE">
+							</form>
+							</td>
 		    				</tr>
 		    			{% endif %}
     				{% endfor %}

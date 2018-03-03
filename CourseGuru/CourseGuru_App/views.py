@@ -173,7 +173,11 @@ def roster(request):
                     credentialmismatch = "Username does not exist"
                     return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'credentialmismatch': credentialmismatch, 'studentList': studentList})
              
-       
+            elif 'delete' in request.POST:
+                user = request.POST.get('delete')
+                courseusers.objects.filter(id = int(user)).delete()                
+                return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'studentList': studentList})
+            
             elif request.method == 'POST' and request.FILES['csvFile']:
                 #decoding the file for reading 
                 csvF = request.FILES['csvFile'].read().decode('utf-8')
@@ -213,7 +217,7 @@ def roster(request):
                             else:
                                 strNotAdded += "and " + n +"."
                                 return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'studentList': studentList, 'notAdded': strNotAdded})
-                
+            
             else:
                 credentialmismatch = "Username does not exist"
                 return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'credentialmismatch': credentialmismatch})
@@ -260,12 +264,29 @@ def publish(request):
             if request.POST.get('Logout') == "Logout":
                 logout(request)
                 return HttpResponseRedirect('/')
+            
             ques = request.POST.get('NQ')
             comm = request.POST.get('NQcom')
             questionDate = genDate()
             user = request.user
-            questions.objects.create(question = ques, course_id = cid, user_id = user.id, date = questionDate, comment = comm)
+            #Simple solution MUST BE CHANGED!!!!!
+            syllabus="Syllabus"
+            other="Other"
+            sylKeyTerms = "syllabus,instructor name,teachers name,grading scale,grade,ta,teaching assistant,student,due date,due,assignment,late"
+            n=sylKeyTerms.split(',')
+            matchCount = 0
+            matchCount=0
+            for z in n:
+                if ques.__contains__(z):
+                    matchCount += 1
+                if comm.__contains__(z):
+                    matchCount+=1
+            if matchCount > 0:
+                questions.objects.create(question = ques, course_id = cid, user_id = user.id, date = questionDate, comment = comm, category=syllabus)
+            else:
+                questions.objects.create(question = ques, course_id = cid, user_id = user.id, date = questionDate, comment = comm, category=other)
             cbAnswer(ques)
+            
             #teachLuis(ques, "Name")
             return HttpResponseRedirect('/question/?id=%s' % cid) 
         return render(request, 'CourseGuru_App/publish.html', {'courseID': cid})
