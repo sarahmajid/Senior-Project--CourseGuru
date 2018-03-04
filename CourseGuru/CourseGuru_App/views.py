@@ -3,39 +3,22 @@ import tempfile
 import json
 import requests
 import datetime
-import PyPDF2 
-import nltk 
+import nltk
 import csv 
 import io
-#===============================================================================
-# from sqlalchemy.sql.expression import null, except_
-# from urllib.request import urlopen
-# from django.http import HttpResponse
-# from django.template import loader
-#===============================================================================
-from django.shortcuts import render, _get_queryset
-from django.http.response import HttpResponseRedirect
-from pdfminer.pdfparser import PDFParser, PDFDocument
-from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
-from pdfminer.layout import LAParams, LTTextBox, LTTextLine, LTTextBoxHorizontal
-from pdfminer.converter import PDFPageAggregator
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from nltk.tokenize import sent_tokenize, word_tokenize
-from nltk.corpus import stopwords
 
-#importing models 
-from CourseGuru_App.models import User
+from nltk.tokenize import word_tokenize, sent_tokenize
+from nltk.corpus import stopwords
+from nltk.stem import WordNetLemmatizer
+from nltk.tokenize.moses import MosesDetokenizer
+
 from django.shortcuts import render, _get_queryset
 from django.http.response import HttpResponseRedirect
-#===============================================================================
-# from pdfminer.pdfparser import PDFParser, PDFDocument
-# from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
-# from pdfminer.layout import LAParams, LTTextBox, LTTextLine
-# from pdfminer.converter import PDFPageAggregator
-#===============================================================================
+from django.contrib.auth import authenticate, login, logout
+from django.http import HttpResponse
+from django.template.context_processors import request
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib.auth.models import User
-
 
 #importing models 
 from CourseGuru_App.models import questions
@@ -48,28 +31,19 @@ from CourseGuru_App.models import botanswers
 from CourseGuru_App.models import comments
 from CourseGuru_App.models import courseusers
 from CourseGuru_App.models import userratings
-
-from PyPDF2.generic import PdfObject
-from PyPDF2 import pdf
-from django.template.context_processors import request
-from test.test_decimal import file
-from pickle import INST
-#from sqlalchemy.sql.expression import null
-#from psqlextra.query import ConflictAction
 from CourseGuru_App.luisRun import teachLuis
 from CourseGuru_App.natLang import reformQuery
-from test.test_enum import Answer
-from django.contrib.auth import authenticate, login, logout
-from django.http import HttpResponse
 
-from CourseGuru_App.models import courseusers
-from CourseGuru_App.models import userratings
-from CourseGuru_App.luisRun import teachLuis
-from test.test_enum import Answer
-from django.contrib.auth import authenticate, login, logout
+from pdfminer.pdfparser import PDFParser, PDFDocument
+from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
+from pdfminer.layout import LAParams, LTTextBox, LTTextLine, LTTextBoxHorizontal
+from pdfminer.converter import PDFPageAggregator
 from pdfminer.pslexer import delimiter
+
+from test.test_decimal import file
+from pickle import INST
+from test.test_enum import Answer
 from builtins import str
-from django.template.defaultfilters import last
 from _ast import Str
 from string import ascii_lowercase
 
@@ -179,6 +153,7 @@ def genDate():
 def roster(request):
     if request.user.is_authenticated:
         cid = request.GET.get('cid', '')
+        cName = course.objects.get(id = cid)
         studentList = courseusers.objects.filter(course_id=cid)
         if request.method == "POST":
             if request.POST.get('Logout') == "Logout":
@@ -203,7 +178,16 @@ def roster(request):
                 user = request.POST.get('delete')
                 courseusers.objects.filter(id = int(user)).delete()                
                 return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'studentList': studentList})
-            
+            elif 'dlCSV' in request.POST:
+                response = HttpResponse(content_type='text/csv')
+                response['Content-Disposition'] = 'attachment; filename=CSVTemplate.csv'
+                writer = csv.writer(response)
+                writer.writerow(["Username"])
+                writer.writerow(["UserName1"])
+                writer.writerow(["UserName2"])
+                writer.writerow(["UserName3"])
+                writer.writerow(["..."])
+                return response
             elif request.method == 'POST' and request.FILES['csvFile']:
                 #decoding the file for reading 
                 csvF = request.FILES['csvFile'].read().decode('utf-8')
@@ -246,8 +230,8 @@ def roster(request):
             
             else:
                 credentialmismatch = "Username does not exist"
-                return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'credentialmismatch': credentialmismatch})
-        return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'studentList': studentList})
+                return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'credentialmismatch': credentialmismatch, 'courseName': cName})
+        return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'studentList': studentList, 'courseName': cName})
     else:
         return HttpResponseRedirect('/')
 
@@ -273,7 +257,7 @@ def question(request):
                     answers.objects.filter(question_id = qid).delete()
                 if questions.objects.filter(id = qid).exists():
                     questions.objects.filter(id = qid).delete()
-        if request.POST.get('query'):
+            if request.POST.get('query'):
                 query = request.POST.get('query')
                 if query: 
                     qData = qData.filter(question__icontains=query)
@@ -303,11 +287,8 @@ def publish(request):
             ques = request.POST.get('NQ')
             comm = request.POST.get('NQcom')
             questionDate = genDate()
-            user = request.user
+            user = request.user    
             
-            newQ = questions.objects.create(question = ques, course_id = cid, user_id = user.id, date = questionDate, comment = comm)
-            botAns = cbAnswer(ques)
-            answerDate = genDate()
             #Simple solution MUST BE CHANGED!!!!!
             syllabus="Syllabus"
             other="Other"
@@ -321,9 +302,13 @@ def publish(request):
                 if comm.__contains__(z):
                     matchCount+=1
             if matchCount > 0:
-                questions.objects.create(question = ques, course_id = cid, user_id = user.id, date = questionDate, comment = comm, category=syllabus)
+                newQ = questions.objects.create(question = ques, course_id = cid, user_id = user.id, date = questionDate, comment = comm, category=syllabus)
             else:
-                questions.objects.create(question = ques, course_id = cid, user_id = user.id, date = questionDate, comment = comm, category=other)
+                newQ = questions.objects.create(question = ques, course_id = cid, user_id = user.id, date = questionDate, comment = comm, category=other)
+                    
+            botAns = cbAnswer(ques)
+            answerDate = genDate()
+            
             if botAns is not None:
                 answers.objects.create(answer = botAns, user_id = 38, question_id = newQ.id, date = answerDate)
             #teachLuis(ques, "Name")
@@ -384,10 +369,6 @@ def answer(request):
             if request.POST.get('Logout') == "Logout":
                 logout(request)
                 return HttpResponseRedirect('/')
-            if request.POST.get('query'):
-                query = request.POST.get('query')
-                if query: 
-                    aData = aData.filter(answer__icontains=query)
             if 'voteUp' in request.POST: 
                 answerId = request.POST.get('voteUp')
                 voting(1, answerId, user)
@@ -397,7 +378,11 @@ def answer(request):
                 answerId = request.POST.get('voteDown')
                 voting(0, answerId, user)
                 return HttpResponseRedirect('/answer/?id=%s&cid=%s' % (qid, cid))
-            
+            elif 'query' in request.POST:
+                query = request.POST.get('query')
+                if query: 
+                    aData = aData.filter(answer__icontains=query)
+                return render(request, 'CourseGuru_App/answer.html', {'answers': aData, 'numAnswers': ansCt, 'Title': qData, 'comments': cData, 'courseID': cid})
 #            return HttpResponseRedirect('/answer/?id=%s&cid=%s' % (qid, cid))        
             elif 'delAns' in request.POST:
                 aid = request.POST.get('delAns')
@@ -405,7 +390,7 @@ def answer(request):
                     userratings.objects.filter(answer_id = aid).delete()
                 if answers.objects.filter(id = aid).exists():
                     answers.objects.filter(id = aid).delete()
-            
+
             elif 'delQues' in request.POST:
                 tempAns = answers.objects.filter(question_id = qid)
                 for x in tempAns:
@@ -416,6 +401,7 @@ def answer(request):
                 if questions.objects.filter(id = qid).exists():
                     questions.objects.filter(id = qid).delete()
                 return HttpResponseRedirect('/question/?id=%s' % cid)   
+
             return HttpResponseRedirect('/answer/?id=%s&cid=%s' % (qid, cid)) 
         return render(request, 'CourseGuru_App/answer.html', {'answers': aData, 'numAnswers': ansCt, 'Title': qData, 'comments': cData, 'courseID': cid})
     else:
@@ -474,7 +460,7 @@ def getIntentAns(luisIntent, luisEntities):
         #=======================================================================
     #if answr == "":
         #answr = (botanswers.objects.filter(category_id = catgry.id).first()).answer
-    return (answr)    
+    return (answr)     
 
 def pdfToText(request):
 #    Create empty string for text to be extracted into
@@ -528,7 +514,9 @@ def pullInfo(file):
     #parallel arrays to store the keywords found and their positions 
     keyPositions = []
     keyWordPositions = []
+
     pdfWords = word_tokenize(file, 'english')
+
     
     for n in keyWordObj:
         keyWords.append(n.intent)    

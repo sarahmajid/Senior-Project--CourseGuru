@@ -42,12 +42,12 @@
 						<label style="font-size: 16px; color: grey; font-family: century gothic;">Last Name: </label><br>
 						{% csrf_token %}
 						<input type="text" name="lastname" class="form-control" value="{{lname}}" required="required" maxlength="50" style="width: 100%;"></input><br>
-						<label style="font-size: 16px; color: grey; font-family: century gothic;">Status:{{status}} </label><br>
+						<label style="font-size: 16px; color: grey; font-family: century gothic;">Status: </label><br>
 						{% csrf_token %}
 						<select name="status" class="form-control select-short" required="required" >
 							<option>{{status}}</option>
 							<option value="Student">Student</option>
-							<option value="Teaching Assistant">Teaching Assistant</option>
+							<option value="TA">Teaching Assistant</option>
 							<option value="Teacher">Instructor</option>
 						</select><br><br>
 						<hr>

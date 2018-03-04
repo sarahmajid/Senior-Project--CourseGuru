@@ -3,107 +3,145 @@
 <html>
 	<head>
 		<title> Amesite Chat Responder </title>
-		<style>
-			.btn {
-			 	text-decoration: none;
-			 	cursor: pointer; 
-			 	font-size: 18px; 
-			 	font-family: century gothic; 
-			 	color: #444;
-			 }
-			 
-			 .btn:hover {
-			 	text-decoration: underline;
-			 }
-		</style>
+		<link rel="stylesheet" href="{% static 'css/questions.css' %}">
+		<link rel="stylesheet" href="{% static 'css/index.css' %}">
+		<meta name="viewport" content="width=device-width" />
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+		<script src="https://code.jquery.com/ui/1.12.0/jquery-ui.js" integrity="sha256-0YPKAwZP7Mp3ALMRVB2i8GXeEndvCq3eSl/WsAl1Ryk=" crossorigin="anonymous"></script>
+		<script defer src="https://use.fontawesome.com/releases/v5.0.6/js/all.js"></script>
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 	</head>
 	<body>    
-		<header width="60%" align="center" height="50px" style="line-height: 56px; text-align: center; font-size: 30px; color: #444; font-family: century gothic; font-weight: normal;">
-			Amesite Chat Responder	
+		<header width="80%" align="center" height="50px" style="margin-left: 7%; line-height: 56px; text-align: center; font-size: 30px; color: #444; font-family: century gothic; font-weight: normal;">
+			Course Roster	
 		</header>
 		<br>
-		<table width="60%" align="Center">
+		<div class="sidenav">
+			<div style="padding: 15px;  border-bottom: 3px solid #1b2e4b; background-color: #223A5E; ">
+				<h1>
+					Amesite Chat Responder
+				</h1>
+			</div>
+			<ul>
+				<li>
+					<a class="side-panel-button" href="/question/?id={{courseID}}"><i id="arrow-left"></i>Back to Questions</a> 
+				</li>
+				<li>
+					<a class="side-panel-button" href="/roster/?cid={{courseID}}">Class Roster</a>
+				</li>
+			</ul>
+			
+			<div class="LiveChat">	
+				<h4 class="LiveChat-head">Amesite Chatbot</h4>	
+				<div id="CWindow">
+				
+				</div>
+				<div id="InpArea">	
+					<input type="text" class="form-control Form" id="inp" name="cb" maxlength="180">
+				</div>
+			</div>
+		</div>
+		
+		<table class="head-table">
 			<tr>
 				<td>
-					<a href="/question/?id={{courseID}}" class="btn">< Back</a> 
-					<div align="right" style="float: right; font-size: 18px; font-family: century gothic; color: #444;">
-						Hi {{user.get_short_name}}!
-						<br>
-						<form method="POST" action=""> 
-							{% csrf_token %}
-							<input type="submit" name="Logout" value="Logout" class="btn" style="font-size: 16px; background-color: transparent; box-shadow: none; border: 0;">
-						</form>
+					<div class="dropdown">
+						<button onclick="profileFunc()" class="dropbtn">Hi {{user.get_short_name}}! <i id="arrow-down"></i></button>
+						  <div id="profileDropdown" class="profile-content">
+						    <form method="POST" action=""> 
+								{% csrf_token %}
+								<button class="head-btn" type="submit" name="Logout" value="Logout" style=" ">Logout</button>
+							</form>
+						  </div>
 					</div>
-					<br><br><br><br>
+					<br><br><br><br><br>
 				</td>
 			</tr>
 			<tr>
-				<td style="padding:5px; font-size: 22px; color: #444; font-family: century gothic;">
-					Roster
+				<td style="padding:5px; font-size: 26px; color: #444; font-family: century gothic;">
+					{{courseName.courseName}}
 				</td>
+				
 			</tr>
 			<tr>
 				<td height="3px" style="background-color: #AEADAD;"></td>
-			</tr>
-			<tr>
-				<td><br></td>
-			</tr>
+			</tr>	
+		</table>
+		
+		<table width="70%" align="Center" style="border-spacing: 0;  float:left; margin-left: 20%; margin-bottom: 100px;">
 			<tr>
 				<td style="padding: 10px;">
 					<form method="POST" action="" style="">
 						<h3 style="font-size: 16px; color: red; font-family: century gothic;">{{credentialmismatch}}</h3>
 						
-						<div style="font-size: 16px; color: grey; font-family: century gothic;"><b>Add a student or teaching assistant to this course</b></div>
+						<div style="font-size: 20px; color: grey; font-family: century gothic;"><b>Add a student or teaching assistant to this course</b></div>
 						<br>
-						<label style="font-size: 16px; color: grey; font-family: century gothic;">Student/TA Username: </label><br>
+						<label style="font-size: 18px; color: grey; font-family: century gothic;">Student/TA Username: </label><br>
 						{% csrf_token %}
-						<input type="text" name="newUser" required="required" maxlength="30" style="width: 50%;"></input>	
+						<input type="text" name="newUser" class="form-control" required="required" maxlength="30" style="width: 50%;"></input>	
 						<br>
+						{% if userAdded %}
 						<h3 style="font-size: 16px; color: green; font-family: century gothic;">{{userAdded}}</h3>
-						<br><br>
-						<input type="submit" name="submit" value="Submit" style="cursor: pointer; font-size: 16px; color: #444; background-color: #cecece; font-family: century gothic; box-shadow: none; border: 0; padding: 5px 10px;">								
+						<br>
+						{% endif %}
+						<button type="submit" name="submit" class="btn basic-btn" id="login-btn" value="Add Single">Add Single</button>								
 					</form>
-					<br>
+					<br><hr><br>
 					<form method="POST" action="" enctype="multipart/form-data">
-						<div style="font-size: 16px; color: grey; font-family: century gothic;"><b>Add multiple students to this course using a CSV file: </b>
+						<div style="font-size: 20px; color: grey; font-family: century gothic;"><b>Add multiple students to this course using a CSV file: </b>
+						<br><br>
+						<div style="font-size: 16px; color: grey; font-family: century gothic;">Download the template: 
+						{% csrf_token %}
+						<button type="submit" name="dlCSV" class="btn btn-warning" value="DOWNLOAD">Download</button>
+						<br><br>
+						</div>
+					</form>
+					<form method="POST" action="" enctype="multipart/form-data">
 						{% csrf_token %}
 						<input type="file" name="csvFile" accept=".csv" required>
-						</div>
-						<input type="submit" name="submit" value="ADD STUDENTS" style="cursor: pointer; font-size: 16px; color: #444; background-color: #cecece; font-family: century gothic; box-shadow: none; border: 0; padding: 5px 10px;">	
+						<br>
+						<button type="submit" name="submit" class="btn basic-btn" id="login-btn" value="Add Multiple" >Add Multiple</button>
 					</form>	
-					<br> 
+
+					
 					
 					<h3 style="font-size: 16px; color: red; font-family: century gothic;">{{notAdded}}</h3>
 					<br>
 					
-					<table style="width:100%; border-collapse: collapse " >
-  					<tr>
-  					<th style="border: 1px solid black" >Username</th>
-    				<th style="border: 1px solid black" >Firstname</th>
-    				<th style="border: 1px solid black" >Lastname</th> 
-    				<th style="border: 1px solid black" >Email</th>
-    				</tr>
-    				{% for c in studentList %}
-    					{%if c.user.status != "Teacher"%}
-		    				<tr>
-		    				<td style="border: 1px solid black" >{{c.user.username}}</td>
-		    				<td style="border: 1px solid black" >{{c.user.first_name}}</td>
-		    				<td style="border: 1px solid black" >{{c.user.last_name}}</td> 
-		    				<td style="border: 1px solid black" >{{c.user.email}}</td>
-		    				<td style="border: none">
-		    				<form method="POST" action=""> 
-							{% csrf_token %}
-							<input type="hidden" name="delete" value={{c.id}}>
-							<input type="submit" value="DELETE">
-							</form>
-							</td>
+					<table class="table" style="width:100%; border-collapse: collapse " >
+	  					<thead>
+		  					<tr>
+			  					<th>Username</th>
+			    				<th>Firstname</th>
+			    				<th>Lastname</th> 
+			    				<th>Email</th>
 		    				</tr>
-		    			{% endif %}
-    				{% endfor %}
+	    				</thead>
+	    				<tbody>
+	    				{% for c in studentList %}
+	    					{%if c.user.status != "Teacher"%}
+			    				<tr>
+			    				<td>{{c.user.username}}</td>
+			    				<td>{{c.user.first_name}}</td>
+			    				<td>{{c.user.last_name}}</td> 
+			    				<td>{{c.user.email}}</td>
+			    				<td>
+				    				<form method="POST" action=""> 
+										{% csrf_token %}
+										<button type="submit" onclick="return confirm('Are you sure you want to remove this user?')" class="btn btn-danger" name="delete" value="{{c.id}}" >Delete</button>
+									</form>
+								</td>
+			    				</tr>
+			    			{% endif %}
+	    				{% endfor %}
+	    				</tbody>
+    				</table>
 				</td>
 			</tr>
 
 		</table>
 		
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+		<script src="{% static 'js/style.js' %}"></script>
 	</body>
 </html>
