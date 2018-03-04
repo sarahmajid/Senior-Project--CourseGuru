@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 
+
 #from email.policy import default
 
 # Create your models here.
@@ -58,17 +59,17 @@ class botanswers(models.Model):
     rating = models.IntegerField(default=0)
     entities = models.CharField(max_length=5000)
     
+    
 class keywords(models.Model):
-    word = models.CharField(max_length=50)
-    common_name = models.CharField(max_length=50)
+    intent = models.CharField(max_length=50)
     
 class courseinfo(models.Model):
-    keyword_common_name = models.CharField(max_length=50)
-    syllabus_data = models.CharField(max_length=50)
-    course_id = models.CharField(max_length=20)
-    
-    
-    
+    fkCourseId = models.ForeignKey(course, on_delete=models.CASCADE)
+    intent = models.CharField(max_length=50)
+    entities = models.CharField(max_length=200)    
+    infoData = models.TextField()
+    courseId = models.CharField(max_length = 15)
+
     
     
     

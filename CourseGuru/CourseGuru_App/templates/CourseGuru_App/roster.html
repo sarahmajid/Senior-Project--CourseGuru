@@ -61,9 +61,45 @@
 						<br>
 						<h3 style="font-size: 16px; color: green; font-family: century gothic;">{{userAdded}}</h3>
 						<br><br>
-						<input type="submit" name="submit" value="Submit" style="cursor: pointer; font-size: 16px; color: #444; background-color: #cecece; font-family: century gothic; box-shadow: none; border: 0; padding: 5px 10px;">				
+						<input type="submit" name="submit" value="Submit" style="cursor: pointer; font-size: 16px; color: #444; background-color: #cecece; font-family: century gothic; box-shadow: none; border: 0; padding: 5px 10px;">								
 					</form>
 					<br>
+					<form method="POST" action="" enctype="multipart/form-data">
+						<div style="font-size: 16px; color: grey; font-family: century gothic;"><b>Add multiple students to this course using a CSV file: </b>
+						{% csrf_token %}
+						<input type="file" name="csvFile" accept=".csv" required>
+						</div>
+						<input type="submit" name="submit" value="ADD STUDENTS" style="cursor: pointer; font-size: 16px; color: #444; background-color: #cecece; font-family: century gothic; box-shadow: none; border: 0; padding: 5px 10px;">	
+					</form>	
+					<br> 
+					
+					<h3 style="font-size: 16px; color: red; font-family: century gothic;">{{notAdded}}</h3>
+					<br>
+					
+					<table style="width:100%; border-collapse: collapse " >
+  					<tr>
+  					<th style="border: 1px solid black" >Username</th>
+    				<th style="border: 1px solid black" >Firstname</th>
+    				<th style="border: 1px solid black" >Lastname</th> 
+    				<th style="border: 1px solid black" >Email</th>
+    				</tr>
+    				{% for c in studentList %}
+    					{%if c.user.status != "Teacher"%}
+		    				<tr>
+		    				<td style="border: 1px solid black" >{{c.user.username}}</td>
+		    				<td style="border: 1px solid black" >{{c.user.first_name}}</td>
+		    				<td style="border: 1px solid black" >{{c.user.last_name}}</td> 
+		    				<td style="border: 1px solid black" >{{c.user.email}}</td>
+		    				<td style="border: none">
+		    				<form method="POST" action=""> 
+							{% csrf_token %}
+							<input type="hidden" name="delete" value={{c.id}}>
+							<input type="submit" value="DELETE">
+							</form>
+							</td>
+		    				</tr>
+		    			{% endif %}
+    				{% endfor %}
 				</td>
 			</tr>
 
