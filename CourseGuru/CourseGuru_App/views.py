@@ -23,7 +23,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from nltk.tokenize import word_tokenize, sent_tokenize
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
-from nltk.tokenize.moses import MosesDetokenizer
+from nltk.tokenize.moses import MosesDetokenizer, MosesTokenizer
 
 #importing models 
 from CourseGuru_App.models import User
@@ -208,7 +208,7 @@ def roster(request):
                 return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'studentList': studentList})
             elif 'dlCSV' in request.POST:
                 response = HttpResponse(content_type='text/csv')
-                response['Content-Disposition'] = 'attachment; filename=CSVTemplate.csv"'
+                response['Content-Disposition'] = 'attachment; filename=CSVTemplate.csv'
                 writer = csv.writer(response)
                 writer.writerow(["Username"])
                 writer.writerow(["UserName1"])
@@ -539,19 +539,27 @@ def pullInfo(file):
     #parallel arrays to store the keywords found and their positions 
     keyPositions = []
     keyWordPositions = []
-
-    detokenizer = MosesDetokenizer()
-
-    #pdfWords = file.split(' ')
+    subCat = ['Name', 'Office location', 'Phone', 'Email', 'Office Hours']
     
+    subCatkeyPosition = [] 
+    subCatWordPosition = []
+    header=[]
+    data=[]
+#    detokenizer = MosesDetokenizer()
+#    tokenizer = MosesTokenizer()
+    
+#    pdfWords = tokenizer.tokenize(file)
+#    print(pdfWords)
+#    pdfWords = file.split(' ')
+#    print(pdfWords)
     #===========================================================================
-    pdfWords = word_tokenize(file, 'english')
+    #pdfWords = word_tokenize(file, 'english')
     # retok = detokenizer.detokenize(pdfWords, return_str=True)
     # retok2 = retok.read().decode()
     # retok2 = re.sub("\xe2\x80\x93", "-", retok2)
     # print(retok2)
     #===========================================================================
- #   pdfWords = sent_tokenize(file, 'english')
+#    pdfWords = sent_tokenize(file, 'english')
 
 #    for n in pdfWords:
 #        words = nltk.word_tokenize(n)
@@ -562,8 +570,12 @@ def pullInfo(file):
    # reader = io.StringIO(pdfWords)
     #secondStage = pdfWords.split('\n')
     
+    pdfWords = word_tokenize(file, 'english')
+    
     for n in keyWordObj:
-        keyWords.append(n.intent)    
+        keyWords.append(n.intent)
+        
+           
     # finding all the key word positions 
             
     i=0    
@@ -573,8 +585,41 @@ def pullInfo(file):
             if pdfWords[i] == n or temp == n:
                 keyPositions.append(i)
                 keyWordPositions.append(n)
+                
         i+=1   
-           
+   # sub category location finder    
+    i=0    
+    while i<len(pdfWords)-1:
+        for m in subCat: 
+            temp = pdfWords[i] + " " + pdfWords[i+1]
+            if pdfWords[i] == m or temp == m:
+                subCatkeyPosition.append(i)
+                subCatWordPosition.append(m)  
+        i+=1 
+        
+    i=0
+    while i<len(keyPositions)-1:
+        j=0
+        while j<len(subCatkeyPosition)-1:
+            k = len(subCatkeyPosition)-1
+            if ((j%(len(subCat)-1) == 0) and (subCatkeyPosition[j] < keyPositions[i+1]) and keyPositions[i] < subCatkeyPosition[j] and j>0):
+                header.append(keyWordPositions[i]+' '+subCatWordPosition[j]) 
+                data.append(pdfWords[subCatkeyPosition[j]:keyPositions[i+1]])
+                j+=1
+            else:
+                if (keyPositions[i] < subCatkeyPosition[j] and subCatkeyPosition[j] < keyPositions[i+1]):
+                    header.append(keyWordPositions[i]+' '+subCatWordPosition[j]) 
+                    data.append(pdfWords[subCatkeyPosition[j]:subCatkeyPosition[j+1]])
+                    j+=1
+                else: 
+                    j+=1
+        i+=1
+        
+    for n in header: 
+        print(n) 
+    for n in data: 
+        print(n)
+        
     #to end of file    
     keyPositions.append(len(pdfWords))
     # loops through the key positions and puts data into appropriate rows according to intent name 
@@ -582,7 +627,7 @@ def pullInfo(file):
     while i <len(keyPositions)-1:      
         intent = keyWordObj.get(intent = keyWordPositions[i])
         intent.infoData=(pdfWords[keyPositions[i]:keyPositions[i+1]])
-        intent.save()
+        #intent.save()
         i+=1
     return(pdfWords)
 def chatbot(request):
