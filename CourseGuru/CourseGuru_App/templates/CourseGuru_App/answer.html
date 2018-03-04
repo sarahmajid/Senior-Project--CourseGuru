@@ -58,7 +58,18 @@
 					</div>
 					<br><br><br><br><br>
 				</td>
-			</tr>	
+			</tr>
+			<tr> 
+				<td>
+					<div>
+						<form method = "POST" action="" style="float: right;">
+							{% csrf_token %}
+							<input type="text" name="query" placeholder="Search Posts">
+							<input type="submit" value="SEARCH">
+						</form>
+					</div>
+				</td>
+			</tr>
 			<tr>
 				<td style="padding:5px; font-size: 26px; color: #444; font-family: century gothic;">
 					{{Title.question}}	
@@ -70,7 +81,7 @@
 						{% endif %}
 					</form>
 				</td>
-			</tr>
+			</tr>			
 			<tr>
 				<td height="3px" style="background-color: #AEADAD;"></td>
 			</tr>	

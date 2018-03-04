@@ -3,8 +3,8 @@ import tempfile
 import json
 import requests
 import datetime
-import PyPDF2 
-import nltk 
+import PyPDF2
+import nltk
 import csv 
 import io
 #===============================================================================
@@ -20,8 +20,10 @@ from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
 from pdfminer.layout import LAParams, LTTextBox, LTTextLine, LTTextBoxHorizontal
 from pdfminer.converter import PDFPageAggregator
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from nltk.tokenize import sent_tokenize, word_tokenize
+from nltk.tokenize import word_tokenize, sent_tokenize
 from nltk.corpus import stopwords
+from nltk.stem import WordNetLemmatizer
+from nltk.tokenize.moses import MosesDetokenizer
 
 #importing models 
 from CourseGuru_App.models import User
@@ -72,6 +74,7 @@ from builtins import str
 from django.template.defaultfilters import last
 from _ast import Str
 from string import ascii_lowercase
+#from nltk.parse.featurechart import sent
 
 #Function to populate Main page
 def index(request):
@@ -203,7 +206,16 @@ def roster(request):
                 user = request.POST.get('delete')
                 courseusers.objects.filter(id = int(user)).delete()                
                 return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'studentList': studentList})
-            
+            elif 'dlCSV' in request.POST:
+                response = HttpResponse(content_type='text/csv')
+                response['Content-Disposition'] = 'attachment; filename=CSVTemplate.csv"'
+                writer = csv.writer(response)
+                writer.writerow(["Username"])
+                writer.writerow(["UserName1"])
+                writer.writerow(["UserName2"])
+                writer.writerow(["UserName3"])
+                writer.writerow(["..."])
+                return response
             elif request.method == 'POST' and request.FILES['csvFile']:
                 #decoding the file for reading 
                 csvF = request.FILES['csvFile'].read().decode('utf-8')
@@ -273,7 +285,7 @@ def question(request):
                     answers.objects.filter(question_id = qid).delete()
                 if questions.objects.filter(id = qid).exists():
                     questions.objects.filter(id = qid).delete()
-        if request.POST.get('query'):
+            if request.POST.get('query'):
                 query = request.POST.get('query')
                 if query: 
                     qData = qData.filter(question__icontains=query)
@@ -384,10 +396,6 @@ def answer(request):
             if request.POST.get('Logout') == "Logout":
                 logout(request)
                 return HttpResponseRedirect('/')
-            if request.POST.get('query'):
-                query = request.POST.get('query')
-                if query: 
-                    aData = aData.filter(answer__icontains=query)
             if 'voteUp' in request.POST: 
                 answerId = request.POST.get('voteUp')
                 voting(1, answerId, user)
@@ -397,7 +405,11 @@ def answer(request):
                 answerId = request.POST.get('voteDown')
                 voting(0, answerId, user)
                 return HttpResponseRedirect('/answer/?id=%s&cid=%s' % (qid, cid))
-            
+            if request.POST.get('query'):
+                query = request.POST.get('query')
+                if query: 
+                    aData = aData.filter(answer__icontains=query)
+                return render(request, 'CourseGuru_App/answer.html', {'answers': aData, 'numAnswers': ansCt, 'Title': qData, 'comments': cData, 'courseID': cid})
 #            return HttpResponseRedirect('/answer/?id=%s&cid=%s' % (qid, cid))        
             elif 'delAns' in request.POST:
                 aid = request.POST.get('delAns')
@@ -527,7 +539,28 @@ def pullInfo(file):
     #parallel arrays to store the keywords found and their positions 
     keyPositions = []
     keyWordPositions = []
+
+    detokenizer = MosesDetokenizer()
+
+    #pdfWords = file.split(' ')
+    
+    #===========================================================================
     pdfWords = word_tokenize(file, 'english')
+    # retok = detokenizer.detokenize(pdfWords, return_str=True)
+    # retok2 = retok.read().decode()
+    # retok2 = re.sub("\xe2\x80\x93", "-", retok2)
+    # print(retok2)
+    #===========================================================================
+ #   pdfWords = sent_tokenize(file, 'english')
+
+#    for n in pdfWords:
+#        words = nltk.word_tokenize(n)
+#        tagWords = nltk.pos_tag(words)
+#        print(tagWords)
+        
+    #str(pdfWords)
+   # reader = io.StringIO(pdfWords)
+    #secondStage = pdfWords.split('\n')
     
     for n in keyWordObj:
         keyWords.append(n.intent)    
