@@ -333,7 +333,7 @@ def getIntentAns(luisIntent, luisEntities):
     catgry = category.objects.get(intent = luisIntent)
     
     filtAns = botanswers.objects.filter(category_id = catgry.id)
-     
+    
     for m in filtAns:
         Match = 0
         #testing, change entities name to something else later
@@ -341,13 +341,14 @@ def getIntentAns(luisIntent, luisEntities):
         for ent in entitiesList:
             print(ent)
             #testing, change entities name to something else later
-            if ent in m.entities:
+            if ent.lower() in m.entities.lower():
                 Match += 1
         Accuracy = (Match/ansLen)
         if Accuracy>count:
             count = Accuracy
             answr = m.answer
-            
+    
+    print('check')  
         #=======================================================================
         # b = m.answer.split(" ")
         # tempCntMtch = 0
@@ -400,6 +401,8 @@ def cbAnswer(nq):
     #---cbAns = botanswers.objects.filter(category_id = catID.id).first()
     #ID of the latest question created
     #qid = questions.objects.last()
+    
+    print(luisEntities)
     
     entAnswer = getIntentAns(luisIntent, luisEntities)
     if entAnswer == "":
