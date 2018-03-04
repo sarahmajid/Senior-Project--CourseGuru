@@ -88,11 +88,11 @@ body {
 	border-radius: 0; 
 	font-size: 18px;
 	border: 0;
-	color: #444;
+	color: white;
 }
 
 .select-short {
-	max-width: 25%;
+	max-width: 33%;
 }
 
 

@@ -15,7 +15,7 @@ $(document).ready(function() {
 			$("#inp").prop("readonly", true);
 			
 			var input = $('input#inp').val();
-			$('input').val('');
+			$('#inp').val('');
 			var history = $('#CWindow').html();	
 			$('#CWindow').html(history + '<div class="msgContainer" align="right"><p>' + input + '</p><br><div class="msgLabel">You</div></div>');
 			function loadGif() {
@@ -32,7 +32,7 @@ $(document).ready(function() {
 				});			
 			}
 			setTimeout(loadGif, 500);
-			setTimeout(grabAnswer, 2000);
+			setTimeout(grabAnswer, 1000);
 			
 			div = $('#CWindow');
 			div.scrollTop(div.prop('scrollHeight'))
@@ -60,4 +60,3 @@ window.onclick = function(event) {
     }
   }
 }
-

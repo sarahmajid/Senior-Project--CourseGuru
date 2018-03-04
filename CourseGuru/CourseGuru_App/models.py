@@ -1,7 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
-from django.db.models.signals import post_save
-from django.dispatch import receiver
+
 
 #from email.policy import default
 
@@ -26,12 +25,13 @@ class questions(models.Model):
     question = models.CharField(max_length=200)
     date = models.CharField(max_length=20)
     comment = models.CharField(max_length=400)
+    category = models.CharField(max_length=20)
  
 class answers(models.Model):   
     #edit variable below
     question = models.ForeignKey(questions, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    answer = models.CharField(max_length=400)
+    answer = models.CharField(max_length=5000)
     comments = models.CharField(max_length=200)
     rating = models.IntegerField(default=0)
     date = models.CharField(max_length=20)
@@ -56,21 +56,21 @@ class category(models.Model):
     
 class botanswers(models.Model):
     category = models.ForeignKey(category, on_delete=models.CASCADE)
-    answer = models.CharField(max_length=400)
+    answer = models.CharField(max_length=5000)
     rating = models.IntegerField(default=0)
-    entities = models.CharField(max_length=200)
+    entities = models.CharField(max_length=5000)
+    
     
 class keywords(models.Model):
-    word = models.CharField(max_length=50)
-    common_name = models.CharField(max_length=50)
+    intent = models.CharField(max_length=50)
     
 class courseinfo(models.Model):
-    keyword_common_name = models.CharField(max_length=50)
-    syllabus_data = models.CharField(max_length=50)
-    course_id = models.CharField(max_length=20)
-    
-    
-    
+    fkCourseId = models.ForeignKey(course, on_delete=models.CASCADE)
+    intent = models.CharField(max_length=50)
+    entities = models.CharField(max_length=200)    
+    infoData = models.TextField()
+    courseId = models.CharField(max_length = 15)
+
     
     
     
