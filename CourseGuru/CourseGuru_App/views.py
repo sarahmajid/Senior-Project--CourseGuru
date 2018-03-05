@@ -548,8 +548,13 @@ def pullInfo(file):
     keyPositions = []
     keyWordPositions = []
 
+    detokenizer = MosesDetokenizer()
+    
+    #===========================================================================
+    pdfWords2 = file.split('\n')
+    #print(pdfWords2)
     pdfWords = word_tokenize(file, 'english')
-
+    
     
     for n in keyWordObj:
         keyWords.append(n.intent)    
@@ -567,12 +572,61 @@ def pullInfo(file):
     #to end of file    
     keyPositions.append(len(pdfWords))
     # loops through the key positions and puts data into appropriate rows according to intent name 
-    i=0
-    while i <len(keyPositions)-1:      
-        intent = keyWordObj.get(intent = keyWordPositions[i])
-        intent.infoData=(pdfWords[keyPositions[i]:keyPositions[i+1]])
-        intent.save()
+    i=1
+    
+    #Mike Testing
+    keyPos = []
+    #keyPos == line positions where keywords are found
+    for x in pdfWords2:
+        for n in keyWords:
+            if n in x:
+                keyPos.append(i)
+        i+=1  
+        
+    for pos in keyPos:
+        print(pos) 
+        
+    i=1
+    inc = 0
+    lock = True
+    hold = []
+    holdinc = 0
+    header = ''
+    pos=keyPos[inc]
+    for x in pdfWords2:
+        if (lock == False and i != pos and len(x.strip()) != 0):
+            hold.insert(len(hold)-1, header + x)
+            
+        elif (i == pos):
+            hold.append('')
+            header = x
+            lock = False;
+            inc += 1
+            if inc > len(keyPos)-1:
+                break
+            else:
+                pos = keyPos[inc]
         i+=1
+            
+    for x in hold:
+        if len(x.strip()) != 0 and '\n' not in x:
+            print(x)
+        
+
+        
+    
+    
+    #match = re.search(r"Instructor:(.*\n){3}", file)
+    #if match:
+    #    print(match.group(0))
+    #else:
+    #    print("N/A")
+    
+    #while i <len(keyPositions)-1:      
+    #    intent = keyWordObj.get(intent = keyWordPositions[i])
+    #    intent.infoData=(pdfWords[keyPositions[i]:keyPositions[i+1]])
+    #    intent.save()
+    #    i+=1
     return(pdfWords)
 def chatbot(request):
     return render(request, 'CourseGuru_App/botchat.html',)
