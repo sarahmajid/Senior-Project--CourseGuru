@@ -19,6 +19,8 @@ from django.http import HttpResponse
 from django.template.context_processors import request
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib.auth.models import User
+from django.core.validators import validate_email
+from django.core.exceptions import ValidationError
 
 #importing models 
 from CourseGuru_App.models import questions
@@ -46,6 +48,9 @@ from test.test_enum import Answer
 from builtins import str
 from _ast import Str
 from string import ascii_lowercase
+from warnings import catch_warnings
+from symbol import except_clause
+#from nltk.parse.featurechart import sent
 
 #Function to populate Main page
 def index(request):
@@ -88,21 +93,26 @@ def account(request):
         username = request.POST.get('username')
         psword = request.POST.get('password')
         cpsword = request.POST.get('cpassword')
-        stat = request.POST.get('status')       
-        passRegCheck = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)"
+        stat = request.POST.get('status')
+        email = request.POST.get('email')       
+        
         if (psword != cpsword):
-            mismatch = 'Password Mismatch'
-            return render(request, 'CourseGuru_App/account.html', {'msmatch': mismatch, 'fname': firstname, 'lname': lastname, 'status': stat})
+            errorMsg = 'Password Mismatch'
+            return render(request, 'CourseGuru_App/account.html', {'errorMsg': errorMsg, 'fname': firstname, 'lname': lastname, 'status': stat, 'email': email})
+        elif (emailValidator(email) == False): 
+            errorMsg = "Invalid Email Address!"
+            return render(request, 'CourseGuru_App/account.html', {'errorMsg': errorMsg,'fname': firstname, 'lname': lastname, 'status': stat, 'email': email})
+        elif(psword == username):
+            errorMsg = "Username and Password can not be the same!"
+            return render(request, 'CourseGuru_App/account.html', {'errorMsg': errorMsg,'fname': firstname, 'lname': lastname, 'status': stat, 'email': email})
         else:
-            if (len(psword)<8): 
-                mismatch = 'Your password must be at least 8 characters long.'
-                return render(request, 'CourseGuru_App/account.html', {'msmatch': mismatch,'fname': firstname, 'lname': lastname, 'status': stat})
-            if ((re.search(passRegCheck, psword))==None):
-                mismatch = "Your password must contain one uppercase character, one lowercase character, and at least one number!"
-                return render(request, 'CourseGuru_App/account.html', {'msmatch': mismatch,'fname': firstname, 'lname': lastname, 'status': stat})
+            if (passwordValidator(psword) != None):
+                errorMsg =  passwordValidator(psword)
+            return render(request, 'CourseGuru_App/account.html', {'errorMsg': errorMsg,'fname': firstname, 'lname': lastname, 'status': stat, 'email': email})
+            
             if User.objects.filter(username = username).exists():
-                mismatch = "Username taken"
-                return render(request, 'CourseGuru_App/account.html', {'msmatch': mismatch,'fname': firstname, 'lname': lastname, 'status': stat})
+                errorMsg = "Username taken"
+                return render(request, 'CourseGuru_App/account.html', {'errorMsg': errorMsg,'fname': firstname, 'lname': lastname, 'status': stat, 'email': email})
 
             else:
                 #edit possibly drop user ID from the table or allow it to be null 
@@ -116,6 +126,24 @@ def account(request):
     else:
         return render(request, 'CourseGuru_App/account.html')
 
+def passwordValidator(password):
+    passRegCheck = r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)"
+    if (len(password)<8): 
+        errorMsg = 'Your password must be at least 8 characters long.'
+        return errorMsg
+    elif ((re.search(passRegCheck, password))==None):
+        errorMsg = "Your password must contain one uppercase character, one lowercase character, and at least one number!"
+        return errorMsg
+    else:
+        return None
+            
+def emailValidator(email):
+    try:
+        validate_email(email)
+        return True
+    except ValidationError:
+        return False
+    
 def courses(request):
     if request.user.is_authenticated:
         if request.method == "POST":
@@ -179,62 +207,72 @@ def roster(request):
                 courseusers.objects.filter(id = int(user)).delete()                
                 return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'studentList': studentList})
             elif 'dlCSV' in request.POST:
-                response = HttpResponse(content_type='text/csv')
-                response['Content-Disposition'] = 'attachment; filename=CSVTemplate.csv'
-                writer = csv.writer(response)
-                writer.writerow(["Username"])
-                writer.writerow(["UserName1"])
-                writer.writerow(["UserName2"])
-                writer.writerow(["UserName3"])
-                writer.writerow(["..."])
+                response = downloadCSV()
                 return response
             elif request.method == 'POST' and request.FILES['csvFile']:
                 #decoding the file for reading 
-                csvF = request.FILES['csvFile'].read().decode('utf-8')
-                #sniffing for the delimiter in csv
-                sniffer = csv.Sniffer().sniff(csvF)         
-                #reading csv using DictReader     
-                reader = csv.DictReader(((io.StringIO(csvF))), delimiter=sniffer.delimiter)   
-                #converts all field names to lowercase
-                reader.fieldnames = [header.strip().lower() for header in reader.fieldnames]
-                        
-                #variable initialization 
-                str1 = "The following "
-                str2 = " users were not added to the course because the usernames do not exist: "
-                strNotAdded = ""
-                notAddedUsers = []
-                numUserNotAdded=0
-                
-                #Adds students according to the csv content. If DictReader is changed code below must be edited.            
-                for n in reader:
-                    if(User.objects.filter(username = n['username'])):
-                        addUser = User.objects.get(username = n['username'])
-                        if (courseusers.objects.filter(user_id = addUser.id, course_id = cid).exists()==False):
-                            courseusers.objects.create(user_id = addUser.id, course_id = cid)
-                    else: 
-                        notAddedUsers.append(n['username']) 
-                        numUserNotAdded+=1   
-                        strNotAdded = str1 + str(numUserNotAdded) + str2
-                #creates a list of none existing users.         
-                if(len(notAddedUsers)>0):
-                    for n in notAddedUsers:
-                        if n != notAddedUsers[len(notAddedUsers)-1]:
-                            strNotAdded += n + ", "
-                        else:
-                            if (len(notAddedUsers)==1):
-                                strNotAdded += n + "."
-                                return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'studentList': studentList, 'notAdded': strNotAdded})
-                            else:
-                                strNotAdded += "and " + n +"."
-                                return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'studentList': studentList, 'notAdded': strNotAdded})
-            
+                csvF = request.FILES['csvFile']
+                strNotAdded = readCSV(csvF, cid)
+                return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'studentList': studentList, 'notAdded': strNotAdded})
             else:
                 credentialmismatch = "Username does not exist"
                 return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'credentialmismatch': credentialmismatch, 'courseName': cName})
         return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'studentList': studentList, 'courseName': cName})
     else:
         return HttpResponseRedirect('/')
+    
+def downloadCSV():
+    file = HttpResponse(content_type='text/csv')
+    file['Content-Disposition'] = 'attachment; filename=CSVTemplate.csv'
+    writer = csv.writer(file)
+    writer.writerow(["Username"])
+    writer.writerow(["UserName1"])
+    writer.writerow(["UserName2"])
+    writer.writerow(["UserName3"])
+    writer.writerow(["..."])
+    return file
 
+def readCSV(csvFile, cid):
+    csvF = csvFile.read().decode()
+    #sniffing for the delimiter in csv
+    sniffer = csv.Sniffer().sniff(csvF)         
+    #reading csv using DictReader     
+    reader = csv.DictReader(((io.StringIO(csvF))), delimiter=sniffer.delimiter)   
+    #converts all field names to lowercase
+    reader.fieldnames = [header.strip().lower() for header in reader.fieldnames]
+            
+    #variable initialization 
+    str1 = "The following "
+    str2 = " users were not added to the course because the usernames do not exist: "
+    strNotAdded = ""
+    notAddedUsers = []
+    numUserNotAdded=0
+    
+    #Adds students according to the csv content. If DictReader is changed code below must be edited.            
+    for n in reader:
+        if(User.objects.filter(username = n['username'])):
+            addUser = User.objects.get(username = n['username'])
+            if (courseusers.objects.filter(user_id = addUser.id, course_id = cid).exists()==False):
+                courseusers.objects.create(user_id = addUser.id, course_id = cid)
+        else: 
+            notAddedUsers.append(n['username']) 
+            numUserNotAdded+=1   
+            strNotAdded = str1 + str(numUserNotAdded) + str2
+    #creates a list of none existing users.         
+    if(len(notAddedUsers)>0):
+        for n in notAddedUsers:
+            if n != notAddedUsers[len(notAddedUsers)-1]:
+                strNotAdded += n + ", "
+            else:
+                if (len(notAddedUsers)==1):
+                    strNotAdded += n + "."
+                    return strNotAdded
+                else:
+                    strNotAdded += "and " + n +"."
+                    return strNotAdded
+    else: 
+        strNotAdded = "All Users Added Successfully!"        
+        return strNotAdded
 # Function to populate Main page
 def question(request):
     if request.user.is_authenticated:
@@ -288,24 +326,9 @@ def publish(request):
             comm = request.POST.get('NQcom')
             questionDate = genDate()
             user = request.user    
-            
-            #Simple solution MUST BE CHANGED!!!!!
-            syllabus="Syllabus"
-            other="Other"
-            sylKeyTerms = "syllabus,instructor name,teachers name,grading scale,grade,ta,teaching assistant,student,due date,due,assignment,late"
-            n=sylKeyTerms.split(',')
-            matchCount = 0
-            matchCount=0
-            for z in n:
-                if ques.__contains__(z):
-                    matchCount += 1
-                if comm.__contains__(z):
-                    matchCount+=1
-            if matchCount > 0:
-                newQ = questions.objects.create(question = ques, course_id = cid, user_id = user.id, date = questionDate, comment = comm, category=syllabus)
-            else:
-                newQ = questions.objects.create(question = ques, course_id = cid, user_id = user.id, date = questionDate, comment = comm, category=other)
-                    
+            categ= categorizeQuestion(ques, comm) 
+            newQ = questions.objects.create(question = ques, course_id = cid, user_id = user.id, date = questionDate, comment = comm, category=categ)
+               
             botAns = cbAnswer(ques)
             answerDate = genDate()
             
@@ -316,7 +339,23 @@ def publish(request):
         return render(request, 'CourseGuru_App/publish.html', {'courseID': cid})
     else:
         return HttpResponseRedirect('/')
-
+    
+def categorizeQuestion(ques,comm):
+    syllabus="Syllabus"
+    other="Other"
+    sylKeyTerms = "syllabus,instructor name,teachers name,grading scale,grade,ta,teaching assistant,student,due date,due,assignment,late"
+    sylKeyTermList=sylKeyTerms.split(',')
+    matchCount=0
+    for z in sylKeyTermList:
+        if ques.__contains__(z):
+            matchCount += 1
+        if comm.__contains__(z):
+            matchCount+=1
+    if matchCount > 0:
+        return syllabus
+    else:
+        return other
+             
 def publishAnswer(request):
     if request.user.is_authenticated:
         qid = request.GET.get('id', '')
@@ -383,7 +422,6 @@ def answer(request):
                 if query: 
                     aData = aData.filter(answer__icontains=query)
                 return render(request, 'CourseGuru_App/answer.html', {'answers': aData, 'numAnswers': ansCt, 'Title': qData, 'comments': cData, 'courseID': cid})
-#            return HttpResponseRedirect('/answer/?id=%s&cid=%s' % (qid, cid))        
             elif 'delAns' in request.POST:
                 aid = request.POST.get('delAns')
                 if userratings.objects.filter(answer_id = aid).exists():
@@ -435,7 +473,6 @@ def getIntentAns(luisIntent, luisEntities):
         #testing, change entities name to something else later
         ansLen = len(m.entities)
         for ent in entitiesList:
-            print(ent)
             #testing, change entities name to something else later
             if ent.lower() in m.entities.lower():
                 Match += 1
@@ -443,8 +480,7 @@ def getIntentAns(luisIntent, luisEntities):
         if Accuracy>count:
             count = Accuracy
             answr = m.answer
-    
-    print('check')  
+
         #=======================================================================
         # b = m.answer.split(" ")
         # tempCntMtch = 0
@@ -519,7 +555,9 @@ def pullInfo(file):
 
     
     for n in keyWordObj:
-        keyWords.append(n.intent)    
+        keyWords.append(n.intent)
+        
+           
     # finding all the key word positions 
             
     i=0    
@@ -529,8 +567,9 @@ def pullInfo(file):
             if pdfWords[i] == n or temp == n:
                 keyPositions.append(i)
                 keyWordPositions.append(n)
+                
         i+=1   
-           
+        
     #to end of file    
     keyPositions.append(len(pdfWords))
     # loops through the key positions and puts data into appropriate rows according to intent name 
@@ -538,7 +577,7 @@ def pullInfo(file):
     while i <len(keyPositions)-1:      
         intent = keyWordObj.get(intent = keyWordPositions[i])
         intent.infoData=(pdfWords[keyPositions[i]:keyPositions[i+1]])
-        intent.save()
+        #intent.save()
         i+=1
     return(pdfWords)
 def chatbot(request):
@@ -575,8 +614,6 @@ def cbAnswer(nq):
     #---cbAns = botanswers.objects.filter(category_id = catID.id).first()
     #ID of the latest question created
     #qid = questions.objects.last()
-    
-    print(luisEntities)
     
     entAnswer = getIntentAns(luisIntent, luisEntities)
     if entAnswer == "":
