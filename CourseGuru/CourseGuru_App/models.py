@@ -31,7 +31,7 @@ class answers(models.Model):
     #edit variable below
     question = models.ForeignKey(questions, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    answer = models.CharField(max_length=400)
+    answer = models.CharField(max_length=5000)
     comments = models.CharField(max_length=200)
     rating = models.IntegerField(default=0)
     date = models.CharField(max_length=20)
@@ -56,9 +56,9 @@ class category(models.Model):
     
 class botanswers(models.Model):
     category = models.ForeignKey(category, on_delete=models.CASCADE)
-    answer = models.CharField(max_length=400)
+    answer = models.CharField(max_length=5000)
     rating = models.IntegerField(default=0)
-    entities = models.CharField(max_length=200)
+    entities = models.CharField(max_length=5000)
     
     
 class keywords(models.Model):
