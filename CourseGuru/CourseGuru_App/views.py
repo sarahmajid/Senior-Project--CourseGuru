@@ -580,18 +580,7 @@ def pullInfo(file):
             if ((n+':')==temp):
                 pdfWords[i] = pdfWords[i]+ " " + pdfWords[i+1]
                 del pdfWords[i+1]
-                print(pdfWords[i])
-                print(pdfWords[i+1])
         i+=1           
-    # finding all the key word positions 
-    i=0    
-    while i<len(pdfWords)-1:
-        for n in keyWords:
-            if pdfWords[i].__contains__(n):  
-                keyPositions.append(i)
-                keyWordPositions.append(n)   
-        i+=1   
-#        
          
     #join two word elements into one such as [Office, Hours] into [Office Hours] sub categories
     i=0
@@ -601,13 +590,22 @@ def pullInfo(file):
             if ((n+':')==temp):
                 pdfWords[i] = pdfWords[i]+ " " + pdfWords[i+1]
                 del pdfWords[i+1]
-        i+=1    
+        i+=1   
+    # finding all the key word positions 
+    i=0    
+    while i<len(pdfWords)-1:
+        for n in keyWords:
+            if pdfWords[i].__contains__(n):  
+                keyPositions.append(i)
+                keyWordPositions.append(n)   
+        i+=1 
+                 
     # sub category location finder     
     i=0    
     while i<len(pdfWords)-1:
         for m in subCat: 
             temp = pdfWords[i] + " " + pdfWords[i+1]
-            if pdfWords[i] == m or temp == m:
+            if pdfWords[i].__contains__(m):
                 subCatkeyPosition.append(i)
                 subCatWordPosition.append(m)  
         i+=1 
@@ -615,19 +613,23 @@ def pullInfo(file):
     i=0
     while i<len(keyPositions)-1:
         j=0
-        while j<len(subCatkeyPosition)-1:
-            k = len(subCatkeyPosition)-1
-            if ((j%(len(subCat)-1) == 0) and (subCatkeyPosition[j] < keyPositions[i+1]) and keyPositions[i] < subCatkeyPosition[j] and j>0):
+        while j<=len(subCatkeyPosition)-1:
+            n=0
+            if (keyPositions[i] < subCatkeyPosition[j] and subCatkeyPosition[j] < keyPositions[i+1] and j==9):
                 header.append(keyWordPositions[i]+' '+subCatWordPosition[j]) 
-                data.append(pdfWords[subCatkeyPosition[j]:keyPositions[i+1]])
+                data.append(pdfWords[subCatkeyPosition[j]:keyPositions[i+1]-1])
                 j+=1
-            else:
-                if (keyPositions[i] < subCatkeyPosition[j] and subCatkeyPosition[j] < keyPositions[i+1]):
-                    header.append(keyWordPositions[i]+' '+subCatWordPosition[j]) 
-                    data.append(pdfWords[subCatkeyPosition[j]:subCatkeyPosition[j+1]])
-                    j+=1
-                else: 
-                    j+=1
+            elif (keyPositions[i] < subCatkeyPosition[j] and subCatkeyPosition[j] < keyPositions[i+1] and j==4):
+                header.append(keyWordPositions[i]+' '+subCatWordPosition[j]) 
+                data.append(pdfWords[subCatkeyPosition[j]:keyPositions[i+1]-1])
+                j+=1
+                    
+            elif (keyPositions[i] < subCatkeyPosition[j] and subCatkeyPosition[j] <= keyPositions[i+1]):
+                header.append(keyWordPositions[i]+' '+subCatWordPosition[j]) 
+                data.append(pdfWords[subCatkeyPosition[j]:subCatkeyPosition[j+1]])
+                j+=1
+            else: 
+                j+=1
         i+=1
         
     for n in header: 
@@ -652,11 +654,11 @@ def pullInfo(file):
     i=0
     while i <len(keyPositions)-1:      
         intent = keyWordObj.get(intent = keyWordPositions[i])
-        intent.infoData=(pdfWords[keyPositions[i]:keyPositions[i+1]])
+        intent.infoData=(pdfWords[(keyPositions[i]+1):keyPositions[i+1]])
         b = pdfWords[keyPositions[i]]
-        a=(pdfWords[(keyPositions[i])+1:keyPositions[i+1]])
-
-        #intent.save()
+        a=(pdfWords[(keyPositions[i]+1):keyPositions[i+1]])
+#        print(intent.infoData)
+        intent.save()
         i+=1
     return(pdfWords)
 def chatbot(request):
