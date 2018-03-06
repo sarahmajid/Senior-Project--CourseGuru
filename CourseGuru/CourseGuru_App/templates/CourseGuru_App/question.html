@@ -64,7 +64,7 @@
 					<div style="padding-bottom: 60px;">
 						<form method = "POST" action="" >
 							{% csrf_token %}
-							<button type="submit" class="btn btn-primary" value="SEARCH" style="float:right;">GO</button>
+							<button type="submit" class="btn btn-primary" value="SEARCH" style="float:right;">Search</button>
 							<input type="text" class="form-control" name="query" placeholder="Search Posts" style="float: right; width:20%; margin-right: 10px;"></input>
 						</form>
 					</div>
@@ -126,7 +126,7 @@
 				</ul>
 			</div>
 		{% endif %}
-		
+		<br><br><br><br><br><br>
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
 		<script src="{% static 'js/style.js' %}"></script>
 	</body>

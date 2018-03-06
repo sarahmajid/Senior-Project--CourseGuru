@@ -160,13 +160,20 @@ def courses(request):
                 tempQues = questions.objects.filter(course_id = cid)
                 for x in tempQues:
                     tempAns = answers.objects.filter(question_id = x.id)
+                    #Delete user ratings in course
                     for y in tempAns:
                         if userratings.objects.filter(answer_id = y.id).exists():
                             userratings.objects.filter(answer_id = y.id).delete()
+                    #Delete answers in course
                     if answers.objects.filter(question_id = x.id).exists():
                         answers.objects.filter(question_id = x.id).delete()
+                #Delete questions in course
                 if questions.objects.filter(course_id = cid).exists():
                     questions.objects.filter(course_id = cid).delete()
+                #Delete course users
+                if courseusers.objects.filter(course_id = cid).exists():
+                    courseusers.objects.filter(course_id = cid).delete()
+                #Delete course
                 if course.objects.filter(id = cid).exists():
                     course.objects.filter(id = cid).delete()
         curUser = request.user
@@ -178,7 +185,7 @@ def courses(request):
     else:
         return HttpResponseRedirect('/')
 def genDate():
-    
+    #This needs to be removed. SQL can do it automatically
     curDate = datetime.datetime.now().strftime("%m-%d-%Y %I:%M %p")
 
     return (curDate)

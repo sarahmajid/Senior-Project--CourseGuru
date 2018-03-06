@@ -139,8 +139,8 @@
 						{% endif %}
 						{% if user.id != a.user.id %}
 						<br>
-						<button name="voteUp" type="submit" value="{{a.id}}" style="border-radius: 5px; cursor: pointer;"><div><i class="fas fa-thumbs-up"></i></div></button>
-						<button name="voteDown" type="submit" value="{{a.id}}" style="border-radius: 5px; cursor: pointer;"><div><i class="fas fa-thumbs-down vote"></i></div></button>
+						<button name="voteUp" type="submit" value="{{a.id}}" id="voteUp" style="border-radius: 5px; cursor: pointer;"><div><i id="voteUpImg" class="glyphicon glyphicon-thumbs-up"></i></div></button>
+						<button name="voteDown" type="submit" value="{{a.id}}" id="voteDown" style="border-radius: 5px; cursor: pointer;"><div><i id="voteDownImg" class="glyphicon glyphicon-thumbs-down"></i></div></button>
 						&nbsp;{{a.rating}}	
 						<br>				
 						{% endif %}

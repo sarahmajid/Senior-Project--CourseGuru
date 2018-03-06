@@ -8,6 +8,17 @@ $(document).ready(function() {
         }
 	});
 	
+	$('#voteUp').click(function(e) { 
+		//$('#voteUpImg').addClass('glyphicon-thumbs-down').removeClass('glyphicon-thumbs-up');
+		$('#voteDownImg').removeClass('votedDown');
+		$('#voteUpImg').addClass('votedUp');
+	});
+	
+	$('#voteDown').click(function(e) { 
+		$('#voteUpImg').removeClass('votedUp');
+		$('#voteDownImg').addClass('votedDown');
+	});
+	
 /*	$('#submit').click(function(){ */
 	$('#inp').keydown(function(e) {
 		if(e.which == 13) {
