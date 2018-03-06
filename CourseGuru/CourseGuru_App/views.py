@@ -38,7 +38,7 @@ from CourseGuru_App.natLang import reformQuery
 
 from pdfminer.pdfparser import PDFParser, PDFDocument
 from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
-from pdfminer.layout import LAParams, LTTextBox, LTTextLine, LTTextBoxHorizontal
+from pdfminer.layout import LAParams, LTTextBoxHorizontal
 from pdfminer.converter import PDFPageAggregator
 from pdfminer.pslexer import delimiter
 
@@ -95,7 +95,6 @@ def account(request):
         cpsword = request.POST.get('cpassword')
         stat = request.POST.get('status')
         email = request.POST.get('email')       
-        
         if (psword != cpsword):
             errorMsg = 'Password Mismatch'
             return render(request, 'CourseGuru_App/account.html', {'errorMsg': errorMsg, 'fname': firstname, 'lname': lastname, 'status': stat, 'email': email})
@@ -108,7 +107,7 @@ def account(request):
         else:
             if (passwordValidator(psword) != None):
                 errorMsg =  passwordValidator(psword)
-            return render(request, 'CourseGuru_App/account.html', {'errorMsg': errorMsg,'fname': firstname, 'lname': lastname, 'status': stat, 'email': email})
+                return render(request, 'CourseGuru_App/account.html', {'errorMsg': errorMsg,'fname': firstname, 'lname': lastname, 'status': stat, 'email': email})
             
             if User.objects.filter(username = username).exists():
                 errorMsg = "Username taken"
@@ -117,7 +116,7 @@ def account(request):
             else:
                 #edit possibly drop user ID from the table or allow it to be null 
                 #user.objects.create(firstName = firstname, lastName = lastname, userName = username, password = psword, status = stat)  
-                newUser = User.objects.create_user(username, 'test@test.com', psword) 
+                newUser = User.objects.create_user(username, email, psword) 
                 newUser.first_name = firstname
                 newUser.last_name = lastname
                 newUser.status = stat
@@ -127,7 +126,7 @@ def account(request):
         return render(request, 'CourseGuru_App/account.html')
 
 def passwordValidator(password):
-    passRegCheck = r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)"
+    passRegCheck = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)"
     if (len(password)<8): 
         errorMsg = 'Your password must be at least 8 characters long.'
         return errorMsg
@@ -250,14 +249,17 @@ def readCSV(csvFile, cid):
     
     #Adds students according to the csv content. If DictReader is changed code below must be edited.            
     for n in reader:
-        if(User.objects.filter(username = n['username'])):
-            addUser = User.objects.get(username = n['username'])
-            if (courseusers.objects.filter(user_id = addUser.id, course_id = cid).exists()==False):
-                courseusers.objects.create(user_id = addUser.id, course_id = cid)
-        else: 
-            notAddedUsers.append(n['username']) 
-            numUserNotAdded+=1   
-            strNotAdded = str1 + str(numUserNotAdded) + str2
+        try:
+            if(User.objects.filter(username = n['username'])):
+                addUser = User.objects.get(username = n['username'])
+                if (courseusers.objects.filter(user_id = addUser.id, course_id = cid).exists()==False):
+                    courseusers.objects.create(user_id = addUser.id, course_id = cid)
+            else: 
+                notAddedUsers.append(n['username']) 
+                numUserNotAdded+=1   
+                strNotAdded = str1 + str(numUserNotAdded) + str2
+        except KeyError: 
+            return 'CSV header error! Please make sure CSV file contain "Username" as the header for all of the usernames.'
     #creates a list of none existing users.         
     if(len(notAddedUsers)>0):
         for n in notAddedUsers:
@@ -507,7 +509,7 @@ def pdfToText(request):
         #Sets myfile to the selected file on page and reads it
         myfile = request.FILES.get("syllabusFile").file.read()
             
-        #Create tempfile in read and write binary mode
+        #Create temporary file in read and write binary mode
         f = tempfile.TemporaryFile('r+b')
         f.write(myfile)
 
@@ -522,7 +524,7 @@ def pdfToText(request):
         #sets parameters for analysis 
         laparams = LAParams()
             
-        #Required to define seperation of text within pdf
+        #Required to define separation of text within pdf
         laparams.char_margin = 1
         laparams.word_margin = 1
             
@@ -550,25 +552,99 @@ def pullInfo(file):
     #parallel arrays to store the keywords found and their positions 
     keyPositions = []
     keyWordPositions = []
-
-    pdfWords = word_tokenize(file, 'english')
-
+#
+    subCat = ['Name', 'Office location', 'Phone', 'Email', 'Office Hours']
+    
+    subCatkeyPosition = [] 
+    subCatWordPosition = []
+    header=[]
+    data=[]
+#
+    #pdfWords = word_tokenize(file, 'english')
+    space = nltk.tokenize.SpaceTokenizer()
+    pdfWord = space.tokenize(file)
+    pdfWords = []
+    
+    for n in pdfWord: 
+        pdfWords.append(n.strip())
     
     for n in keyWordObj:
         keyWords.append(n.intent)
         
            
-    # finding all the key word positions 
-            
-    i=0    
+    #join two word elements into one such as [Teaching, assistant] into [Teaching assistant] in main Category
+    i=0
     while i<len(pdfWords)-1:
         for n in keyWords:
             temp = pdfWords[i] + " " + pdfWords[i+1]
-            if pdfWords[i] == n or temp == n:
+            if ((n+':')==temp):
+                pdfWords[i] = pdfWords[i]+ " " + pdfWords[i+1]
+                del pdfWords[i+1]
+                print(pdfWords[i])
+                print(pdfWords[i+1])
+        i+=1           
+    # finding all the key word positions 
+    i=0    
+    while i<len(pdfWords)-1:
+        for n in keyWords:
+            if pdfWords[i].__contains__(n):  
                 keyPositions.append(i)
-                keyWordPositions.append(n)
-                
+                keyWordPositions.append(n)   
         i+=1   
+#        
+         
+    #join two word elements into one such as [Office, Hours] into [Office Hours] sub categories
+    i=0
+    while i<len(pdfWords)-1:
+        for n in subCat:
+            temp = pdfWords[i] + " " + pdfWords[i+1]
+            if ((n+':')==temp):
+                pdfWords[i] = pdfWords[i]+ " " + pdfWords[i+1]
+                del pdfWords[i+1]
+        i+=1    
+    # sub category location finder     
+    i=0    
+    while i<len(pdfWords)-1:
+        for m in subCat: 
+            temp = pdfWords[i] + " " + pdfWords[i+1]
+            if pdfWords[i] == m or temp == m:
+                subCatkeyPosition.append(i)
+                subCatWordPosition.append(m)  
+        i+=1 
+    #   
+    i=0
+    while i<len(keyPositions)-1:
+        j=0
+        while j<len(subCatkeyPosition)-1:
+            k = len(subCatkeyPosition)-1
+            if ((j%(len(subCat)-1) == 0) and (subCatkeyPosition[j] < keyPositions[i+1]) and keyPositions[i] < subCatkeyPosition[j] and j>0):
+                header.append(keyWordPositions[i]+' '+subCatWordPosition[j]) 
+                data.append(pdfWords[subCatkeyPosition[j]:keyPositions[i+1]])
+                j+=1
+            else:
+                if (keyPositions[i] < subCatkeyPosition[j] and subCatkeyPosition[j] < keyPositions[i+1]):
+                    header.append(keyWordPositions[i]+' '+subCatWordPosition[j]) 
+                    data.append(pdfWords[subCatkeyPosition[j]:subCatkeyPosition[j+1]])
+                    j+=1
+                else: 
+                    j+=1
+        i+=1
+        
+    for n in header: 
+        print(n) 
+    for n in data: 
+        print(n)   
+#             
+    #===========================================================================
+    # i=0    
+    # while i<len(pdfWords)-1:
+    #     for n in keyWords:
+    #         temp = pdfWords[i] + " " + pdfWords[i+1]
+    #         if pdfWords[i].__contains__(n) or temp.__contains__(n):   
+    #             keyPositions.append(i)
+    #             keyWordPositions.append(n)   
+    #     i+=1   
+    #===========================================================================
         
     #to end of file    
     keyPositions.append(len(pdfWords))
@@ -577,6 +653,9 @@ def pullInfo(file):
     while i <len(keyPositions)-1:      
         intent = keyWordObj.get(intent = keyWordPositions[i])
         intent.infoData=(pdfWords[keyPositions[i]:keyPositions[i+1]])
+        b = pdfWords[keyPositions[i]]
+        a=(pdfWords[(keyPositions[i])+1:keyPositions[i+1]])
+
         #intent.save()
         i+=1
     return(pdfWords)
