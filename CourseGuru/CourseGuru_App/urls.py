@@ -21,5 +21,6 @@ urlpatterns = [
     path('courses/', views.courses, name='courses'),
     path('roster/', views.roster, name='roster'),
     path('chatAnswer/', views.chatAnswer, name='chatAnswer'),
+    path('uploadDocument/', views.uploadDocument, name='uploadDocument'),
 
 ]

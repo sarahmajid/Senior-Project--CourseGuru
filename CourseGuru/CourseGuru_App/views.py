@@ -315,7 +315,22 @@ def question(request):
         return render(request, 'CourseGuru_App/question.html', {'content': fquestions, 'user': user, 'courseID': cid, 'courseName': cName})
     else:
         return HttpResponseRedirect('/')
-
+def uploadDocument(request):
+    if request.user.is_authenticated:
+        cid = request.GET.get('cid', '')
+        cName = course.objects.get(id = cid)
+        studentList = courseusers.objects.filter(course_id=cid)
+        if request.method == "POST":
+            if request.POST.get('Logout') == "Logout":
+                logout(request)
+                return HttpResponseRedirect('/')
+            else:
+                credentialmismatch = "Username does not exist"
+                return render(request, 'CourseGuru_App/uploadDocument.html', {'courseID': cid, 'credentialmismatch': credentialmismatch, 'courseName': cName})
+        return render(request, 'CourseGuru_App/uploadDocument.html', {'courseID': cid, 'studentList': studentList, 'courseName': cName})
+    else:
+        return HttpResponseRedirect('/')
+    
 def publish(request):
     if request.user.is_authenticated:
         cid = request.GET.get('cid', '')
@@ -577,8 +592,9 @@ def pullInfo(file):
     i=0
     while i<len(pdfWords)-1:
         for n in keyWords:
+            a = n + r":|;"
             temp = pdfWords[i] + " " + pdfWords[i+1]
-            if ((n+':')==temp):
+            if ((a)==temp):
                 pdfWords[i] = pdfWords[i]+ " " + pdfWords[i+1]
                 del pdfWords[i+1]
         i+=1           
@@ -587,11 +603,13 @@ def pullInfo(file):
     i=0
     while i<len(pdfWords)-1:
         for n in subCat:
+            a = n + r":|;"
             temp = pdfWords[i] + " " + pdfWords[i+1]
-            if ((n+':')==temp):
+            if ((a)==temp):
                 pdfWords[i] = pdfWords[i]+ " " + pdfWords[i+1]
                 del pdfWords[i+1]
         i+=1   
+        
     # finding all the key word positions 
     i=0    
     while i<len(pdfWords)-1:
@@ -624,32 +642,31 @@ def pullInfo(file):
                     
                     j+=1
                 elif (keyPositions[i] < subCatkeyPosition[j] and subCatkeyPosition[j] < keyPositions[i+1] and j==4):
-##                    header.append(keyWordPositions[i]+' '+subCatWordPosition[j]) 
-##                    data.append(pdfWords[subCatkeyPosition[j]:keyPositions[i+1]-1])
-                    keywords.objects.create(intent = (keyWordPositions[i]+' '+subCatWordPosition[j]), data = (pdfWords[(subCatkeyPosition[j]+1):keyPositions[i+1]-1]))
+                    header.append(keyWordPositions[i]+' '+subCatWordPosition[j]) 
+                    data.append(pdfWords[subCatkeyPosition[j]:keyPositions[i+1]-1])
+#                    keywords.objects.create(intent = (keyWordPositions[i]+' '+subCatWordPosition[j]), data = (pdfWords[(subCatkeyPosition[j]+1):keyPositions[i+1]-1]))
                     j+=1
                         
                 elif (keyPositions[i] < subCatkeyPosition[j] and subCatkeyPosition[j] <= keyPositions[i+1]):
-##                    header.append(keyWordPositions[i]+' '+subCatWordPosition[j]) 
-##                    data.append(pdfWords[subCatkeyPosition[j]:subCatkeyPosition[j+1]])
-                    keywords.objects.create(intent = (keyWordPositions[i]+' '+subCatWordPosition[j]), data = (pdfWords[(subCatkeyPosition[j]+1):subCatkeyPosition[j+1]]))
+                    header.append(keyWordPositions[i]+' '+subCatWordPosition[j]) 
+                    ##crash here if only one sub cat name found
+                    data.append(pdfWords[subCatkeyPosition[j]:subCatkeyPosition[j+1]])
+#                    keywords.objects.create(intent = (keyWordPositions[i]+' '+subCatWordPosition[j]), data = (pdfWords[(subCatkeyPosition[j]+1):subCatkeyPosition[j+1]]))
                     j+=1
                 else: 
                     j+=1
             i+=1
         else: 
-##            header.append(pdfWords[keyPositions[i]])
-##            data.append(pdfWords[(keyPositions[i]+1):keyPositions[i+1]])
-            keywords.objects.create(intent = (keyWordPositions[i]), data = (pdfWords[(keyPositions[i]+1):keyPositions[i+1]]))
+            header.append(pdfWords[keyPositions[i]])
+            data.append(pdfWords[(keyPositions[i]+1):keyPositions[i+1]])
+#            keywords.objects.create(intent = (keyWordPositions[i]), data = (pdfWords[(keyPositions[i]+1):keyPositions[i+1]]))
             i+=1
         
-    #===========================================================================
-    ##For Testing 
-    # for n in header: 
-    #     print(n) 
-    # for n in data: 
-    #     print(n)   
-    #===========================================================================
+    #For Testing 
+    for n in header: 
+        print(n) 
+    for n in data: 
+        print(n)   
 
 #Will need once finished setting all key words        
     #to end of file    
