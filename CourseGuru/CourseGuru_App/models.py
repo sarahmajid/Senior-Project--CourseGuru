@@ -63,6 +63,7 @@ class botanswers(models.Model):
     
 class keywords(models.Model):
     intent = models.CharField(max_length=50)
+    data = models.CharField(max_length=50000)
     
 class courseinfo(models.Model):
     fkCourseId = models.ForeignKey(course, on_delete=models.CASCADE)

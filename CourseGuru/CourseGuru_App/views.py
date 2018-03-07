@@ -546,25 +546,26 @@ def pdfToText(request):
 
 #will need a more robust way
 def pullInfo(file):
-
+    
+## = for Testing Purposes 
     keyWordObj = courseinfo.objects.all()
     keyWords = []
     #parallel arrays to store the keywords found and their positions 
     keyPositions = []
     keyWordPositions = []
-#
+
     subCat = ['Name', 'Office location', 'Phone', 'Email', 'Office Hours']
     
     subCatkeyPosition = [] 
     subCatWordPosition = []
     header=[]
     data=[]
-#
-    #pdfWords = word_tokenize(file, 'english')
+
     space = nltk.tokenize.SpaceTokenizer()
     pdfWord = space.tokenize(file)
     pdfWords = []
     
+    #strips the '\n' character from the list of elements 
     for n in pdfWord: 
         pdfWords.append(n.strip())
     
@@ -609,57 +610,62 @@ def pullInfo(file):
                 subCatkeyPosition.append(i)
                 subCatWordPosition.append(m)  
         i+=1 
-    #   
+    #structuring text and storing it into the database table as ex: Instructors Name | John Doe    
     i=0
     while i<len(keyPositions)-1:
         j=0
-        while j<=len(subCatkeyPosition)-1:
-            n=0
-            if (keyPositions[i] < subCatkeyPosition[j] and subCatkeyPosition[j] < keyPositions[i+1] and j==9):
-                header.append(keyWordPositions[i]+' '+subCatWordPosition[j]) 
-                data.append(pdfWords[subCatkeyPosition[j]:keyPositions[i+1]-1])
-                j+=1
-            elif (keyPositions[i] < subCatkeyPosition[j] and subCatkeyPosition[j] < keyPositions[i+1] and j==4):
-                header.append(keyWordPositions[i]+' '+subCatWordPosition[j]) 
-                data.append(pdfWords[subCatkeyPosition[j]:keyPositions[i+1]-1])
-                j+=1
+        if keyPositions[i] < subCatkeyPosition[-1]:
+            while j<=len(subCatkeyPosition)-1:
+                n=0
+                if (keyPositions[i] < subCatkeyPosition[j] and subCatkeyPosition[j] < keyPositions[i+1] and j==9):
+##                   header.append(keyWordPositions[i]+' '+subCatWordPosition[j]) 
+##                    data.append(pdfWords[subCatkeyPosition[j]:keyPositions[i+1]-1])
+                    keywords.objects.create(intent = (keyWordPositions[i]+' '+subCatWordPosition[j]), data = (pdfWords[(subCatkeyPosition[j]+1):keyPositions[i+1]-1]))
                     
-            elif (keyPositions[i] < subCatkeyPosition[j] and subCatkeyPosition[j] <= keyPositions[i+1]):
-                header.append(keyWordPositions[i]+' '+subCatWordPosition[j]) 
-                data.append(pdfWords[subCatkeyPosition[j]:subCatkeyPosition[j+1]])
-                j+=1
-            else: 
-                j+=1
-        i+=1
+                    j+=1
+                elif (keyPositions[i] < subCatkeyPosition[j] and subCatkeyPosition[j] < keyPositions[i+1] and j==4):
+##                    header.append(keyWordPositions[i]+' '+subCatWordPosition[j]) 
+##                    data.append(pdfWords[subCatkeyPosition[j]:keyPositions[i+1]-1])
+                    keywords.objects.create(intent = (keyWordPositions[i]+' '+subCatWordPosition[j]), data = (pdfWords[(subCatkeyPosition[j]+1):keyPositions[i+1]-1]))
+                    j+=1
+                        
+                elif (keyPositions[i] < subCatkeyPosition[j] and subCatkeyPosition[j] <= keyPositions[i+1]):
+##                    header.append(keyWordPositions[i]+' '+subCatWordPosition[j]) 
+##                    data.append(pdfWords[subCatkeyPosition[j]:subCatkeyPosition[j+1]])
+                    keywords.objects.create(intent = (keyWordPositions[i]+' '+subCatWordPosition[j]), data = (pdfWords[(subCatkeyPosition[j]+1):subCatkeyPosition[j+1]]))
+                    j+=1
+                else: 
+                    j+=1
+            i+=1
+        else: 
+##            header.append(pdfWords[keyPositions[i]])
+##            data.append(pdfWords[(keyPositions[i]+1):keyPositions[i+1]])
+            keywords.objects.create(intent = (keyWordPositions[i]), data = (pdfWords[(keyPositions[i]+1):keyPositions[i+1]]))
+            i+=1
         
-    for n in header: 
-        print(n) 
-    for n in data: 
-        print(n)   
-#             
     #===========================================================================
-    # i=0    
-    # while i<len(pdfWords)-1:
-    #     for n in keyWords:
-    #         temp = pdfWords[i] + " " + pdfWords[i+1]
-    #         if pdfWords[i].__contains__(n) or temp.__contains__(n):   
-    #             keyPositions.append(i)
-    #             keyWordPositions.append(n)   
-    #     i+=1   
+    ##For Testing 
+    # for n in header: 
+    #     print(n) 
+    # for n in data: 
+    #     print(n)   
     #===========================================================================
-        
+
+#Will need once finished setting all key words        
     #to end of file    
     keyPositions.append(len(pdfWords))
     # loops through the key positions and puts data into appropriate rows according to intent name 
-    i=0
-    while i <len(keyPositions)-1:      
-        intent = keyWordObj.get(intent = keyWordPositions[i])
-        intent.infoData=(pdfWords[(keyPositions[i]+1):keyPositions[i+1]])
-        b = pdfWords[keyPositions[i]]
-        a=(pdfWords[(keyPositions[i]+1):keyPositions[i+1]])
-#        print(intent.infoData)
-        intent.save()
-        i+=1
+#===============================================================================
+#     i=0
+#     while i <len(keyPositions)-1:      
+#         intent = keyWordObj.get(intent = keyWordPositions[i])
+#         intent.infoData=(pdfWords[(keyPositions[i]+1):keyPositions[i+1]])
+#         b = pdfWords[keyPositions[i]]
+#         a=(pdfWords[(keyPositions[i]+1):keyPositions[i+1]])
+# #        print(intent.infoData)
+#         intent.save()
+#         i+=1
+#===============================================================================
     return(pdfWords)
 def chatbot(request):
     return render(request, 'CourseGuru_App/botchat.html',)
