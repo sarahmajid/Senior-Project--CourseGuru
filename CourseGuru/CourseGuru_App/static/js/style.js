@@ -8,15 +8,42 @@ $(document).ready(function() {
         }
 	});
 	
-	$('#voteUp').click(function(e) { 
-		//$('#voteUpImg').addClass('glyphicon-thumbs-down').removeClass('glyphicon-thumbs-up');
-		$('#voteDownImg').removeClass('votedDown');
-		$('#voteUpImg').addClass('votedUp');
+	
+	//Changes color of upvote and rating number when clicked
+	$(".ratingArea").find("#voteUp").click(function(e) {
+		rateDiv = $(this).closest("div");
+		downBtn = rateDiv.find("#voteDown");
+		
+		rateEl = rateDiv.find("#rating")
+		curRate = parseInt(rateEl.html());
+		if (downBtn.hasClass('votedDown')){
+			rateEl.html(curRate+2);
+		}
+		else if (!($(this).hasClass('votedUp')) && !(downBtn.hasClass('votedDown'))){
+			rateEl.html(curRate+1);
+		}
+		
+		downBtn.removeClass('votedDown');
+		$(this).addClass('votedUp');
+		
 	});
 	
-	$('#voteDown').click(function(e) { 
-		$('#voteUpImg').removeClass('votedUp');
-		$('#voteDownImg').addClass('votedDown');
+	//Changes color of downvote and rating number when clicked
+	$(".ratingArea").find("#voteDown").click(function(e) {
+		rateDiv = $(this).closest("div");
+		upBtn = rateDiv.find("#voteUp");
+		
+		rateEl = rateDiv.find("#rating")
+		curRate = parseInt(rateEl.html());
+		if (upBtn.hasClass('votedUp')){
+			rateEl.html(curRate-2);
+		}
+		else if (!($(this).hasClass('votedDown')) && !(upBtn.hasClass('votedUp'))){
+			rateEl.html(curRate-1);
+		}
+		
+		upBtn.removeClass('votedUp');
+		$(this).addClass('votedDown');
 	});
 	
 /*	$('#submit').click(function(){ */
@@ -54,6 +81,15 @@ $(document).ready(function() {
 // Hide or show account drop down
 function profileFunc() {
     document.getElementById("profileDropdown").classList.toggle("show");
+}
+
+//Ajax call to voting function and changes rating number on page
+function vote(elem, rating, answerID, userID) { 
+	$.get('/voting/', {"rating": rating, "answer": answerID, "user": userID}, function(data) {		
+//		rateDiv = $(elem).closest("div");
+//		rating = rateDiv.find("#rating");
+//		rating.html(data);
+	});	
 }
 
 // Close the account drop down when click is made outside of content

@@ -403,20 +403,25 @@ def answer(request):
         ansCt = aData.count()
         qData = questions.objects.get(id = qid)
         cData = comments.objects.filter(question_id = qid)
+        
+        #-----Used for checking if post was previously rated------
+        upData2 = userratings.objects.filter(user_id = user.id, rating = 1).only('answer_id')
+        downData2 = userratings.objects.filter(user_id = user.id, rating = 0).only('answer_id')
+        
+        upData = []
+        downData = []
+        
+        for x in upData2:
+            upData.append(x.answer_id)
+            
+        for x in downData2:
+            downData.append(x.answer_id)
+        #--------------------------------------------------------
 
         if request.method == "POST":
             if request.POST.get('Logout') == "Logout":
                 logout(request)
                 return HttpResponseRedirect('/')
-            if 'voteUp' in request.POST: 
-                answerId = request.POST.get('voteUp')
-                voting(1, answerId, user)
-                return HttpResponseRedirect('/answer/?id=%s&cid=%s' % (qid, cid))
-            
-            elif 'voteDown' in request.POST: 
-                answerId = request.POST.get('voteDown')
-                voting(0, answerId, user)
-                return HttpResponseRedirect('/answer/?id=%s&cid=%s' % (qid, cid))
             
             elif 'query' in request.POST:
                 query = request.POST.get('query')
@@ -443,22 +448,28 @@ def answer(request):
                 return HttpResponseRedirect('/question/?id=%s' % cid)   
 
             return HttpResponseRedirect('/answer/?id=%s&cid=%s' % (qid, cid)) 
-        return render(request, 'CourseGuru_App/answer.html', {'answers': aData, 'numAnswers': ansCt, 'Title': qData, 'comments': cData, 'courseID': cid})
+        return render(request, 'CourseGuru_App/answer.html', {'answers': aData, 'numAnswers': ansCt, 'Title': qData, 'comments': cData, 'courseID': cid, 'upData': upData, 'downData': downData})
     else:
         return HttpResponseRedirect('/')
     
-def voting(rate, answerId, user):
-    if userratings.objects.filter(user_id = user.id, answer_id = answerId).exists():
-        newRate = userratings.objects.get(user_id = user.id, answer_id = answerId)
+def voting(request):
+    rate = request.GET.get('rating')
+    answerID = request.GET.get('answer')
+    userID = request.GET.get('user')    
+    
+    if userratings.objects.filter(user_id = userID, answer_id = answerID).exists():
+        newRate = userratings.objects.get(user_id = userID, answer_id = answerID)
         newRate.rating = rate
         newRate.save()
     else:
-        userratings.objects.create(user_id = user.id, answer_id = answerId, rating = rate)    
-    uprateCt = userratings.objects.filter(answer_id = answerId, rating = 1).count()
-    downrateCt = userratings.objects.filter(answer_id = answerId, rating = 0).count()
-    record = answers.objects.get(id = answerId)
+        userratings.objects.create(user_id = userID, answer_id = answerID, rating = rate)    
+    uprateCt = userratings.objects.filter(answer_id = answerID, rating = 1).count()
+    downrateCt = userratings.objects.filter(answer_id = answerID, rating = 0).count()
+    record = answers.objects.get(id = answerID)
     record.rating = (uprateCt - downrateCt)
     record.save()
+    
+    return HttpResponse()
 
 # returns a good match to entities answer object  
 def getIntentAns(luisIntent, luisEntities):    
@@ -475,7 +486,6 @@ def getIntentAns(luisIntent, luisEntities):
         #testing, change entities name to something else later
         ansLen = len(m.entities)
         for ent in entitiesList:
-            print(ent)
             #testing, change entities name to something else later
             if ent.lower() in m.entities.lower():
                 Match += 1
@@ -484,7 +494,6 @@ def getIntentAns(luisIntent, luisEntities):
             count = Accuracy
             answr = m.answer
     
-    print('check')  
         #=======================================================================
         # b = m.answer.split(" ")
         # tempCntMtch = 0
@@ -670,7 +679,7 @@ def cbAnswer(nq):
     #ID of the latest question created
     #qid = questions.objects.last()
     
-    print(luisEntities)
+    #print(luisEntities)
     
     entAnswer = getIntentAns(luisIntent, luisEntities)
     if entAnswer == "":
