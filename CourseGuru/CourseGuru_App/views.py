@@ -36,11 +36,14 @@ from CourseGuru_App.models import userratings
 from CourseGuru_App.luisRun import teachLuis
 from CourseGuru_App.natLang import reformQuery
 
+ 
 from pdfminer.pdfparser import PDFParser, PDFDocument
-from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
+from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter, process_pdf
 from pdfminer.layout import LAParams, LTTextBoxHorizontal
-from pdfminer.converter import PDFPageAggregator
+from pdfminer.converter import PDFPageAggregator, HTMLConverter
 from pdfminer.pslexer import delimiter
+
+from io import BytesIO
 
 from test.test_decimal import file
 from pickle import INST
@@ -523,11 +526,11 @@ def pdfToText(request):
     if request.method == "POST":
         #Sets myfile to the selected file on page and reads it
         myfile = request.FILES.get("syllabusFile").file.read()
-            
+             
         #Create temporary file in read and write binary mode
         f = tempfile.TemporaryFile('r+b')
         f.write(myfile)
-
+ 
         #Sets the cursor back to 0 in f to be parsed and sets the documents and parser
         f.seek(0)
         parser = PDFParser(f)
@@ -538,15 +541,16 @@ def pdfToText(request):
         rsrcmgr = PDFResourceManager()
         #sets parameters for analysis 
         laparams = LAParams()
-            
+             
         #Required to define separation of text within pdf
         laparams.char_margin = 1
         laparams.word_margin = 1
-            
+             
         #Device takes LAPrams and uses them to parse individual pdf objects
         device = PDFPageAggregator(rsrcmgr, laparams=laparams)
+        #device = HTMLConverter(rsrcmgr, laparams=laparams)
         interpreter = PDFPageInterpreter(rsrcmgr, device)
-            
+             
         for page in doc.get_pages():
             interpreter.process_page(page)
             layout = device.get_result()
@@ -558,18 +562,46 @@ def pdfToText(request):
     return render(request, 'CourseGuru_App/parse.html', {'convText' : test})
 
 #===============================================================================
+# def pdfToHTML(request):
+#     if request.method == "POST":
+#         #Sets myfile to the selected file on page and reads it
+#         myfile = request.FILES.get("syllabusFile").file.read()
+#         
+#         f = tempfile.TemporaryFile('r+b')
+#         f.write(myfile)
+#         
+#         resourceManager = PDFResourceManager()
+#         laparams = LAParams()
+#           
+#         file = open(f, 'rb')
+#         maxpages = 0
+#         caching = True
+#         pagenos=set()
+#         
+#         device = HTMLConverter(resourceManager, file, codec='utf-8', laparams=laparams)
+#         
+#         process_pdf(resourceManager, device, file, pagenos=None, maxpages=0)
+#         
+#         file.close()
+#         device.close()
+#         #return text
+#         
+#     return render(request, 'CourseGuru_App/parse.html')
+# #===============================================================================
+#===============================================================================
 
 #will need a more robust way
 def pullInfo(file):
     
 ## = for Testing Purposes 
-    keyWordObj = courseinfo.objects.all()
+    keyWordObj = keywords.objects.exclude(categoryKeyWords=None)
+    subKeyWords = keywords.objects.exclude(subCategoryKeyWords=None)
     keyWords = []
     #parallel arrays to store the keywords found and their positions 
     keyPositions = []
     keyWordPositions = []
 
-    subCat = ['Name', 'Office location', 'Phone', 'Email', 'Office Hours']
+    subCat = []
     
     subCatkeyPosition = [] 
     subCatWordPosition = []
@@ -585,16 +617,17 @@ def pullInfo(file):
         pdfWords.append(n.strip())
     
     for n in keyWordObj:
-        keyWords.append(n.intent)
+        keyWords.append(n.categoryKeyWords)
+    for n in subKeyWords:
+        subCat.append(n.subCategoryKeyWords)
         
-           
+               
     #join two word elements into one such as [Teaching, assistant] into [Teaching assistant] in main Category
     i=0
     while i<len(pdfWords)-1:
         for n in keyWords:
-            a = n + r":|;"
             temp = pdfWords[i] + " " + pdfWords[i+1]
-            if ((a)==temp):
+            if re.match(n + r"^\:|\;$", temp, re.IGNORECASE):
                 pdfWords[i] = pdfWords[i]+ " " + pdfWords[i+1]
                 del pdfWords[i+1]
         i+=1           
@@ -603,9 +636,8 @@ def pullInfo(file):
     i=0
     while i<len(pdfWords)-1:
         for n in subCat:
-            a = n + r":|;"
             temp = pdfWords[i] + " " + pdfWords[i+1]
-            if ((a)==temp):
+            if re.match(n + r"^\:|\;$", temp, re.IGNORECASE):
                 pdfWords[i] = pdfWords[i]+ " " + pdfWords[i+1]
                 del pdfWords[i+1]
         i+=1   
@@ -623,29 +655,25 @@ def pullInfo(file):
     i=0    
     while i<len(pdfWords)-1:
         for m in subCat: 
-            temp = pdfWords[i] + " " + pdfWords[i+1]
             if pdfWords[i].__contains__(m):
                 subCatkeyPosition.append(i)
                 subCatWordPosition.append(m)  
         i+=1 
+        
+    numKeyWordsFound=len(set(subCatWordPosition))
+    
     #structuring text and storing it into the database table as ex: Instructors Name | John Doe    
     i=0
     while i<len(keyPositions)-1:
         j=0
         if keyPositions[i] < subCatkeyPosition[-1]:
             while j<=len(subCatkeyPosition)-1:
-                n=0
-                if (keyPositions[i] < subCatkeyPosition[j] and subCatkeyPosition[j] < keyPositions[i+1] and j==9):
-##                   header.append(keyWordPositions[i]+' '+subCatWordPosition[j]) 
-##                    data.append(pdfWords[subCatkeyPosition[j]:keyPositions[i+1]-1])
-                    keywords.objects.create(intent = (keyWordPositions[i]+' '+subCatWordPosition[j]), data = (pdfWords[(subCatkeyPosition[j]+1):keyPositions[i+1]-1]))
-                    
-                    j+=1
-                elif (keyPositions[i] < subCatkeyPosition[j] and subCatkeyPosition[j] < keyPositions[i+1] and j==4):
+                if (keyPositions[i] < subCatkeyPosition[j] and subCatkeyPosition[j] < keyPositions[i+1] and j==(numKeyWordsFound-1)):
                     header.append(keyWordPositions[i]+' '+subCatWordPosition[j]) 
                     data.append(pdfWords[subCatkeyPosition[j]:keyPositions[i+1]-1])
-#                    keywords.objects.create(intent = (keyWordPositions[i]+' '+subCatWordPosition[j]), data = (pdfWords[(subCatkeyPosition[j]+1):keyPositions[i+1]-1]))
+#                     keywords.objects.create(intent = (keyWordPositions[i]+' '+subCatWordPosition[j]), data = (pdfWords[(subCatkeyPosition[j]+1):keyPositions[i+1]-1]))
                     j+=1
+                    numKeyWordsFound+=numKeyWordsFound
                         
                 elif (keyPositions[i] < subCatkeyPosition[j] and subCatkeyPosition[j] <= keyPositions[i+1]):
                     header.append(keyWordPositions[i]+' '+subCatWordPosition[j]) 
@@ -653,6 +681,7 @@ def pullInfo(file):
                     data.append(pdfWords[subCatkeyPosition[j]:subCatkeyPosition[j+1]])
 #                    keywords.objects.create(intent = (keyWordPositions[i]+' '+subCatWordPosition[j]), data = (pdfWords[(subCatkeyPosition[j]+1):subCatkeyPosition[j+1]]))
                     j+=1
+                    
                 else: 
                     j+=1
             i+=1

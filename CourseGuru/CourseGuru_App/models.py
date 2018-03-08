@@ -62,12 +62,13 @@ class botanswers(models.Model):
     
     
 class keywords(models.Model):
-    intent = models.CharField(max_length=50)
-    data = models.CharField(max_length=50000)
+    categoryKeyWords = models.CharField(max_length=100)
+    subCategoryKeyWords = models.CharField(max_length=100) 
+   
     
 class courseinfo(models.Model):
     fkCourseId = models.ForeignKey(course, on_delete=models.CASCADE)
-    intent = models.CharField(max_length=50)
+    category = models.CharField(max_length=50)
     entities = models.CharField(max_length=200)    
     infoData = models.TextField()
     courseId = models.CharField(max_length = 15)
