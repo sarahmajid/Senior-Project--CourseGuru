@@ -32,4 +32,5 @@ urlpatterns = [
     path('/roster/', include('CourseGuru_App.urls')), 
     path('/chatAnswer/', include('CourseGuru_App.urls')), 
     path('admin/', admin.site.urls),
+    path('/uploadDocument/', include('CourseGuru_App.urls')),
     ]

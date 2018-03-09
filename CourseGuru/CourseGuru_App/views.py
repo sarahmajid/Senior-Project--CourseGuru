@@ -4,7 +4,7 @@ import json
 import requests
 import datetime
 import nltk
-import csv 
+ 
 import io
 
 from nltk.tokenize import word_tokenize, sent_tokenize
@@ -35,21 +35,25 @@ from CourseGuru_App.models import courseusers
 from CourseGuru_App.models import userratings
 from CourseGuru_App.luisRun import teachLuis
 from CourseGuru_App.natLang import reformQuery
+from CourseGuru_App.pdfParser import *
+from CourseGuru_App.docxParser import *
+from CourseGuru_App.CSV import *
 
-from pdfminer.pdfparser import PDFParser, PDFDocument
-from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
-from pdfminer.layout import LAParams, LTTextBox, LTTextLine, LTTextBoxHorizontal
-from pdfminer.converter import PDFPageAggregator
-from pdfminer.pslexer import delimiter
+
+from io import BytesIO
 
 from test.test_decimal import file
 from pickle import INST
 from test.test_enum import Answer
 from builtins import str
-from _ast import Str
+from _ast import Str, Yield
 from string import ascii_lowercase
 from warnings import catch_warnings
 from symbol import except_clause
+from tkinter.font import BOLD
+from attr.validators import instance_of
+from docx.oxml.document import CT_Body
+from CourseGuru_App import pdfParser
 #from nltk.parse.featurechart import sent
 
 #Function to populate Main page
@@ -95,7 +99,6 @@ def account(request):
         cpsword = request.POST.get('cpassword')
         stat = request.POST.get('status')
         email = request.POST.get('email')       
-        
         if (psword != cpsword):
             errorMsg = 'Password Mismatch'
             return render(request, 'CourseGuru_App/account.html', {'errorMsg': errorMsg, 'fname': firstname, 'lname': lastname, 'status': stat, 'email': email})
@@ -108,7 +111,7 @@ def account(request):
         else:
             if (passwordValidator(psword) != None):
                 errorMsg =  passwordValidator(psword)
-            return render(request, 'CourseGuru_App/account.html', {'errorMsg': errorMsg,'fname': firstname, 'lname': lastname, 'status': stat, 'email': email})
+                return render(request, 'CourseGuru_App/account.html', {'errorMsg': errorMsg,'fname': firstname, 'lname': lastname, 'status': stat, 'email': email})
             
             if User.objects.filter(username = username).exists():
                 errorMsg = "Username taken"
@@ -117,7 +120,7 @@ def account(request):
             else:
                 #edit possibly drop user ID from the table or allow it to be null 
                 #user.objects.create(firstName = firstname, lastName = lastname, userName = username, password = psword, status = stat)  
-                newUser = User.objects.create_user(username, 'test@test.com', psword) 
+                newUser = User.objects.create_user(username, email, psword) 
                 newUser.first_name = firstname
                 newUser.last_name = lastname
                 newUser.status = stat
@@ -127,7 +130,7 @@ def account(request):
         return render(request, 'CourseGuru_App/account.html')
 
 def passwordValidator(password):
-    passRegCheck = r"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)"
+    passRegCheck = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)"
     if (len(password)<8): 
         errorMsg = 'Your password must be at least 8 characters long.'
         return errorMsg
@@ -221,58 +224,9 @@ def roster(request):
     else:
         return HttpResponseRedirect('/')
     
-def downloadCSV():
-    file = HttpResponse(content_type='text/csv')
-    file['Content-Disposition'] = 'attachment; filename=CSVTemplate.csv'
-    writer = csv.writer(file)
-    writer.writerow(["Username"])
-    writer.writerow(["UserName1"])
-    writer.writerow(["UserName2"])
-    writer.writerow(["UserName3"])
-    writer.writerow(["..."])
-    return file
 
-def readCSV(csvFile, cid):
-    csvF = csvFile.read().decode()
-    #sniffing for the delimiter in csv
-    sniffer = csv.Sniffer().sniff(csvF)         
-    #reading csv using DictReader     
-    reader = csv.DictReader(((io.StringIO(csvF))), delimiter=sniffer.delimiter)   
-    #converts all field names to lowercase
-    reader.fieldnames = [header.strip().lower() for header in reader.fieldnames]
-            
-    #variable initialization 
-    str1 = "The following "
-    str2 = " users were not added to the course because the usernames do not exist: "
-    strNotAdded = ""
-    notAddedUsers = []
-    numUserNotAdded=0
-    
-    #Adds students according to the csv content. If DictReader is changed code below must be edited.            
-    for n in reader:
-        if(User.objects.filter(username = n['username'])):
-            addUser = User.objects.get(username = n['username'])
-            if (courseusers.objects.filter(user_id = addUser.id, course_id = cid).exists()==False):
-                courseusers.objects.create(user_id = addUser.id, course_id = cid)
-        else: 
-            notAddedUsers.append(n['username']) 
-            numUserNotAdded+=1   
-            strNotAdded = str1 + str(numUserNotAdded) + str2
-    #creates a list of none existing users.         
-    if(len(notAddedUsers)>0):
-        for n in notAddedUsers:
-            if n != notAddedUsers[len(notAddedUsers)-1]:
-                strNotAdded += n + ", "
-            else:
-                if (len(notAddedUsers)==1):
-                    strNotAdded += n + "."
-                    return strNotAdded
-                else:
-                    strNotAdded += "and " + n +"."
-                    return strNotAdded
-    else: 
-        strNotAdded = "All Users Added Successfully!"        
-        return strNotAdded
+
+
 # Function to populate Main page
 def question(request):
     if request.user.is_authenticated:
@@ -313,7 +267,22 @@ def question(request):
         return render(request, 'CourseGuru_App/question.html', {'content': fquestions, 'user': user, 'courseID': cid, 'courseName': cName})
     else:
         return HttpResponseRedirect('/')
-
+def uploadDocument(request):
+    if request.user.is_authenticated:
+        cid = request.GET.get('cid', '')
+        cName = course.objects.get(id = cid)
+        studentList = courseusers.objects.filter(course_id=cid)
+        if request.method == "POST":
+            if request.POST.get('Logout') == "Logout":
+                logout(request)
+                return HttpResponseRedirect('/')
+            else:
+                credentialmismatch = "Username does not exist"
+                return render(request, 'CourseGuru_App/uploadDocument.html', {'courseID': cid, 'credentialmismatch': credentialmismatch, 'courseName': cName})
+        return render(request, 'CourseGuru_App/uploadDocument.html', {'courseID': cid, 'studentList': studentList, 'courseName': cName})
+    else:
+        return HttpResponseRedirect('/')
+    
 def publish(request):
     if request.user.is_authenticated:
         cid = request.GET.get('cid', '')
@@ -498,88 +467,36 @@ def getIntentAns(luisIntent, luisEntities):
         #answr = (botanswers.objects.filter(category_id = catgry.id).first()).answer
     return (answr)     
 
-def pdfToText(request):
-#    Create empty string for text to be extracted into
-    extracted_text = '' 
-    test = ''
-    #When button is clicked we parse the file
+def courseFile(request):
     if request.method == "POST":
         #Sets myfile to the selected file on page and reads it
         myfile = request.FILES.get("syllabusFile").file.read()
-            
-        #Create tempfile in read and write binary mode
-        f = tempfile.TemporaryFile('r+b')
-        f.write(myfile)
-
-        #Sets the cursor back to 0 in f to be parsed and sets the documents and parser
-        f.seek(0)
-        parser = PDFParser(f)
-        doc = PDFDocument()
-        parser.set_document(doc)
-        doc.set_parser(parser)
-        doc.initialize('')
-        rsrcmgr = PDFResourceManager()
-        #sets parameters for analysis 
-        laparams = LAParams()
-            
-        #Required to define seperation of text within pdf
-        laparams.char_margin = 1
-        laparams.word_margin = 1
-            
-        #Device takes LAPrams and uses them to parse individual pdf objects
-        device = PDFPageAggregator(rsrcmgr, laparams=laparams)
-        interpreter = PDFPageInterpreter(rsrcmgr, device)
-            
-        for page in doc.get_pages():
-            interpreter.process_page(page)
-            layout = device.get_result()
-            for lt_obj in layout:
-                if isinstance(lt_obj, LTTextBoxHorizontal):
-                    extracted_text += lt_obj.get_text() 
-        test = pullInfo(extracted_text)   
-        f.close() 
+        test = pdfParser.pdfToText(myfile)
     return render(request, 'CourseGuru_App/parse.html', {'convText' : test})
 
+
+def fileParsing(request):
+    if request.method == "POST":
+        myfile = request.FILES.get("syllabusFile").file.read()
+         
+        f = tempfile.TemporaryFile('r+b')
+        f.write(myfile)
+        
+        document = docxParser(f)
+        
+    return render(request, 'CourseGuru_App/parse.html')  
+  
+
+        
+
+
 #===============================================================================
-
-#will need a more robust way
-def pullInfo(file):
-
-    keyWordObj = courseinfo.objects.all()
-    keyWords = []
-    #parallel arrays to store the keywords found and their positions 
-    keyPositions = []
-    keyWordPositions = []
-
-    pdfWords = word_tokenize(file, 'english')
-
-    
-    for n in keyWordObj:
-        keyWords.append(n.intent)
+# def pdfToHTML(pdfFile):
+#     if request.method == "POST":
+#         #Sets myfile to the selected file on page and reads it
+#         myfile = request.FILES.get("syllabusFile").file.read()
+#===============================================================================
         
-           
-    # finding all the key word positions 
-            
-    i=0    
-    while i<len(pdfWords)-1:
-        for n in keyWords:
-            temp = pdfWords[i] + " " + pdfWords[i+1]
-            if pdfWords[i] == n or temp == n:
-                keyPositions.append(i)
-                keyWordPositions.append(n)
-                
-        i+=1   
-        
-    #to end of file    
-    keyPositions.append(len(pdfWords))
-    # loops through the key positions and puts data into appropriate rows according to intent name 
-    i=0
-    while i <len(keyPositions)-1:      
-        intent = keyWordObj.get(intent = keyWordPositions[i])
-        intent.infoData=(pdfWords[keyPositions[i]:keyPositions[i+1]])
-        #intent.save()
-        i+=1
-    return(pdfWords)
 def chatbot(request):
     return render(request, 'CourseGuru_App/botchat.html',)
 
