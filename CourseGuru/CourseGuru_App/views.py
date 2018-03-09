@@ -4,7 +4,7 @@ import json
 import requests
 import datetime
 import nltk
-import csv 
+ 
 import io
 
 from nltk.tokenize import word_tokenize, sent_tokenize
@@ -37,14 +37,7 @@ from CourseGuru_App.luisRun import teachLuis
 from CourseGuru_App.natLang import reformQuery
 from CourseGuru_App.pdfParser import *
 from CourseGuru_App.docxParser import *
-
-
-from docx import Document
-from docx.document import Document as _Document 
-from docx.oxml.table import CT_Tbl
-from docx.oxml.text.paragraph import CT_P
-from docx.table import _Cell, Table
-from docx.text.paragraph import Paragraph
+from CourseGuru_App.CSV import *
 
 
 from io import BytesIO
@@ -231,61 +224,9 @@ def roster(request):
     else:
         return HttpResponseRedirect('/')
     
-def downloadCSV():
-    file = HttpResponse(content_type='text/csv')
-    file['Content-Disposition'] = 'attachment; filename=CSVTemplate.csv'
-    writer = csv.writer(file)
-    writer.writerow(["Username"])
-    writer.writerow(["UserName1"])
-    writer.writerow(["UserName2"])
-    writer.writerow(["UserName3"])
-    writer.writerow(["..."])
-    return file
 
-def readCSV(csvFile, cid):
-    csvF = csvFile.read().decode()
-    #sniffing for the delimiter in csv
-    sniffer = csv.Sniffer().sniff(csvF)         
-    #reading csv using DictReader     
-    reader = csv.DictReader(((io.StringIO(csvF))), delimiter=sniffer.delimiter)   
-    #converts all field names to lowercase
-    reader.fieldnames = [header.strip().lower() for header in reader.fieldnames]
-            
-    #variable initialization 
-    str1 = "The following "
-    str2 = " users were not added to the course because the usernames do not exist: "
-    strNotAdded = ""
-    notAddedUsers = []
-    numUserNotAdded=0
-    
-    #Adds students according to the csv content. If DictReader is changed code below must be edited.            
-    for n in reader:
-        try:
-            if(User.objects.filter(username = n['username'])):
-                addUser = User.objects.get(username = n['username'])
-                if (courseusers.objects.filter(user_id = addUser.id, course_id = cid).exists()==False):
-                    courseusers.objects.create(user_id = addUser.id, course_id = cid)
-            else: 
-                notAddedUsers.append(n['username']) 
-                numUserNotAdded+=1   
-                strNotAdded = str1 + str(numUserNotAdded) + str2
-        except KeyError: 
-            return 'CSV header error! Please make sure CSV file contain "Username" as the header for all of the usernames.'
-    #creates a list of none existing users.         
-    if(len(notAddedUsers)>0):
-        for n in notAddedUsers:
-            if n != notAddedUsers[len(notAddedUsers)-1]:
-                strNotAdded += n + ", "
-            else:
-                if (len(notAddedUsers)==1):
-                    strNotAdded += n + "."
-                    return strNotAdded
-                else:
-                    strNotAdded += "and " + n +"."
-                    return strNotAdded
-    else: 
-        strNotAdded = "All Users Added Successfully!"        
-        return strNotAdded
+
+
 # Function to populate Main page
 def question(request):
     if request.user.is_authenticated:
@@ -533,41 +474,15 @@ def courseFile(request):
         test = pdfParser.pdfToText(myfile)
     return render(request, 'CourseGuru_App/parse.html', {'convText' : test})
 
-def pdfToText(request):
+
+def fileParsing(request):
     if request.method == "POST":
         myfile = request.FILES.get("syllabusFile").file.read()
          
         f = tempfile.TemporaryFile('r+b')
         f.write(myfile)
         
-        document = Document(f)
-        
-        for n in iterBlockItems(document):
-            print("found block")
-            print(n.text if isinstance(n, Paragraph) else '<table>')
-        
-        categoryPos = [] 
-        categoryPosHeading = []
-        header = []
-        data = []
-    
-        for i in [i for i, paragraph in enumerate(document.paragraphs) if paragraph.style.name == 'Heading 1']:
-                categoryPos.append(i)
-                categoryPosHeading.append(document.paragraphs[i].text)
-      
-        i=0 
-        while i <len(categoryPos)-1:
-            header.append(document.paragraphs[categoryPos[i]].text)
-            data.append(document.paragraphs[categoryPos[i]:categoryPos[i+1]])
-            i+=1        
-        
-        #     #For Testing 
-#        for n in header: 
-#            print(n) 
-        for n in data: 
-            for j in n:
-                print(j.text)
-                #print(j.table)  
+        document = docxParser(f)
         
     return render(request, 'CourseGuru_App/parse.html')  
   
