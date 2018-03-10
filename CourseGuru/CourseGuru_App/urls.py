@@ -9,7 +9,7 @@ urlpatterns = [
     path('account/', views.account, name='account'),
     path('question/', views.question, name='question'),
     path('answer/', views.answer, name='answer'),
-    path('parse/', views.pdfToText, name='parse'),
+    path('parse/', views.fileParsing, name='parse'),
     path('reset-password/', password_reset, {'template_name': 'CourseGuru_App/passwordReset.html'}),
     path('reset-password/done/', password_reset_done,  {'template_name': 'CourseGuru_App/emailedPassMessage.html'}, name='password_reset_done'),
     path('reset-password/confirm/<uidb64>/<token>/', password_reset_confirm,  {'template_name': 'CourseGuru_App/newPassword.html'}, name='password_reset_confirm'),
@@ -22,5 +22,6 @@ urlpatterns = [
     path('roster/', views.roster, name='roster'),
     path('chatAnswer/', views.chatAnswer, name='chatAnswer'),
     path('voting/', views.voting, name='voting'),
+    path('uploadDocument/', views.uploadDocument, name='uploadDocument'),
 
 ]
