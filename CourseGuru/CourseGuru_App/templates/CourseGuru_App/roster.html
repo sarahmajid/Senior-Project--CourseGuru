@@ -88,7 +88,7 @@
 					</form>
 					<br><hr><br>
 					<form method="POST" action="" enctype="multipart/form-data">
-						<div style="font-size: 20px; color: grey; font-family: century gothic;"><b>Add multiple students to this course using a CSV file: </b>
+						<div style="font-size: 18px; color: grey; font-family: century gothic;"><b>Add multiple students to this course using a CSV file: </b>
 						<br><br>
 						<div style="font-size: 16px; color: grey; font-family: century gothic;">Download the template: 
 						{% csrf_token %}
@@ -102,7 +102,6 @@
 						<br>
 						<button type="submit" name="submit" class="btn basic-btn" id="login-btn" value="Add Multiple" >Add Multiple</button>
 					</form>	
-										
 					<h3 style="font-size: 16px; color: red; font-family: century gothic;">{{notAdded}}</h3>
 					<br>
 					
