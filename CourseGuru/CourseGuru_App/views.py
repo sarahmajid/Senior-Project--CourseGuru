@@ -71,15 +71,7 @@ def index(request):
                         login(request, user)
                         return HttpResponseRedirect('/courses/')
                 else:
-                    return render(request, 'CourseGuru_App/index.html', {'credentialmismatch': credentialmismatch})
-        
-                #try:
-                #    
-                #    lid = user.objects.get(userName = usname, password = psword)        
-                #    if (lid.id>0):
-                #        return HttpResponseRedirect('/question/') 
-                #except:
-                #    return render(request, 'CourseGuru_App/index.html',{'credentialmismatch': credentialmismatch})      
+                    return render(request, 'CourseGuru_App/index.html', {'credentialmismatch': credentialmismatch})    
         else:
             newAct = request.GET.get('newAct', '')
             if newAct == "1":
@@ -277,7 +269,6 @@ def uploadDocument(request):
     if request.user.is_authenticated:
         cid = request.GET.get('cid', '')
         cName = course.objects.get(id = cid)
-        studentList = courseusers.objects.filter(course_id=cid)
         if request.method == "POST":
             if request.POST.get('Logout') == "Logout":
                 logout(request)
@@ -285,7 +276,7 @@ def uploadDocument(request):
             else:
                 credentialmismatch = "Username does not exist"
                 return render(request, 'CourseGuru_App/uploadDocument.html', {'courseID': cid, 'credentialmismatch': credentialmismatch, 'courseName': cName})
-        return render(request, 'CourseGuru_App/uploadDocument.html', {'courseID': cid, 'studentList': studentList, 'courseName': cName})
+        return render(request, 'CourseGuru_App/uploadDocument.html', {'courseID': cid, 'courseName': cName})
     else:
         return HttpResponseRedirect('/')
     
@@ -457,10 +448,8 @@ def getIntentAns(luisIntent, luisEntities):
     
     for m in filtAns:
         Match = 0
-        #testing, change entities name to something else later
         ansLen = len(m.entities)
         for ent in entitiesList:
-            #testing, change entities name to something else later
             if ent.lower() in m.entities.lower():
                 Match += 1
         Accuracy = (Match/ansLen)
@@ -468,21 +457,6 @@ def getIntentAns(luisIntent, luisEntities):
             count = Accuracy
             answr = m.answer
 
-        #=======================================================================
-        # b = m.answer.split(" ")
-        # tempCntMtch = 0
-        # ttlCnt = len(b)
-        # for n in b: 
-        #     #if the word in the answer is in the list of entities then increment by 1
-        #     if luisEntities.count(n) > 0:
-        #         tempCntMtch += 1
-        #     cntAccuracy = (tempCntMtch/ttlCnt)
-        #     if cntAccuracy>count:
-        #         count = cntAccuracy 
-        #         answr = m.answer
-        #=======================================================================
-    #if answr == "":
-        #answr = (botanswers.objects.filter(category_id = catgry.id).first()).answer
     return (answr)     
 
 def courseFile(request):
@@ -500,14 +474,14 @@ def fileParsing(request):
         f = tempfile.TemporaryFile('r+b')
         f.write(myfile)
         
-        document = docxParser(f)
+        docxParser(f)
         
     return render(request, 'CourseGuru_App/parse.html')  
   def chatbot(request):
     return render(request, 'CourseGuru_App/botchat.html',)
 
 def cbAnswer(nq):
-    r = requests.get('https://westus.api.cognitive.microsoft.com/luis/v2.0/apps/6059c365-d88a-412b-8f33-d7393ba3bf9f?subscription-key=c574439a46e64d8cb597879499ccf8f9&verbose=true&timezoneOffset=-300&q=%s' % nq)
+    r = requests.get('https://westus.api.cognitive.microsoft.com/luis/v2.0/apps/6059c365-d88a-412b-8f33-d7393ba3bf9f?subscription-key=c574439a46e64d8cb597879499ccf8f9&spellCheck=true&bing-spell-check-subscription-key={5831ea4a48994d53abdc2312b6ea7ccf}&verbose=true&timezoneOffset=0&q=%s' % nq)
     luisStr = json.loads(r.text)
     #Grabs intent score of question
     luisScore = float(luisStr['topScoringIntent']['score'])
@@ -516,9 +490,12 @@ def cbAnswer(nq):
     #Grabs entities
     if luisIntent == 'Greetings':
         return('Hello, how can I help you?')
-    if not luisStr['entities']:
-        return
+    elif luisIntent == 'Name':
+        luisIntent = 'Course Policies'
+    if luisIntent == "None" or not luisStr['entities']:
+        return("Sorry, I didn't understand that.")
     luisEntities = ""
+        
     z = 0
     for x in luisStr['entities']:
         newEnt = luisStr['entities'][z]['entity']
@@ -542,7 +519,8 @@ def cbAnswer(nq):
     entAnswer = getIntentAns(luisIntent, luisEntities)
     if entAnswer == "":
         return
-    botAns = reformQuery(nq) + entAnswer
+    #botAns = reformQuery(nq) + entAnswer
+    botAns = entAnswer
     return(botAns)
 
 

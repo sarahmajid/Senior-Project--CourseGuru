@@ -8,7 +8,10 @@ Created on Mar 8, 2018
 import re
 import nltk
 
+from CourseGuru_App.models import botanswers
+
 from nltk.corpus import stopwords
+from nltk.tokenize.moses import MosesDetokenizer
 
 from docx import Document
 from docx.document import Document as _Document 
@@ -18,6 +21,7 @@ from docx.table import _Cell, Table
 from docx.text.paragraph import Paragraph
 from django.utils.lorem_ipsum import paragraph
 
+#Function checks if blocks are paragraphs or tables
 def iterBlockItems(parent):
     
     if isinstance(parent, _Document):
@@ -39,62 +43,125 @@ def docxParser(docxFile):
                
     document = Document(docxFile)
             
-    categoryPos = [] 
-    header = []
-    answer = []   
-    headerAnswer = [] 
+    header = ""
+    data = ""
+    detokenizer = MosesDetokenizer()
     
-    tableData = [] 
-    
-    #call the function to check the block is a paragraph or a table
-    #obtains position of each paragraph or table 
-    parPosition = 0 
-    tblPosition = 0
     for n in iterBlockItems(document):
+        #newHead = False
         if isinstance(n, Paragraph):
-            #getting the heading paragraphs 
-            if n.style.name == 'Heading 2':
-                #storing the position of the heading
-                categoryPos.append(parPosition)
-                #storing the heading 
-                header.append(re.sub('[^A-Za-z0-9]+', '', (n.text)))
-                #print(parPosition)
-                parPosition+=1
-                print(n.text)
-            #takes the first line as the initial header
+            for wInd, words in enumerate(n.runs):
+                if words.bold:
+                    if re.match(r'^\s*$', words.text) or words.text == ':':
+                        exit
+                    elif wInd > 0:
+                        #This commented out portion looks for bold words in the middle of a paragraph. Does not work correctly yet.
+#                         if newHead == False:
+#                             while(header[-1:] == ':' or header[-1:] == ' '):
+#                                 header = header[:-1]
+#                             header = header + ': '  
+#                             print(header + data + '\n')
+#                             data = ""
+#                             header = words.text
+#                             newHead = True
+                        if n.runs[wInd - 1].text in header:
+                            header = header + ' '.join(words.text.split())      
+                            #newHead = True
+                        #else:
+                        #    print("THIS WOULD HAVE BEEN A HEADER: " + words.text)
+                    else:
+                        if data != "" and header != "":
+                            while(header[-1:] == ':' or header[-1:] == ' '):
+                                header = header[:-1]
+                            header = header + ': '  
+                            #UNCOMMENT THIS LINE FOR TESTING
+                            #####print(header + data + '\n')
+                            #COMMENT THIS BLOCK FOR TESTING
+                            dbAnswer = header + data
+                            data_list = nltk.word_tokenize(data)
+                            data = [word for word in data_list if word not in stopwords.words('english')]
+                            detokenizer.detokenize(data, return_str=True)
+                            data = " ".join(data)
+                            dbInfo = (header + data).lower()
+                            botanswers.objects.create(answer = dbAnswer, rating = 0, category_id = 5, entities = dbInfo, course_id = 40)
+                        data = ""
+                        header = ' '.join(words.text.split())         
+                        #newHead = True
+            #identifying Headings 
+            if (n.style.name == 'Heading 1' or n.style.name == 'Heading 2' or n.style.name == 'Heading 3'):
+                #if data != "":
+                if data != "" and header != "":
+                    #UNCOMMENT THIS LINE FOR TESTING
+                    #####print(header + data + '\n')
+                    #COMMENT THIS BLOCK FOR TESTING
+                    dbAnswer = header + data
+                    data_list = nltk.word_tokenize(data)
+                    data = [word for word in data_list if word not in stopwords.words('english')]
+                    detokenizer.detokenize(data, return_str=True)
+                    data = " ".join(data)
+                    dbInfo = (header + data).lower()
+                    botanswers.objects.create(answer = dbAnswer, rating = 0, category_id = 5, entities = dbInfo, course_id = 40)
+                data = ""
+                header = ' '.join(n.text.split())    
+                while(header[-1:] == ':' or header[-1:] == ' '):
+                    header = header[:-1]
+                header = header + ': '    
             else:
-                if parPosition == 0:
-                    header.append(n.text)
-                    parPosition+=1
-                    print(n.text)
-                elif n.text=="":
-                    throwAway = n.text             
+                if n.text=="":
+                    exit            
                 else:
-                    answer.append(n.text)
-                    headerAnswer.append(header[-1]+ "|" + n.text)
-                    parPosition+=1
-                    print(n.text)
+                    tempHeader = header
+                    tempText = ' '.join(n.text.split())
+                    while(tempHeader[-1:] == ':' or tempHeader[-1:] == ' '):
+                        tempHeader = tempHeader[:-1]
+                    while(tempText[-1:] == ':' or tempText[-1:] == ' '):
+                        tempText = tempText[:-1]
+                    if not tempText in tempHeader:
+                        tempText = ' '.join(n.text.split())
+                        data = data + '<br>' + tempText
                 
-        elif isinstance(n, Table):
+        elif isinstance(n, Table) and data == "":
             #number of columns in the table 
             numCols=len(n.columns)
             #number of rows in the table 
             numRows=len(n.rows)
-
-            tblPosition=parPosition
+            
+          
             i = 0 
+            temp = ""
             while i <numRows:
                 j=0
                 while j<numCols:
-                    tableData.append((n.table.cell(i, j)).text)
+                    #tableData.append((n.table.cell(i, j)).text)
+                    check = ' '.join((n.table.cell(i, j)).text.split())
+                    if check != ' ' and check != '': 
+                        if temp == "":
+                            temp = header + '<br>' + check
+                        elif j > 0:
+                            temp = temp + ' -- ' + check
+                        else:
+                            temp = temp + check
+                    if j == numCols-1:
+                        temp = temp + '<br>'
                     j+=1
                 i+=1
-
-    for n in headerAnswer: 
-        print(n)
+            #####print(temp)
+            dbAnswer = temp
+            data_list = nltk.word_tokenize(temp)
+            data = [word for word in data_list if word not in stopwords.words('english')]
+            detokenizer.detokenize(data, return_str=True)
+            data = " ".join(data)
+            dbInfo = data.lower()
+            botanswers.objects.create(answer = dbAnswer, rating = 0, category_id = 5, entities = dbInfo, course_id = 40)
+            data = ""
     
-    for n in tableData:
-        print(n)
-        
-    for n in answer: 
-        print(n)
+    if header != "" and data != "":
+        #####print(header + data)
+        dbAnswer = header + data
+        data_list = nltk.word_tokenize(data)
+        data = [word for word in data_list if word not in stopwords.words('english')]
+        detokenizer.detokenize(data, return_str=True)
+        data = " ".join(data)
+        dbInfo = (header + data).lower()
+        botanswers.objects.create(answer = dbAnswer, rating = 0, category_id = 5, entities = dbInfo, course_id = 40)
+
