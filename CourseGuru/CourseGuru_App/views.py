@@ -38,6 +38,7 @@ from CourseGuru_App.natLang import reformQuery
 from CourseGuru_App.pdfParser import *
 from CourseGuru_App.docxParser import *
 from CourseGuru_App.CSV import *
+from CourseGuru_App.catQuestion import *
 
 
 from io import BytesIO
@@ -53,7 +54,7 @@ from symbol import except_clause
 from tkinter.font import BOLD
 from attr.validators import instance_of
 from docx.oxml.document import CT_Body
-from CourseGuru_App import pdfParser
+from CourseGuru_App import pdfParser, catQuestion
 #from nltk.parse.featurechart import sent
 
 #Function to populate Main page
@@ -90,8 +91,8 @@ def index(request):
             return render(request, 'CourseGuru_App/index.html')
 
 def account(request):
+    stat = 'Student'
     if request.method == "POST":
-        
         firstname = request.POST.get('firstname')
         lastname = request.POST.get('lastname')
         username = request.POST.get('username')
@@ -127,7 +128,7 @@ def account(request):
                 newUser.save()
                 return HttpResponseRedirect('/?newAct=1')  
     else:
-        return render(request, 'CourseGuru_App/account.html')
+        return render(request, 'CourseGuru_App/account.html', {'status': stat})
 
 def passwordValidator(password):
     passRegCheck = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)"
@@ -235,6 +236,7 @@ def question(request):
         qData = questions.objects.get_queryset().filter(course_id = cid).order_by('-pk')
         page = request.GET.get('page', 1)
         cName = course.objects.get(id = cid)
+        filterCategory = 'All'
         if request.method == "POST":
             if request.POST.get('Logout') == "Logout":
                 logout(request)
@@ -253,6 +255,13 @@ def question(request):
                 query = request.POST.get('query')
                 if query: 
                     qData = qData.filter(question__icontains=query)
+            if request.POST.get('Filter'):
+                filterCategory = request.POST.get('Filter')
+                if filterCategory != 'All':
+                    qData = qData.filter(category=filterCategory) 
+                else: 
+                    qData = questions.objects.get_queryset().filter(course_id = cid).order_by('-pk')
+                
         #Paginator created to limit page display to 10 data items per page
         paginator = Paginator(qData, 10)
         try:
@@ -264,7 +273,7 @@ def question(request):
     #    return render(request, 'CourseGuru_App/question.html', {'content': fquestions})
         user = request.user
         
-        return render(request, 'CourseGuru_App/question.html', {'content': fquestions, 'user': user, 'courseID': cid, 'courseName': cName})
+        return render(request, 'CourseGuru_App/question.html', {'content': fquestions, 'user': user, 'courseID': cid, 'courseName': cName, 'status': filterCategory})
     else:
         return HttpResponseRedirect('/')
 def uploadDocument(request):
@@ -295,7 +304,8 @@ def publish(request):
             comm = request.POST.get('NQcom')
             questionDate = genDate()
             user = request.user    
-            categ= categorizeQuestion(ques, comm) 
+            categ= catQuestion.categorize(ques) 
+
             newQ = questions.objects.create(question = ques, course_id = cid, user_id = user.id, date = questionDate, comment = comm, category=categ)
                
             botAns = cbAnswer(ques)
@@ -308,23 +318,7 @@ def publish(request):
         return render(request, 'CourseGuru_App/publish.html', {'courseID': cid})
     else:
         return HttpResponseRedirect('/')
-    
-def categorizeQuestion(ques,comm):
-    syllabus="Syllabus"
-    other="Other"
-    sylKeyTerms = "syllabus,instructor name,teachers name,grading scale,grade,ta,teaching assistant,student,due date,due,assignment,late"
-    sylKeyTermList=sylKeyTerms.split(',')
-    matchCount=0
-    for z in sylKeyTermList:
-        if ques.__contains__(z):
-            matchCount += 1
-        if comm.__contains__(z):
-            matchCount+=1
-    if matchCount > 0:
-        return syllabus
-    else:
-        return other
-             
+                 
 def publishAnswer(request):
     if request.user.is_authenticated:
         qid = request.GET.get('id', '')
