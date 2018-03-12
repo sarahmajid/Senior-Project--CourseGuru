@@ -19,8 +19,7 @@ from django.http import HttpResponse
 from django.template.context_processors import request
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib.auth.models import User
-from django.core.validators import validate_email
-from django.core.exceptions import ValidationError
+
 
 #importing models 
 from CourseGuru_App.models import questions
@@ -39,9 +38,8 @@ from CourseGuru_App.pdfParser import *
 from CourseGuru_App.docxParser import *
 from CourseGuru_App.CSV import *
 from CourseGuru_App.catQuestion import *
+from CourseGuru_App.validate import *
 
-
-from io import BytesIO
 
 from test.test_decimal import file
 from pickle import INST
@@ -55,6 +53,9 @@ from tkinter.font import BOLD
 from attr.validators import instance_of
 from docx.oxml.document import CT_Body
 from CourseGuru_App import pdfParser, catQuestion
+from pip._vendor.html5lib.constants import entities
+from _overlapped import NULL
+from attr.filters import exclude
 #from nltk.parse.featurechart import sent
 
 #Function to populate Main page
@@ -128,26 +129,7 @@ def account(request):
                 newUser.save()
                 return HttpResponseRedirect('/?newAct=1')  
     else:
-        return render(request, 'CourseGuru_App/account.html', {'status': stat})
-
-def passwordValidator(password):
-    passRegCheck = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)"
-    if (len(password)<8): 
-        errorMsg = 'Your password must be at least 8 characters long.'
-        return errorMsg
-    elif ((re.search(passRegCheck, password))==None):
-        errorMsg = "Your password must contain one uppercase character, one lowercase character, and at least one number!"
-        return errorMsg
-    else:
-        return None
-            
-def emailValidator(email):
-    try:
-        validate_email(email)
-        return True
-    except ValidationError:
-        return False
-    
+        return render(request, 'CourseGuru_App/account.html', {'status': stat})    
 def courses(request):
     if request.user.is_authenticated:
         if request.method == "POST":
@@ -224,10 +206,7 @@ def roster(request):
         return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'studentList': studentList, 'courseName': cName})
     else:
         return HttpResponseRedirect('/')
-    
-
-
-
+  
 # Function to populate Main page
 def question(request):
     if request.user.is_authenticated:
@@ -332,7 +311,13 @@ def publishAnswer(request):
             ans = request.POST.get('NQcom')
             answerDate = genDate()
             user = request.user
-            answers.objects.create(answer = ans, user_id = user.id, question_id = qid, date = answerDate)
+            newAns = answers.objects.create(answer = ans, user_id = user.id, question_id = qid, date = answerDate)
+            if user.status == 'Teacher':
+                botanswers.objects.create(entities = qData.question, answerId= newAns, category_id = 5, answer=ans )
+#            if qData.resolved == True:
+#                if bot
+#                botanswers.objects.create(entities = qData.question, answerId= newAns, category_id = 5, answer=ans )
+                
             return HttpResponseRedirect('/answer/?id=%s&cid=%s' % (qid, cid))
         return render(request, 'CourseGuru_App/publishAnswer.html', {'Title': qData, 'courseID': cid, 'quesID': qid})
     else:
@@ -362,11 +347,14 @@ def answer(request):
         qid = request.GET.get('id', '')
         cid = request.GET.get('cid', '')
         user = request.user
-        aData = answers.objects.filter(question_id = qid).order_by('pk')
+        aData = answers.objects.filter(question_id = qid).order_by( '-resolved', 'pk')
         ansCt = aData.count()
         qData = questions.objects.get(id = qid)
         cData = comments.objects.filter(question_id = qid)
-
+        resolve = False
+        for a in aData: 
+                if a.resolved == True:
+                    resolve = True
         if request.method == "POST":
             if request.POST.get('Logout') == "Logout":
                 logout(request)
@@ -384,7 +372,7 @@ def answer(request):
                 query = request.POST.get('query')
                 if query: 
                     aData = aData.filter(answer__icontains=query)
-                return render(request, 'CourseGuru_App/answer.html', {'answers': aData, 'numAnswers': ansCt, 'Title': qData, 'comments': cData, 'courseID': cid})
+                return render(request, 'CourseGuru_App/answer.html', {'answers': aData, 'numAnswers': ansCt, 'Title': qData, 'comments': cData, 'courseID': cid, 'resolved':resolve})
             elif 'delAns' in request.POST:
                 aid = request.POST.get('delAns')
                 if userratings.objects.filter(answer_id = aid).exists():
@@ -402,9 +390,29 @@ def answer(request):
                 if questions.objects.filter(id = qid).exists():
                     questions.objects.filter(id = qid).delete()
                 return HttpResponseRedirect('/question/?id=%s' % cid)   
-
+            elif 'resolve' in request.POST:
+                aid = request.POST.get('resolve')
+                ans = answers.objects.get(id = aid)
+                resolve = True
+                ans.resolved = True
+                ans.save()
+                if ((answers.objects.filter(id = aid).exists()) and (botanswers.objects.filter(answerId = aid).exists() == False)):
+                    botanswers.objects.create(entities = qData.question, answerId=ans , category_id = 5, answer=ans.answer)
+                aData = answers.objects.filter(question_id = qid).order_by( '-resolved', 'pk')
+                return render(request, 'CourseGuru_App/answer.html', {'answers': aData, 'numAnswers': ansCt, 'Title': qData, 'comments': cData, 'courseID': cid, 'resolved':resolve})
+            elif 'unresolve' in request.POST:
+                rslvdAnsId = answers.objects.get(resolved = True)
+                providedBy = User.objects.get(id = rslvdAnsId.user.id)                    
+                if providedBy.status != 'Teacher':
+                    print(providedBy.status)
+                    botanswers.objects.filter(answerId = rslvdAnsId).delete()
+                rslvdAnsId.resolved=False
+                rslvdAnsId.save()
+                resolve = False
+                aData = answers.objects.filter(question_id = qid).order_by( '-resolved', 'pk')
+                return render(request, 'CourseGuru_App/answer.html', {'answers': aData, 'numAnswers': ansCt, 'Title': qData, 'comments': cData, 'courseID': cid, 'resolved':resolve})
             return HttpResponseRedirect('/answer/?id=%s&cid=%s' % (qid, cid)) 
-        return render(request, 'CourseGuru_App/answer.html', {'answers': aData, 'numAnswers': ansCt, 'Title': qData, 'comments': cData, 'courseID': cid})
+        return render(request, 'CourseGuru_App/answer.html', {'answers': aData, 'numAnswers': ansCt, 'Title': qData, 'comments': cData, 'courseID': cid, 'resolved':resolve})
     else:
         return HttpResponseRedirect('/')
     
@@ -444,28 +452,13 @@ def getIntentAns(luisIntent, luisEntities):
             count = Accuracy
             answr = m.answer
 
-        #=======================================================================
-        # b = m.answer.split(" ")
-        # tempCntMtch = 0
-        # ttlCnt = len(b)
-        # for n in b: 
-        #     #if the word in the answer is in the list of entities then increment by 1
-        #     if luisEntities.count(n) > 0:
-        #         tempCntMtch += 1
-        #     cntAccuracy = (tempCntMtch/ttlCnt)
-        #     if cntAccuracy>count:
-        #         count = cntAccuracy 
-        #         answr = m.answer
-        #=======================================================================
-    #if answr == "":
-        #answr = (botanswers.objects.filter(category_id = catgry.id).first()).answer
     return (answr)     
 
 def courseFile(request):
     if request.method == "POST":
         #Sets myfile to the selected file on page and reads it
         myfile = request.FILES.get("syllabusFile").file.read()
-        test = pdfParser.pdfToText(myfile)
+        test = pdfParser.pdfToHTML(myfile)
     return render(request, 'CourseGuru_App/parse.html', {'convText' : test})
 
 
@@ -476,7 +469,8 @@ def fileParsing(request):
         f = tempfile.TemporaryFile('r+b')
         f.write(myfile)
         
-        document = docxParser(f)
+        #document = docxParser(f)
+        document = pdfParser.pdfToHTML(f)
         
     return render(request, 'CourseGuru_App/parse.html')  
   

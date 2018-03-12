@@ -11,6 +11,9 @@ from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter, process_p
 from pdfminer.layout import LAParams, LTTextBoxHorizontal
 from pdfminer.converter import PDFPageAggregator, HTMLConverter
 from pdfminer.pslexer import delimiter
+#from pdfminer.pdfpage import PDFPage
+
+from io import BytesIO
 
 from nltk.tokenize import word_tokenize, sent_tokenize
 from nltk.corpus import stopwords
@@ -198,14 +201,16 @@ def pdfToHTML(pdfFile):
     f.write(pdfFile)
      
     resourceManager = PDFResourceManager()
+    retstr = BytesIO()
     laparams = LAParams()
        
+    device = HTMLConverter(resourceManager, codec='utf-8', laparams=laparams)
+    
     file = open(f, 'rb')
+    interp = PDFPageInterpreter(resourceManager, device)
     maxpages = 0
     caching = True
     pagenos=set()
-     
-    device = HTMLConverter(resourceManager, file, codec='utf-8', laparams=laparams)
      
     htmlFile = process_pdf(resourceManager, device, file, pagenos=None, maxpages=0)
      
