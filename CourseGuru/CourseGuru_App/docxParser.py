@@ -38,7 +38,7 @@ def iterBlockItems(parent):
             b = Table(c, parent)
             yield b
           
-def parsedToDB(data, header):
+def parsedToDB(data, header, cid, catID):
     detokenizer = MosesDetokenizer()
     regex = re.compile('[^a-zA-Z0-9 \n\.]')
     
@@ -50,9 +50,9 @@ def parsedToDB(data, header):
     detokenizer.detokenize(data, return_str=True)
     data = " ".join(data)
     dbInfo = (header + data).lower()
-    botanswers.objects.create(answer = dbAnswer, rating = 0, category_id = 5, entities = dbInfo, course_id = 40)
+    botanswers.objects.create(answer = dbAnswer, rating = 0, category_id = catID.id, entities = dbInfo, course_id = cid)
  
-def docxParser(docxFile):
+def docxParser(docxFile, cid, catID):
                
     document = Document(docxFile)
             
@@ -89,7 +89,7 @@ def docxParser(docxFile):
                             #UNCOMMENT THIS LINE FOR TESTING
                             #####print(header + data + '\n')
                             #COMMENT THIS LINE FOR TESTING
-                            parsedToDB(data, header)
+                            parsedToDB(data, header, cid, catID)
                         data = ""
                         header = ' '.join(words.text.split())         
                         #newHead = True
@@ -100,7 +100,7 @@ def docxParser(docxFile):
                     #UNCOMMENT THIS LINE FOR TESTING
                     #####print(header + data + '\n')
                     #COMMENT THIS LINE FOR TESTING
-                    parsedToDB(data, header)
+                    parsedToDB(data, header, cid, catID)
                 data = ""
                 header = ' '.join(n.text.split())    
                 while(header[-1:] == ':' or header[-1:] == ' '):
@@ -148,13 +148,13 @@ def docxParser(docxFile):
             #COMMENT THIS LINE FOR TESTING
             #####print(header + data)
             #COMMENT THIS LINE FOR TESTING
-            parsedToDB(data, header)
+            parsedToDB(data, header, cid, catID)
             data = ""
     
     if header != "" and data != "":
         #COMMENT THIS LINE FOR TESTING
         #####print(header + data)
         #COMMENT THIS LINE FOR TESTING
-        parsedToDB(data, header)
+        parsedToDB(data, header, cid, catID)
         data = ""
 

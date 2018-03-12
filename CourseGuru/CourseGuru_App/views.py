@@ -37,7 +37,8 @@ from CourseGuru_App.natLang import reformQuery
 from CourseGuru_App.pdfParser import *
 from CourseGuru_App.docxParser import *
 from CourseGuru_App.CSV import *
-
+from CourseGuru_App import pdfParser
+from CourseGuru_App.luisRun import publishLUIS
 
 from io import BytesIO
 
@@ -52,7 +53,7 @@ from symbol import except_clause
 from tkinter.font import BOLD
 from attr.validators import instance_of
 from docx.oxml.document import CT_Body
-from CourseGuru_App import pdfParser
+
 
 #Function to populate Main page
 def index(request):
@@ -273,9 +274,13 @@ def uploadDocument(request):
             if request.POST.get('Logout') == "Logout":
                 logout(request)
                 return HttpResponseRedirect('/')
-            else:
-                credentialmismatch = "Username does not exist"
-                return render(request, 'CourseGuru_App/uploadDocument.html', {'courseID': cid, 'credentialmismatch': credentialmismatch, 'courseName': cName})
+            if len(request.FILES) != 0:
+                courseFile = request.FILES.get("courseFile").file.read()
+                docType = request.POST.get("docType")
+                catID = category.objects.get(intent = docType)
+                f = tempfile.TemporaryFile('r+b')
+                f.write(courseFile)
+                docxParser(f, cid, catID)
         return render(request, 'CourseGuru_App/uploadDocument.html', {'courseID': cid, 'courseName': cName})
     else:
         return HttpResponseRedirect('/')
@@ -470,11 +475,16 @@ def cbAnswer(nq, courseID=0, chatWindow=False):
     elif luisIntent == 'Greetings':
         return
     elif luisIntent == 'Name':
-        luisIntent = 'Course Policies'
+        luisIntent = 'Syllabus'
     elif (luisIntent == "None" or not luisStr['entities']) and chatWindow == True:
         return("Sorry, I didn't understand that.")
     elif luisIntent == "None" or not luisStr['entities']:
         return
+    
+    print(luisIntent)
+    
+    #teachLuis(nq, 'Other')
+    #publishLUIS()
     
     luisEntities = ""
     z = 0

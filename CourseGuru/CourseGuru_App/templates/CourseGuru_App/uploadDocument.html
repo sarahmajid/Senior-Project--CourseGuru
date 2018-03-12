@@ -26,6 +26,12 @@
 				<li>
 					<a class="side-panel-button" href="/question/?id={{courseID}}"><i id="arrow-left"></i>Back to Questions</a> 
 				</li>
+				<li>
+					<a class="side-panel-button" href="/roster/?cid={{courseID}}">Class Roster</a>
+				</li>
+				<li> 
+					<a class="side-panel-button" href="/uploadDocument/?cid={{courseID}}">Upload Document</a>
+				</li>
 			</ul>
 			
 			<div class="LiveChat">	
@@ -70,7 +76,10 @@
 
 					<form method="POST" action="" enctype="multipart/form-data">
 						{% csrf_token %}
-						<br><input type="file" name="File" required><br><br>
+						<br>
+						<label style="font-size: 16px; color: grey; font-family: century gothic;">Upload a course file for the Chatbot to learn: </label><br>
+						<span style="color:red;">(File must be in docx format)</span><br>
+						<input type="file" name="courseFile" required><br><br>
 						<label style="font-size: 16px; color: grey; font-family: century gothic;">What type of course file is this?: </label><br>
 						<select name="docType" class="form-control select-short" required="required" >
 							<option></option>

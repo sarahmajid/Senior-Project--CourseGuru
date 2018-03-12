@@ -19,8 +19,8 @@ LUIS_HOST       = "westus.api.cognitive.microsoft.com"
 
 # uploadFile is the file containing JSON for utterance(s) to add to the LUIS app.
 # The contents of the file must be in this format described at: https://aka.ms/add-utterance-json-format
-UTTERANCE_FILE   = "CourseGuru_App/static/utterances.json"
-RESULTS_FILE     = "CourseGuru_App/static/utterances.results.json"
+UTTERANCE_FILE   = "CourseGuru/CourseGuru_App/static/utterances.json"
+RESULTS_FILE     = "CourseGuru/CourseGuru_App/static/utterances.results.json"
 
 # LUIS client class for adding and training utterances
 class LUISClient:
