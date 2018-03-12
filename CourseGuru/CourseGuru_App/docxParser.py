@@ -19,7 +19,6 @@ from docx.oxml.table import CT_Tbl
 from docx.oxml.text.paragraph import CT_P
 from docx.table import _Cell, Table
 from docx.text.paragraph import Paragraph
-from django.utils.lorem_ipsum import paragraph
 
 #Function checks if blocks are paragraphs or tables
 def iterBlockItems(parent):
@@ -38,14 +37,27 @@ def iterBlockItems(parent):
         elif isinstance(c, CT_Tbl):
             b = Table(c, parent)
             yield b
-            
+          
+def parsedToDB(data, header):
+    detokenizer = MosesDetokenizer()
+    regex = re.compile('[^a-zA-Z0-9 \n\.]')
+    
+    dbAnswer = header + data
+    data = data.replace('<br>',' ')
+    data = regex.sub('', data)
+    data_list = nltk.word_tokenize(data)
+    data = [word for word in data_list if word not in stopwords.words('english')]
+    detokenizer.detokenize(data, return_str=True)
+    data = " ".join(data)
+    dbInfo = (header + data).lower()
+    botanswers.objects.create(answer = dbAnswer, rating = 0, category_id = 5, entities = dbInfo, course_id = 40)
+ 
 def docxParser(docxFile):
                
     document = Document(docxFile)
             
     header = ""
     data = ""
-    detokenizer = MosesDetokenizer()
     
     for n in iterBlockItems(document):
         #newHead = False
@@ -76,14 +88,8 @@ def docxParser(docxFile):
                             header = header + ': '  
                             #UNCOMMENT THIS LINE FOR TESTING
                             #####print(header + data + '\n')
-                            #COMMENT THIS BLOCK FOR TESTING
-                            dbAnswer = header + data
-                            data_list = nltk.word_tokenize(data)
-                            data = [word for word in data_list if word not in stopwords.words('english')]
-                            detokenizer.detokenize(data, return_str=True)
-                            data = " ".join(data)
-                            dbInfo = (header + data).lower()
-                            botanswers.objects.create(answer = dbAnswer, rating = 0, category_id = 5, entities = dbInfo, course_id = 40)
+                            #COMMENT THIS LINE FOR TESTING
+                            parsedToDB(data, header)
                         data = ""
                         header = ' '.join(words.text.split())         
                         #newHead = True
@@ -93,14 +99,8 @@ def docxParser(docxFile):
                 if data != "" and header != "":
                     #UNCOMMENT THIS LINE FOR TESTING
                     #####print(header + data + '\n')
-                    #COMMENT THIS BLOCK FOR TESTING
-                    dbAnswer = header + data
-                    data_list = nltk.word_tokenize(data)
-                    data = [word for word in data_list if word not in stopwords.words('english')]
-                    detokenizer.detokenize(data, return_str=True)
-                    data = " ".join(data)
-                    dbInfo = (header + data).lower()
-                    botanswers.objects.create(answer = dbAnswer, rating = 0, category_id = 5, entities = dbInfo, course_id = 40)
+                    #COMMENT THIS LINE FOR TESTING
+                    parsedToDB(data, header)
                 data = ""
                 header = ' '.join(n.text.split())    
                 while(header[-1:] == ':' or header[-1:] == ' '):
@@ -128,40 +128,33 @@ def docxParser(docxFile):
             
           
             i = 0 
-            temp = ""
+            data = ""
             while i <numRows:
                 j=0
                 while j<numCols:
                     #tableData.append((n.table.cell(i, j)).text)
                     check = ' '.join((n.table.cell(i, j)).text.split())
                     if check != ' ' and check != '': 
-                        if temp == "":
-                            temp = header + '<br>' + check
+                        if data == "":
+                            data = '<br>' + check
                         elif j > 0:
-                            temp = temp + ' -- ' + check
+                            data = data + ' -- ' + check
                         else:
-                            temp = temp + check
+                            data = data + check
                     if j == numCols-1:
-                        temp = temp + '<br>'
+                        data = data + '<br>'
                     j+=1
                 i+=1
-            #####print(temp)
-            dbAnswer = temp
-            data_list = nltk.word_tokenize(temp)
-            data = [word for word in data_list if word not in stopwords.words('english')]
-            detokenizer.detokenize(data, return_str=True)
-            data = " ".join(data)
-            dbInfo = data.lower()
-            botanswers.objects.create(answer = dbAnswer, rating = 0, category_id = 5, entities = dbInfo, course_id = 40)
+            #COMMENT THIS LINE FOR TESTING
+            #####print(header + data)
+            #COMMENT THIS LINE FOR TESTING
+            parsedToDB(data, header)
             data = ""
     
     if header != "" and data != "":
+        #COMMENT THIS LINE FOR TESTING
         #####print(header + data)
-        dbAnswer = header + data
-        data_list = nltk.word_tokenize(data)
-        data = [word for word in data_list if word not in stopwords.words('english')]
-        detokenizer.detokenize(data, return_str=True)
-        data = " ".join(data)
-        dbInfo = (header + data).lower()
-        botanswers.objects.create(answer = dbAnswer, rating = 0, category_id = 5, entities = dbInfo, course_id = 40)
+        #COMMENT THIS LINE FOR TESTING
+        parsedToDB(data, header)
+        data = ""
 

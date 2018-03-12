@@ -295,7 +295,7 @@ def publish(request):
             categ= categorizeQuestion(ques, comm) 
             newQ = questions.objects.create(question = ques, course_id = cid, user_id = user.id, date = questionDate, comment = comm, category=categ)
                
-            botAns = cbAnswer(ques)
+            botAns = cbAnswer(ques, cid)
             answerDate = genDate()
             
             if botAns is not None:
@@ -434,30 +434,7 @@ def voting(request):
     record.rating = (uprateCt - downrateCt)
     record.save()
     
-    return HttpResponse()
-
-# returns a good match to entities answer object  
-def getIntentAns(luisIntent, luisEntities):    
-    count = 0
-    answr = ""
-    
-    entitiesList = luisEntities.split(",")
-    catgry = category.objects.get(intent = luisIntent)
-    
-    filtAns = botanswers.objects.filter(category_id = catgry.id)
-    
-    for m in filtAns:
-        Match = 0
-        ansLen = len(m.entities)
-        for ent in entitiesList:
-            if ent.lower() in m.entities.lower():
-                Match += 1
-        Accuracy = (Match/ansLen)
-        if Accuracy>count:
-            count = Accuracy
-            answr = m.answer
-
-    return (answr)     
+    return HttpResponse()    
 
 def courseFile(request):
     if request.method == "POST":
@@ -480,7 +457,7 @@ def fileParsing(request):
   def chatbot(request):
     return render(request, 'CourseGuru_App/botchat.html',)
 
-def cbAnswer(nq):
+def cbAnswer(nq, courseID=0, chatWindow=False):
     r = requests.get('https://westus.api.cognitive.microsoft.com/luis/v2.0/apps/6059c365-d88a-412b-8f33-d7393ba3bf9f?subscription-key=c574439a46e64d8cb597879499ccf8f9&spellCheck=true&bing-spell-check-subscription-key={5831ea4a48994d53abdc2312b6ea7ccf}&verbose=true&timezoneOffset=0&q=%s' % nq)
     luisStr = json.loads(r.text)
     #Grabs intent score of question
@@ -488,44 +465,92 @@ def cbAnswer(nq):
     #Grabs intent of question
     luisIntent = luisStr['topScoringIntent']['intent']
     #Grabs entities
-    if luisIntent == 'Greetings':
+    if luisIntent == 'Greetings' and chatWindow == True:
         return('Hello, how can I help you?')
+    elif luisIntent == 'Greetings':
+        return
     elif luisIntent == 'Name':
         luisIntent = 'Course Policies'
-    if luisIntent == "None" or not luisStr['entities']:
+    elif (luisIntent == "None" or not luisStr['entities']) and chatWindow == True:
         return("Sorry, I didn't understand that.")
+    elif luisIntent == "None" or not luisStr['entities']:
+        return
+    
     luisEntities = ""
-        
     z = 0
+    #regex = re.compile('[^a-zA-Z]')
+
     for x in luisStr['entities']:
         newEnt = luisStr['entities'][z]['entity']
-        if luisStr['entities'][z]['type'] == "Role" and newEnt.endswith('s'):
-            newEnt = newEnt[:-1]
+        #newEnt = regex.sub('', newEnt)
         if z == 0:
             luisEntities += newEnt
         else:
             luisEntities += ',' + newEnt
         z += 1
+    
+    #Add variations of names a student would call the teacher if one is found
+    profNames = ['instructor','teacher','professor']
+    for name in profNames:
+        if name in luisEntities.lower():
+            for addName in profNames:
+                if addName not in luisEntities.lower():
+                    luisEntities += ',' + addName
+        else:
+            continue
+        break
+    if 'ta' in luisEntities.lower():
+        luisEntities += ',' + 'teaching assistant'
+                    
     #If intent receives a lower score than 75% or there is no intent, the question does not get answered
     if luisScore < 0.75 or luisIntent == 'None':
         return
-    #---catID = category.objects.get(intent=luisIntent)
-    #Sets cbAns to the first answer it can find matching that category (This needs to be improved)
-    #---cbAns = botanswers.objects.filter(category_id = catID.id).first()
-    #ID of the latest question created
-    #qid = questions.objects.last()
-
     
-    entAnswer = getIntentAns(luisIntent, luisEntities)
+    entAnswer = getIntentAns(luisIntent, luisEntities, courseID)
     if entAnswer == "":
         return
     #botAns = reformQuery(nq) + entAnswer
     botAns = entAnswer
     return(botAns)
 
+# returns a good match to entities answer object  
+def getIntentAns(luisIntent, luisEntities, courseID=0):    
+    count = 0
+    answr = ""
+    
+    entitiesList = luisEntities.lower().split(",")
+    catgry = category.objects.get(intent = luisIntent)
+    
+    #Removes 's' from end of entities (Change to nltk plural)
+    for ind, ent in enumerate(entitiesList):
+        print("CHECK: " + ent)
+        if ent[-1:] == 's':
+            print("BEFORE: " + entitiesList[ind])
+            entitiesList[ind] = ent[:-1]
+            print("AFTER: " + entitiesList[ind])
+    
+    if courseID != 0:
+        filtAns = botanswers.objects.filter(category_id = catgry.id, course_id = courseID)
+    else:
+        filtAns = botanswers.objects.filter(category_id = catgry.id)
+    
+    for m in filtAns:
+        Match = 0
+        #ansLen = len(m.entities)
+        for ent in entitiesList:
+            if ent.lower() in m.entities.lower():
+                Match += 1
+        #Accuracy = (Match/ansLen)
+        if Match>count:
+            count = Match
+            answr = m.answer
+            
+            
+    return (answr) 
+
 
 def chatAnswer(request):
     question = request.GET.get('question')
-    botAns = cbAnswer(question)
+    botAns = cbAnswer(question, chatWindow=True)
     return HttpResponse(botAns)
 

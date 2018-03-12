@@ -148,6 +148,7 @@ li a {
     padding: 5px;
     font-size: 14px;
     word-break: break-all;
+    text-align: left;
 }
 
 .msgLabel {

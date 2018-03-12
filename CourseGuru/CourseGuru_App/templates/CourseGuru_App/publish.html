@@ -77,9 +77,9 @@
 						{% csrf_token %}
 						<input type="text" name="NQ" class="form-control"  rows="4" required="required" maxlength="180" style="resize: none; width: 50%;"></input>
 						<br><br>
-						<label style="font-size: 16px; color: grey; font-family: century gothic;">Comment: </label><br>
+						<label style="font-size: 16px; color: grey; font-family: century gothic;">Comment (Optional): </label><br>
 						{% csrf_token %}
-						<textarea type="text" name="NQcom" class="form-control"  rows="4" required="required" maxlength="180" style="resize: none; width: 50%;"></textarea>
+						<textarea type="text" name="NQcom" class="form-control"  rows="4" maxlength="180" style="resize: none; width: 50%;"></textarea>
 						<br><br>
 						<button type="submit" name="submit" class="btn basic-btn" id="login-btn" value="Publish" >Publish</button>			
 					</form>

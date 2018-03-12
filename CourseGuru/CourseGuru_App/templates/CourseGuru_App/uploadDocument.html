@@ -70,8 +70,14 @@
 
 					<form method="POST" action="" enctype="multipart/form-data">
 						{% csrf_token %}
-						<input type="file" name="File" required>
-						<br>
+						<br><input type="file" name="File" required><br><br>
+						<label style="font-size: 16px; color: grey; font-family: century gothic;">What type of course file is this?: </label><br>
+						<select name="docType" class="form-control select-short" required="required" >
+							<option></option>
+							<option value="Syllabus">Syllabus</option>
+							<option value="Assignment">Assignment</option>
+							<option value="Lecture">Lecture</option>
+						</select><br><br>
 						<button type="submit" name="submit" class="btn basic-btn" id="login-btn" value="Upload" >Upload File</button>
 					</form>	
 
