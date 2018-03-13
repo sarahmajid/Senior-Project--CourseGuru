@@ -76,8 +76,10 @@
 					{{Title.question}}	
 					<form action="" method="POST" style="float: right;">	
 						{% csrf_token %}
+						{% if resolved != True %}
 						<a href="/publishAnswer/?id={{Title.id}}&cid={{courseID}}" class="btn basic-btn" id="publish-btn" style="float: right;">Submit an answer</a>
-						{% if user.id == Title.user.id %}
+						{% endif %}
+						{% if user.id == Title.user.id or user.status == "Teacher" %}
 						<button type="submit" onclick="return confirm('Are you sure you want to delete this post?')" class="btn btn-danger" id="ThreadDel" name="delQues" value="{{Title.id}}">Delete Question</button>		
 						{% endif %}
 					</form>
@@ -106,11 +108,27 @@
 			<tr>
 				<td style="color: #444; font-size: 22px; padding:10px; font-family: century gothic;">
 					{{numAnswers}} Answer(s)
+					
+					<form action="" method="POST" style="float: right; display: inline;">
+					{% csrf_token %}
+					{% if resolved == True and user.id == Title.user.id %}
+						<button type="submit" onclick="return confirm('Are you sure you want to unresolve this post?')" class="btn btn-warning" name="unresolve" style="margin-right: 5px">Unresolve</button>
+					{% endif %}
+					
+			</form>
 				</td>
 			</tr>
 			<tr><td style="border-top: #AEADAD 3px solid;"> </td></tr>
 			
 			{% for a in answers %}
+				{% if a.resolved == True %}
+				<tr>
+					<td style="padding: 0px 0px 0px 3%; background-color: #EAECEE; color: grey; font-family: century gothic;">
+						<div style="font-size: 14px; color: green; float: left">Resolved Answer</div>
+					</td>
+				</tr>
+				{%endif%}
+			
 			<tr>
 				<td style="padding:10px 10px 10px 3%; color: grey; background-color: #EAECEE; font-family: century gothic;">
 					{% if a.user.id == 38 %}	
@@ -126,8 +144,17 @@
 					<div style="font-size: 18px;float: left; width: 80%;">
 						<br>{{a.answer}}
 					</div>
-					
-					
+					<div>
+						<form action="" method="POST" style="float: right; display: inline;">
+							{% csrf_token %}
+							{% if resolved == False and user.id == Title.user.id %}
+								&nbsp;<button type="submit" onclick="return confirm('Are you sure you want to resolve this post?')" class="btn btn-success" name="resolve" value="{{a.id}}">Resolve</button>
+							{% endif %}
+							{% if user.id == a.user.id or user.status == "Teacher" %}
+							&nbsp;<button type="submit" onclick="return confirm('Are you sure you want to delete this post?')" class="btn btn-danger" name="delAns" value="{{a.id}}">Delete</button>
+							{% endif %}
+						</form>	
+					</div>
 					<br>
 					<div class="ratingArea" style="float: right; display: inline;">
 						{% if user.id != a.user.id %}
@@ -145,13 +172,6 @@
 							{% endif %}
 							&nbsp;<span id="rating">{{a.rating}}</span><br><br>
 						{% endif %}
-						{% if user.id == a.user.id or user.status == "Teacher" %}
-							<form action="" method="POST" >
-								{% csrf_token %}
-								
-								<button type="submit" onclick="return confirm('Are you sure you want to delete this post?')" class="btn btn-danger" name="delAns" value="{{a.id}}">Delete</button>
-							</form>
-						{% endif %}	
 					</div>
 				</td>
 			</tr>

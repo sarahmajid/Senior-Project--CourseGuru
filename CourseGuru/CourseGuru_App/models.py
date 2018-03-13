@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from django.template.defaultfilters import default
 
 
 #from email.policy import default
@@ -35,6 +36,7 @@ class answers(models.Model):
     comments = models.CharField(max_length=200)
     rating = models.IntegerField(default=0)
     date = models.CharField(max_length=20)
+    resolved = models.BooleanField(default = False)
 
     class meta:
         ordering = ['rating']
@@ -56,9 +58,11 @@ class category(models.Model):
     
 class botanswers(models.Model):
     category = models.ForeignKey(category, on_delete=models.CASCADE)
+    answerId = models.ForeignKey(answers, on_delete=models.CASCADE)
     answer = models.CharField(max_length=5000)
     rating = models.IntegerField(default=0)
     entities = models.CharField(max_length=5000)
+
     
     
 class keywords(models.Model):
