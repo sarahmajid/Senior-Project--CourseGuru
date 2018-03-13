@@ -24,47 +24,39 @@ from CourseGuru_App.models import keywords
 from CourseGuru_App.models import courseinfo
 from CourseGuru_App.models import botanswers
 
-def pdfToText(request):
+def pdfToText(file):
 #    Create empty string for text to be extracted into
     extracted_text = '' 
     test = ''
     #When button is clicked we parse the file
-    if request.method == "POST":
-        #Sets myfile to the selected file on page and reads it
-        myfile = request.FILES.get("syllabusFile").file.read()
-              
-        #Create temporary file in read and write binary mode
-        f = tempfile.TemporaryFile('r+b')
-        f.write(myfile)
-  
         #Sets the cursor back to 0 in f to be parsed and sets the documents and parser
-        f.seek(0)
-        parser = PDFParser(f)
-        doc = PDFDocument()
-        parser.set_document(doc)
-        doc.set_parser(parser)
-        doc.initialize('')
-        rsrcmgr = PDFResourceManager()
-        #sets parameters for analysis 
-        laparams = LAParams()
-              
-        #Required to define separation of text within pdf
-        laparams.char_margin = 1
-        laparams.word_margin = 1
-              
-        #Device takes LAPrams and uses them to parse individual pdf objects
-        device = PDFPageAggregator(rsrcmgr, laparams=laparams)
-        #device = HTMLConverter(rsrcmgr, laparams=laparams)
-        interpreter = PDFPageInterpreter(rsrcmgr, device)
-              
-        for page in doc.get_pages():
-            interpreter.process_page(page)
-            layout = device.get_result()
-            for lt_obj in layout:
-                if isinstance(lt_obj, LTTextBoxHorizontal):
-                    extracted_text += lt_obj.get_text() 
-        textFile = pullInfo(extracted_text)   
-        f.close() 
+    file.seek(0)
+    parser = PDFParser(file)
+    doc = PDFDocument()
+    parser.set_document(doc)
+    doc.set_parser(parser)
+    doc.initialize('')
+    rsrcmgr = PDFResourceManager()
+    #sets parameters for analysis 
+    laparams = LAParams()
+          
+    #Required to define separation of text within pdf
+    laparams.char_margin = 1
+    laparams.word_margin = 1
+          
+    #Device takes LAPrams and uses them to parse individual pdf objects
+    device = PDFPageAggregator(rsrcmgr, laparams=laparams)
+    #device = HTMLConverter(rsrcmgr, laparams=laparams)
+    interpreter = PDFPageInterpreter(rsrcmgr, device)
+          
+    for page in doc.get_pages():
+        interpreter.process_page(page)
+        layout = device.get_result()
+        for lt_obj in layout:
+            if isinstance(lt_obj, LTTextBoxHorizontal):
+                extracted_text += lt_obj.get_text() 
+    textFile = pullInfo(extracted_text)   
+    file.close() 
     return textFile
 
 

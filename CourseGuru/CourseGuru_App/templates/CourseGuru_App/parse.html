@@ -4,6 +4,9 @@
 		<title>Course Guru Doc Parser</title>
 	</head>
 	<body>
+		{% if error %} 
+			{{error}}
+		{%endif%}
 			<form method="POST" action="" enctype="multipart/form-data" style="margin: 0 10%;">{% csrf_token %}				
 				
 				<input name='syllabusFile' type='file'>

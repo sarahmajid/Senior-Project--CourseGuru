@@ -267,6 +267,9 @@ def uploadDocument(request):
             else:
                 credentialmismatch = "Username does not exist"
                 return render(request, 'CourseGuru_App/uploadDocument.html', {'courseID': cid, 'credentialmismatch': credentialmismatch, 'courseName': cName})
+#MIKE BEFORE DELETING THIS DOUBLE CHECK THAT YOU ADDED THE ERROR FILE HANDLING FROM PARSER FUNCTION BELOW. 
+
+        
         return render(request, 'CourseGuru_App/uploadDocument.html', {'courseID': cid, 'studentList': studentList, 'courseName': cName})
     else:
         return HttpResponseRedirect('/')
@@ -400,6 +403,7 @@ def answer(request):
                     botanswers.objects.create(entities = qData.question, answerId=ans , category_id = 5, answer=ans.answer)
                 aData = answers.objects.filter(question_id = qid).order_by( '-resolved', 'pk')
                 return render(request, 'CourseGuru_App/answer.html', {'answers': aData, 'numAnswers': ansCt, 'Title': qData, 'comments': cData, 'courseID': cid, 'resolved':resolve})
+#unresolve functionality ===================================         
             elif 'unresolve' in request.POST:
                 rslvdAnsId = answers.objects.get(resolved = True)
                 providedBy = User.objects.get(id = rslvdAnsId.user.id)                    
@@ -411,6 +415,7 @@ def answer(request):
                 resolve = False
                 aData = answers.objects.filter(question_id = qid).order_by( '-resolved', 'pk')
                 return render(request, 'CourseGuru_App/answer.html', {'answers': aData, 'numAnswers': ansCt, 'Title': qData, 'comments': cData, 'courseID': cid, 'resolved':resolve})
+#=============================================================            
             return HttpResponseRedirect('/answer/?id=%s&cid=%s' % (qid, cid)) 
         return render(request, 'CourseGuru_App/answer.html', {'answers': aData, 'numAnswers': ansCt, 'Title': qData, 'comments': cData, 'courseID': cid, 'resolved':resolve})
     else:
@@ -464,13 +469,20 @@ def courseFile(request):
 
 def fileParsing(request):
     if request.method == "POST":
-        myfile = request.FILES.get("syllabusFile").file.read()
-         
+        myfile = request.FILES.get("syllabusFile")
+        errorMessage="Only .pdf and .docx type are currently supported"
+        docType= myfile.content_type
+        #print(docType)
+        myfile=myfile.file.read()
         f = tempfile.TemporaryFile('r+b')
         f.write(myfile)
         
-        #document = docxParser(f)
-        document = pdfParser.pdfToHTML(f)
+        if docType == 'application/pdf':
+            document = pdfParser.pdfToText(f)
+        elif docType == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+            document = docxParser(f)
+        else: 
+            return render(request, 'CourseGuru_App/parse.html', {'error': errorMessage})
         
     return render(request, 'CourseGuru_App/parse.html')  
   
