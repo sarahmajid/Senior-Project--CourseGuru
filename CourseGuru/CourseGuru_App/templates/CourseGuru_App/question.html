@@ -64,10 +64,11 @@
 			</tr>
 			<tr> 
 				<td>
+				<label style="font-size: 16px; color: grey; font-family: century gothic;">Category:</label><br>
 				<div style="padding-bottom: 60px">
 						<form method = "POST" style="float:left; width:50%">
 								{% csrf_token %}
-								<select name="Filter" class="form-control" required="required" style="float:left; width:15%" >
+								<select name="Filter" class="form-control" required="required" style="float:left; width:18%" >
 								<option>{{status}}</option>
 								{% if status != "All"%}
 								<option value="All">All</option>
@@ -77,6 +78,9 @@
 								{%endif%}
 								{% if status != "Syllabus"%}
 								<option value="Syllabus">Syllabus</option>
+								{%endif%}
+								{% if status != "Other"%}
+								<option value="Other">Other</option>
 								{%endif%}
 								</select>
 								{% csrf_token %}

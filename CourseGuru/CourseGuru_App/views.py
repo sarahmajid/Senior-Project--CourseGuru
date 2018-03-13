@@ -267,9 +267,23 @@ def uploadDocument(request):
             else:
                 credentialmismatch = "Username does not exist"
                 return render(request, 'CourseGuru_App/uploadDocument.html', {'courseID': cid, 'credentialmismatch': credentialmismatch, 'courseName': cName})
-#MIKE BEFORE DELETING THIS DOUBLE CHECK THAT YOU ADDED THE ERROR FILE HANDLING FROM PARSER FUNCTION BELOW. 
-
-        
+#MIKE BEFORE DELETING THIS DOUBLE CHECK THAT YOU ADDED THE ERROR FILE HANDLING FROM BELOW
+#                if request.method == "POST":
+#                        myfile = request.FILES.get("syllabusFile")
+#                        errorMessage="Only .pdf and .docx type are currently supported"
+#                        docType= myfile.content_type
+#                        #print(docType)
+#                        myfile=myfile.file.read()
+#                        f = tempfile.TemporaryFile('r+b')
+#                        f.write(myfile)
+#                        
+#                        if docType == 'application/pdf':
+#                            document = pdfParser.pdfToText(f)
+#                        elif docType == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+#                            document = docxParser(f)
+#                        else: 
+#                            return render(request, 'CourseGuru_App/parse.html', {'error': errorMessage})
+############################################################################################################        
         return render(request, 'CourseGuru_App/uploadDocument.html', {'courseID': cid, 'studentList': studentList, 'courseName': cName})
     else:
         return HttpResponseRedirect('/')
@@ -316,11 +330,7 @@ def publishAnswer(request):
             user = request.user
             newAns = answers.objects.create(answer = ans, user_id = user.id, question_id = qid, date = answerDate)
             if user.status == 'Teacher':
-                botanswers.objects.create(entities = qData.question, answerId= newAns, category_id = 5, answer=ans )
-#            if qData.resolved == True:
-#                if bot
-#                botanswers.objects.create(entities = qData.question, answerId= newAns, category_id = 5, answer=ans )
-                
+                botanswers.objects.create(entities = qData.question, answerId= newAns, category_id = 5, answer=ans )              
             return HttpResponseRedirect('/answer/?id=%s&cid=%s' % (qid, cid))
         return render(request, 'CourseGuru_App/publishAnswer.html', {'Title': qData, 'courseID': cid, 'quesID': qid})
     else:
@@ -458,13 +468,6 @@ def getIntentAns(luisIntent, luisEntities):
             answr = m.answer
 
     return (answr)     
-
-def courseFile(request):
-    if request.method == "POST":
-        #Sets myfile to the selected file on page and reads it
-        myfile = request.FILES.get("syllabusFile").file.read()
-        test = pdfParser.pdfToHTML(myfile)
-    return render(request, 'CourseGuru_App/parse.html', {'convText' : test})
 
 
 def fileParsing(request):
