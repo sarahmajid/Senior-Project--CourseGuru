@@ -2,6 +2,7 @@ $(document).ready(function() {
 	
     $("#test").html("Test!"); 
 
+    //Submits a form on enter key press
 	$("#NQ").keydown(function(e) {
         if(e.which == 13) {
             this.form.submit();
@@ -46,13 +47,19 @@ $(document).ready(function() {
 		$(this).addClass('votedDown');
 	});
 	
+	/*HTMLEscape a string*/
+	function escape(value) {
+	      return value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+	}
+	
+	
 /*	$('#submit').click(function(){ */
 	$('#inp').keydown(function(e) {
 		if(e.which == 13) {
 			
 			$("#inp").prop("readonly", true);
 			
-			var input = $('input#inp').val();
+			var input = escape($('input#inp').val());
 			$('#inp').val('');
 			var history = $('#CWindow').html();	
 			$('#CWindow').html(history + '<div class="msgContainer" align="right"><p>' + input + '</p><br><div class="msgLabel">You</div></div>');
@@ -61,8 +68,15 @@ $(document).ready(function() {
 				div = $('#CWindow');
 				div.scrollTop(div.prop('scrollHeight'))
 			}
+			/*Extracts url parameters*/
+			$.urlParam = function(name){
+				var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
+				return results[1] || 0;
+			}
 			function grabAnswer() {
-				$.get('/chatAnswer/', {"question": input}, function(data) {	
+				
+				var cid = $.urlParam('id');
+				$.get('/chatAnswer/', {"question": input, "cid": cid}, function(data) {	
 					$('#CWindow').html(history + '<div class="msgContainer" align="right"><p>' + input + '</p><br><div class="msgLabel">You</div></div>' + '<div class="botmsgContainer"><p >' + data + '</p><br><div class="msgBotLabel">Chatbot</div></div>');			
 					div = $('#CWindow');
 					div.scrollTop(div.prop('scrollHeight'))
@@ -70,7 +84,7 @@ $(document).ready(function() {
 				});			
 			}
 			setTimeout(loadGif, 500);
-			setTimeout(grabAnswer, 1000);
+			setTimeout(grabAnswer, 500);
 			
 			div = $('#CWindow');
 			div.scrollTop(div.prop('scrollHeight'))

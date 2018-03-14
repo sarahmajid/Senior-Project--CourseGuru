@@ -1,10 +1,3 @@
-'''
-Created on Mar 8, 2018
-
-@author: Andriy Marynovskyy
-
-'''
- 
 import re
 import nltk
 
@@ -132,7 +125,6 @@ def docxParser(docxFile, cid, catID):
             while i <numRows:
                 j=0
                 while j<numCols:
-                    #tableData.append((n.table.cell(i, j)).text)
                     check = ' '.join((n.table.cell(i, j)).text.split())
                     if check != ' ' and check != '': 
                         if data == "":

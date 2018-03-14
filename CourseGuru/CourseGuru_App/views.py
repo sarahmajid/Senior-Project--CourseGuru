@@ -8,7 +8,7 @@ import io
 
 from nltk.tokenize import word_tokenize, sent_tokenize
 from nltk.corpus import stopwords
-from nltk.stem import WordNetLemmatizer
+from nltk.stem.wordnet import WordNetLemmatizer
 from nltk.tokenize.moses import MosesDetokenizer
 
 from django.shortcuts import render, _get_queryset
@@ -481,9 +481,7 @@ def cbAnswer(nq, courseID=0, chatWindow=False):
         return("Sorry, I didn't understand that.")
     elif luisIntent == "None" or not luisStr['entities'] or luisScore < 0.75:
         return
-    
-    print(luisIntent, chatWindow)
-    
+      
     #teachLuis(nq, 'Other')
     #publishLUIS()
     
@@ -530,16 +528,16 @@ def getIntentAns(luisIntent, luisEntities, courseID=0, chatWindow=False):
     catgry = category.objects.get(intent = luisIntent)
     
     #Changes plural to singular
-    lem = nltk.wordnet.WordNetLemmatizer()
+    lem = WordNetLemmatizer()
     for ind, ent in enumerate(entitiesList):
-        print("CHECK: " + ent)
         entitiesList[ind] = lem.lemmatize(ent)
-        print("AFTER: " + entitiesList[ind])
     
     if courseID != 0:
         filtAns = botanswers.objects.filter(category_id = catgry.id, course_id = courseID)
     else:
         filtAns = botanswers.objects.filter(category_id = catgry.id)
+    
+    bestMatch = 0
     
     for m in filtAns:
         Match = 0
@@ -548,9 +546,11 @@ def getIntentAns(luisIntent, luisEntities, courseID=0, chatWindow=False):
             if ent.lower() in m.entities.lower():
                 Match += 1
         Accuracy = (Match/ansLen)
-        if Accuracy>count:
+        if (Accuracy > count or Match > bestMatch) and not Match < bestMatch:
             count = Accuracy
             answr = m.answer
+            if Match > bestMatch:
+                bestMatch = Match
             
     if answr == "" and chatWindow == True:
         answr = "Sorry, I didn't understand that."
@@ -560,6 +560,7 @@ def getIntentAns(luisIntent, luisEntities, courseID=0, chatWindow=False):
 
 def chatAnswer(request):
     question = request.GET.get('question')
-    botAns = cbAnswer(question, chatWindow=True)
+    cid = request.GET.get('cid')
+    botAns = cbAnswer(question, cid, chatWindow=True)
     return HttpResponse(botAns)
 
