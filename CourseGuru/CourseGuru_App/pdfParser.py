@@ -49,13 +49,20 @@ def pdfToText(file):
     device = PDFPageAggregator(rsrcmgr, laparams=laparams)
     #device = HTMLConverter(rsrcmgr, laparams=laparams)
     interpreter = PDFPageInterpreter(rsrcmgr, device)
+    
+    ExtractedArray = []      
           
     for page in doc.get_pages():
         interpreter.process_page(page)
         layout = device.get_result()
         for lt_obj in layout:
             if isinstance(lt_obj, LTTextBoxHorizontal):
-                extracted_text += lt_obj.get_text() 
+                extracted_text += lt_obj.get_text()
+#                ExtractedArray.append(lt_obj.get_text())
+                
+#    for n in ExtractedArray: 
+#        print(n)
+#        print("========================================")
     textFile = pullInfo(extracted_text)   
     file.close() 
     return textFile
@@ -85,7 +92,16 @@ def pullInfo(file):
      
     #strips the '\n' character from the list of elements 
     for n in pdfWord:
-        pdfWords.append(re.sub('\\n|\:|\;|\ ', '', n))
+        pdfWords.append(re.sub('\\n|\:|\;|\\uf0b7|\\uf020', '', n))
+       
+    i = 0 
+    while i < len(pdfWords)-1:    
+        if pdfWords[i] == '' or pdfWords[i] == (''+''): 
+            del pdfWords[i]
+            i+=1
+        else: 
+            i+=1
+        
    # pdfWords = re.sub('\\n|\:|\;', '', pdfWord)
 
     for n in keyWordObj:
@@ -106,9 +122,10 @@ def pullInfo(file):
     
     # sub category location finder     
     subCatkeyPosition, subCatWordPosition = findKeyWordsPosition(pdfWords, subCat)
-
-
-    numKeyWordsFound=len(set(subCatWordPosition))
+    
+       
+    #end of file    
+    keyPositions.append(len(pdfWords))
     
     #structuring text and storing it into the database table as ex: Instructors Name | John Doe    
     i=0
@@ -152,9 +169,7 @@ def pullInfo(file):
     for n in data: 
         print(n)   
  
-#Will need once finished setting all key words        
-    #to end of file    
-    keyPositions.append(len(pdfWords))
+
     # loops through the key positions and puts data into appropriate rows according to intent name 
 #===============================================================================
 #     i=0
@@ -169,20 +184,34 @@ def pullInfo(file):
 #===============================================================================
     return(pdfWords)
 
-def stripCharacters(parsedFile, character):
-    for n in parsedFile: 
-        parsedFile.append(n.strip(character))
-    return parsedFile
+#===============================================================================
+# def stripCharacters(parsedFile, character):
+#     for n in parsedFile: 
+#         parsedFile.append(n.strip(character))
+#     return parsedFile
+#===============================================================================
 
 def joinKeyWords(parsedFile, keyWords):
     i=0
-    while i<len(parsedFile)-1:
+    while i<len(parsedFile)-4:
         for n in keyWords:
             temp = parsedFile[i] + " " + parsedFile[i+1]
-            #if re.match((n + r"^\:|\;$"), temp, re.IGNORECASE):
-            if ((n)==temp):
+            temp1 = parsedFile[i] + " " + parsedFile[i+1]+ " " + parsedFile[i+2]
+            temp2 = parsedFile[i] + " " + parsedFile[i+1]+ " " + parsedFile[i+2]+ " " + parsedFile[i+3]
+            temp3 = parsedFile[i] + " " + parsedFile[i+1]+ " " + parsedFile[i+2]+ " " + parsedFile[i+3]+ " " + parsedFile[i+4]
+            if (n.lower()==temp3.lower()):
+                parsedFile[i] = parsedFile[i]+ " " + parsedFile[i+1] + " " + parsedFile[i+2] + " " + parsedFile[i+3]+ " " + parsedFile[i+4]
+                del parsedFile[i+1:i+4]
+            elif (n.lower()==temp2.lower()):
+                parsedFile[i] = parsedFile[i]+ " " + parsedFile[i+1] + " " + parsedFile[i+2] + " " + parsedFile[i+3]
+                del parsedFile[i+1:i+3]
+            elif (n.lower()==temp1.lower()):
+                parsedFile[i] = parsedFile[i]+ " " + parsedFile[i+1] + " " + parsedFile[i+2] 
+                del parsedFile[i+1:i+2]
+            elif (n.lower()==temp.lower()):
                 parsedFile[i] = parsedFile[i]+ " " + parsedFile[i+1]
                 del parsedFile[i+1]
+
         i+=1  
         
 def findKeyWordsPosition(parsedFile, keyWords):

@@ -503,6 +503,7 @@ def fileParsing(request):
         
         if docType == 'application/pdf':
             document = pdfParser.pdfToText(f)
+            return render(request, 'CourseGuru_App/parse.html', {'convText': document})
         elif docType == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
             document = docxParser(f)
         else: 
