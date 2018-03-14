@@ -109,25 +109,24 @@
 				<td style="color: #444; font-size: 22px; padding:10px; font-family: century gothic;">
 					{{numAnswers}} Answer(s)
 					
-					<form action="" method="POST" style="float: right; display: inline;">
+<!-- 					<form action="" method="POST" style="float: right; display: inline;">
 					{% csrf_token %}
 					{% if resolved == True and user.id == Title.user.id %}
 						<button type="submit" onclick="return confirm('Are you sure you want to unresolve this post?')" class="btn btn-warning" name="unresolve" style="margin-right: 5px">Unresolve</button>
-					{% endif %}
-					
-			</form>
+  					{% endif %}
+					</form> -->
 				</td>
 			</tr>
 			<tr><td style="border-top: #AEADAD 3px solid;"> </td></tr>
 			
 			{% for a in answers %}
-				{% if a.resolved == True %}
+<!-- 				{% if a.resolved == True %}
 				<tr>
 					<td style="padding: 0px 0px 0px 3%; background-color: #EAECEE; color: grey; font-family: century gothic;">
 						<div style="font-size: 14px; color: green; float: left">Resolved Answer</div>
 					</td>
 				</tr>
-				{%endif%}
+				{%endif%} -->
 			
 			<tr>
 				<td style="padding:10px 10px 10px 3%; color: grey; background-color: #EAECEE; font-family: century gothic;">

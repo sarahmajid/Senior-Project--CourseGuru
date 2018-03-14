@@ -428,17 +428,19 @@ def answer(request):
                 aData = answers.objects.filter(question_id = qid).order_by( '-resolved', 'pk')
                 return render(request, 'CourseGuru_App/answer.html', {'answers': aData, 'numAnswers': ansCt, 'Title': qData, 'comments': cData, 'courseID': cid, 'resolved':resolve})
 #unresolve functionality ===================================         
-            elif 'unresolve' in request.POST:
-                rslvdAnsId = answers.objects.get(resolved = True)
-                providedBy = User.objects.get(id = rslvdAnsId.user.id)                    
-                if providedBy.status != 'Teacher':
-                    print(providedBy.status)
-                    botanswers.objects.filter(answerId = rslvdAnsId).delete()
-                rslvdAnsId.resolved=False
-                rslvdAnsId.save()
-                resolve = False
-                aData = answers.objects.filter(question_id = qid).order_by( '-resolved', 'pk')
-                return render(request, 'CourseGuru_App/answer.html', {'answers': aData, 'numAnswers': ansCt, 'Title': qData, 'comments': cData, 'courseID': cid, 'resolved':resolve})
+            #===================================================================
+            # elif 'unresolve' in request.POST:
+            #     rslvdAnsId = answers.objects.get(resolved = True)
+            #     providedBy = User.objects.get(id = rslvdAnsId.user.id)                    
+            #     if providedBy.status != 'Teacher':
+            #         print(providedBy.status)
+            #         botanswers.objects.filter(answerId = rslvdAnsId).delete()
+            #     rslvdAnsId.resolved=False
+            #     rslvdAnsId.save()
+            #     resolve = False
+            #     aData = answers.objects.filter(question_id = qid).order_by( '-resolved', 'pk')
+            #     return render(request, 'CourseGuru_App/answer.html', {'answers': aData, 'numAnswers': ansCt, 'Title': qData, 'comments': cData, 'courseID': cid, 'resolved':resolve})
+            #===================================================================
 #=============================================================            
             return HttpResponseRedirect('/answer/?id=%s&cid=%s' % (qid, cid)) 
         return render(request, 'CourseGuru_App/answer.html', {'answers': aData, 'numAnswers': ansCt, 'Title': qData, 'comments': cData, 'courseID': cid, 'resolved': resolve, 'upData': upData, 'downData': downData})
