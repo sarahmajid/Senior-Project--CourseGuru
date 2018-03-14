@@ -474,14 +474,15 @@ def cbAnswer(nq, courseID=0, chatWindow=False):
         return('Hello, how can I help you?')
     elif luisIntent == 'Greetings':
         return
-    elif luisIntent == 'Name':
+    elif luisIntent == 'Name' or luisIntent == 'Course Policies':
         luisIntent = 'Syllabus'
-    elif (luisIntent == "None" or not luisStr['entities']) and chatWindow == True:
+    #If intent receives a lower score than 75% or there is no intent, the question does not get answered
+    elif (luisIntent == "None" or not luisStr['entities'] or luisScore < 0.75) and chatWindow == True:
         return("Sorry, I didn't understand that.")
-    elif luisIntent == "None" or not luisStr['entities']:
+    elif luisIntent == "None" or not luisStr['entities'] or luisScore < 0.75:
         return
     
-    print(luisIntent)
+    print(luisIntent, chatWindow)
     
     #teachLuis(nq, 'Other')
     #publishLUIS()
@@ -512,11 +513,8 @@ def cbAnswer(nq, courseID=0, chatWindow=False):
     if 'ta' in luisEntities.lower():
         luisEntities += ',' + 'teaching assistant'
                     
-    #If intent receives a lower score than 75% or there is no intent, the question does not get answered
-    if luisScore < 0.75 or luisIntent == 'None':
-        return
     
-    entAnswer = getIntentAns(luisIntent, luisEntities, courseID)
+    entAnswer = getIntentAns(luisIntent, luisEntities, courseID, chatWindow)
     if entAnswer == "":
         return
     #botAns = reformQuery(nq) + entAnswer
@@ -524,20 +522,19 @@ def cbAnswer(nq, courseID=0, chatWindow=False):
     return(botAns)
 
 # returns a good match to entities answer object  
-def getIntentAns(luisIntent, luisEntities, courseID=0):    
+def getIntentAns(luisIntent, luisEntities, courseID=0, chatWindow=False):    
     count = 0
     answr = ""
     
     entitiesList = luisEntities.lower().split(",")
     catgry = category.objects.get(intent = luisIntent)
     
-    #Removes 's' from end of entities (Change to nltk plural)
+    #Changes plural to singular
+    lem = nltk.wordnet.WordNetLemmatizer()
     for ind, ent in enumerate(entitiesList):
         print("CHECK: " + ent)
-        if ent[-1:] == 's':
-            print("BEFORE: " + entitiesList[ind])
-            entitiesList[ind] = ent[:-1]
-            print("AFTER: " + entitiesList[ind])
+        entitiesList[ind] = lem.lemmatize(ent)
+        print("AFTER: " + entitiesList[ind])
     
     if courseID != 0:
         filtAns = botanswers.objects.filter(category_id = catgry.id, course_id = courseID)
@@ -546,16 +543,18 @@ def getIntentAns(luisIntent, luisEntities, courseID=0):
     
     for m in filtAns:
         Match = 0
-        #ansLen = len(m.entities)
+        ansLen = len(m.entities)
         for ent in entitiesList:
             if ent.lower() in m.entities.lower():
                 Match += 1
-        #Accuracy = (Match/ansLen)
-        if Match>count:
-            count = Match
+        Accuracy = (Match/ansLen)
+        if Accuracy>count:
+            count = Accuracy
             answr = m.answer
             
-            
+    if answr == "" and chatWindow == True:
+        answr = "Sorry, I didn't understand that."
+    
     return (answr) 
 
 
