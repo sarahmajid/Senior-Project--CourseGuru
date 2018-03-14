@@ -192,6 +192,7 @@ def pullInfo(file):
 #===============================================================================
 
 def joinKeyWords(parsedFile, keyWords):
+    
     i=0
     while i<len(parsedFile)-4:
         for n in keyWords:
