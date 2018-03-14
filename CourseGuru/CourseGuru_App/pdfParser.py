@@ -32,7 +32,7 @@ def pdfToText(file):
     #When button is clicked we parse the file
         #Sets the cursor back to 0 in f to be parsed and sets the documents and parser
     file.seek(0)
-    parser = PDFParser(file)
+    parser = PDFParser(file.decode())
     doc = PDFDocument()
     parser.set_document(doc)
     doc.set_parser(parser)
@@ -58,11 +58,11 @@ def pdfToText(file):
         for lt_obj in layout:
             if isinstance(lt_obj, LTTextBoxHorizontal):
                 extracted_text += lt_obj.get_text()
-#                ExtractedArray.append(lt_obj.get_text())
+                ExtractedArray.append(lt_obj.get_text())
                 
-#    for n in ExtractedArray: 
-#        print(n)
-#        print("========================================")
+    for n in ExtractedArray: 
+        print(n)
+        print("========================================")
     textFile = pullInfo(extracted_text)   
     file.close() 
     return textFile

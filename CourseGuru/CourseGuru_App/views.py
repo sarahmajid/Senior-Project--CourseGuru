@@ -468,7 +468,7 @@ def voting(request):
     return HttpResponse()
 
 # returns a good match to entities answer object  
-def getIntentAns(luisIntent, luisEntities):    
+def getIntentAns(luisIntent, luisEntities, nq):    
     count = 0
     answr = ""
     
@@ -477,6 +477,11 @@ def getIntentAns(luisIntent, luisEntities):
     
     filtAns = botanswers.objects.filter(category_id = catgry.id)
     
+    for m in filtAns: 
+        if nq.lower() in m.entities.lower():
+            answer = m.answer
+            return answer
+         
     for m in filtAns:
         Match = 0
         #testing, change entities name to something else later
@@ -501,7 +506,7 @@ def fileParsing(request):
         #print(docType)
         myfile=myfile.file.read()
         f = tempfile.TemporaryFile('r+b')
-        f.write(myfile)
+        f.write(myfile.decode())
         
         if docType == 'application/pdf':
             document = pdfParser.pdfToText(f)
@@ -528,6 +533,7 @@ def cbAnswer(nq):
     if not luisStr['entities']:
         return
     luisEntities = ""
+    
     z = 0
     for x in luisStr['entities']:
         newEnt = luisStr['entities'][z]['entity']
@@ -538,6 +544,7 @@ def cbAnswer(nq):
         else:
             luisEntities += ',' + newEnt
         z += 1
+        
     #If intent receives a lower score than 75% or there is no intent, the question does not get answered
     if luisScore < 0.75 or luisIntent == 'None':
         return
@@ -548,7 +555,7 @@ def cbAnswer(nq):
     #qid = questions.objects.last()
 
     
-    entAnswer = getIntentAns(luisIntent, luisEntities)
+    entAnswer = getIntentAns(luisIntent, luisEntities, nq)
     if entAnswer == "":
         return
     botAns = reformQuery(nq) + entAnswer
