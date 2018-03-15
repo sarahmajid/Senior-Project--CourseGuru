@@ -12,7 +12,7 @@
 		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 	</head>
 	<body>    
-		<header width="70%" align="center" height="50px" style="margin-left: calc(300px); margin-left: -moz-calc(300px); margin-right: 5%; line-height: 56px; text-align: center; font-size: 30px; color: #444; font-family: century gothic; font-weight: normal;">
+		<header width="70%" align="center" height="50px" style="margin-left: calc(300px + 5%); margin-left: -moz-calc(300px + 5%); margin-right: 5%; line-height: 56px; text-align: center; font-size: 30px; color: #444; font-family: century gothic; font-weight: normal;">
 			Course Questions	
 		</header>
 		<br>
@@ -64,11 +64,32 @@
 			</tr>
 			<tr> 
 				<td>
-					<div style="padding-bottom: 60px;">
-						<form method = "POST" action="" >
+				<label style="font-size: 16px; color: grey; font-family: century gothic;">Category:</label><br>
+				<div style="padding-bottom: 60px">
+						<form method = "POST" style="float:left; width:50%">
+								{% csrf_token %}
+								<select name="Filter" class="form-control" required="required" style="float:left; width:18%" >
+								<option>{{status}}</option>
+								{% if status != "All"%}
+								<option value="All">All</option>
+								{%endif%}
+								{% if status != "Assignment"%}
+								<option value="Assignment">Assignment</option>
+								{%endif%}
+								{% if status != "Syllabus"%}
+								<option value="Syllabus">Syllabus</option>
+								{%endif%}
+								{% if status != "Other"%}
+								<option value="Other">Other</option>
+								{%endif%}
+								</select>
+								{% csrf_token %}
+								<input type="submit" name="filterSubmit" class="btn btn-primary" value="Filter" style = "margin-left: 10px">	
+						</form>
+						<form method = "POST" action="" style="float: right; width:50%" >
 							{% csrf_token %}
-							<button type="submit" class="btn btn-primary" value="SEARCH" style="float:right;">Search</button>
-							<input type="text" class="form-control" name="query" placeholder="Search Posts" style="float: right; width:20%; margin-right: 10px;"></input>
+							<button type="submit" class="btn btn-primary" value="SEARCH" style="float:right;">SEARCH</button>
+							<input type="text" class="form-control" name="query" placeholder="Search Posts" style="width:40%; float:right; margin-right: 10px;"></input>
 						</form>
 					</div>
 				</td>

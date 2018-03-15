@@ -49,9 +49,15 @@
 						{% csrf_token %}
 						<select name="status" class="form-control select-short" required="required" >
 							<option>{{status}}</option>
+							{% if status != "Student"%}
 							<option value="Student">Student</option>
+							{%endif%}
+							{% if status != "Teaching Assistant"%}
 							<option value="TA">Teaching Assistant</option>
+							{%endif%}
+							{% if status != "Instructor"%}
 							<option value="Teacher">Instructor</option>
+							{%endif%}
 						</select><br><br>
 						<hr>
 						<br>
