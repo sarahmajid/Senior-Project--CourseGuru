@@ -9,7 +9,7 @@ import re
 
 from pdfminer.pdfparser import PDFParser, PDFDocument
 from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter, process_pdf
-from pdfminer.layout import LAParams, LTTextBoxHorizontal
+from pdfminer.layout import LAParams, LTTextBoxHorizontal, LTTextBox, LTTextLine
 from pdfminer.converter import PDFPageAggregator, HTMLConverter
 from pdfminer.pslexer import delimiter
 #from pdfminer.pdfpage import PDFPage
@@ -25,14 +25,21 @@ from CourseGuru_App.models import keywords
 from CourseGuru_App.models import courseinfo
 from CourseGuru_App.models import botanswers
 
+
 def pdfToText(file):
 #    Create empty string for text to be extracted into
+    keyWordObj = keywords.objects.exclude(categoryKeyWords=None)
+    
+    keyWords = []
+    for n in keyWordObj:
+        keyWords.append(n.categoryKeyWords)
+#    subKeyWords = keywords.objects.exclude(subCategoryKeyWords=None)
     extracted_text = '' 
     test = ''
     #When button is clicked we parse the file
         #Sets the cursor back to 0 in f to be parsed and sets the documents and parser
     file.seek(0)
-    parser = PDFParser(file.decode())
+    parser = PDFParser(file)
     doc = PDFDocument()
     parser.set_document(doc)
     doc.set_parser(parser)
@@ -51,21 +58,73 @@ def pdfToText(file):
     interpreter = PDFPageInterpreter(rsrcmgr, device)
     
     ExtractedArray = []      
-          
+#ISSUES TO SOLVE: key word repeated will be put in separate index, page number being read need to be discarded, multiple \n are read need to be discarded          
     for page in doc.get_pages():
         interpreter.process_page(page)
         layout = device.get_result()
         for lt_obj in layout:
-            if isinstance(lt_obj, LTTextBoxHorizontal):
-                extracted_text += lt_obj.get_text()
-                ExtractedArray.append(lt_obj.get_text())
-                
+            if isinstance(lt_obj, LTTextBox) or isinstance(lt_obj, LTTextLine):
+            #if isinstance(lt_obj, LTTextBoxHorizontal):
+                extracted_text = lt_obj.get_text()
+                filtText = re.sub('\\n', '<br>', extracted_text)
+                filtText = re.sub('\\uf0b7|\\uf020', '', filtText)
+                added = False
+                for n in keyWords:
+                    if n.lower() in filtText.lower(): 
+                        ExtractedArray.append(filtText)
+                        added=True
+                        
+                if len(ExtractedArray) > 0 and added == False:
+                    ExtractedArray[-1] = ExtractedArray[-1] + ' ' + filtText
+                    
+                elif len(ExtractedArray)==0: 
+                    ExtractedArray.append('Course Information: ' + filtText)
+
     for n in ExtractedArray: 
         print(n)
         print("========================================")
     textFile = pullInfo(extracted_text)   
     file.close() 
     return textFile
+
+#===============================================================================
+# def pdfToText(file):
+# #    Create empty string for text to be extracted into
+#     extracted_text = '' 
+#     test = ''
+#     #When button is clicked we parse the file
+#         #Sets the cursor back to 0 in f to be parsed and sets the documents and parser
+#     file.seek(0)
+#     parser = PDFParser(file)
+#     doc = PDFDocument()
+#     parser.set_document(doc)
+#     doc.set_parser(parser)
+#     doc.initialize('')
+#     rsrcmgr = PDFResourceManager()
+#     #sets parameters for analysis 
+#     laparams = LAParams()
+#           
+#     #Required to define separation of text within pdf
+#     laparams.char_margin = 1
+#     laparams.word_margin = 1
+#           
+#     #Device takes LAPrams and uses them to parse individual pdf objects
+#     device = PDFPageAggregator(rsrcmgr, laparams=laparams)
+#     #device = HTMLConverter(rsrcmgr, laparams=laparams)
+#     interpreter = PDFPageInterpreter(rsrcmgr, device)
+#     
+#     ExtractedArray = []      
+#           
+#     for page in doc.get_pages():
+#         interpreter.process_page(page)
+#         layout = device.get_result()
+#         for lt_obj in layout:
+#             if isinstance(lt_obj, LTTextBoxHorizontal):
+#                 extracted_text += lt_obj.get_text()
+#     textFile = pullInfo(extracted_text)   
+#     file.close() 
+#     return textFile
+#===============================================================================
 
 
 #will need a more robust way

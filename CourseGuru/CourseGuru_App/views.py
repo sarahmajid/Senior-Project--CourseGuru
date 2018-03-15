@@ -506,7 +506,7 @@ def fileParsing(request):
         #print(docType)
         myfile=myfile.file.read()
         f = tempfile.TemporaryFile('r+b')
-        f.write(myfile.decode())
+        f.write(myfile)
         
         if docType == 'application/pdf':
             document = pdfParser.pdfToText(f)
