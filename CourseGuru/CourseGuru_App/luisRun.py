@@ -22,7 +22,7 @@ def publishLUIS():
         'Content-Type': 'application/json',
         'Ocp-Apim-Subscription-Key': 'c574439a46e64d8cb597879499ccf8f9',
     }
-    filename = 'CourseGuru/CourseGuru_App/static/publish.json'
+    filename = 'CourseGuru_App/static/publish.json'
     with open(filename, 'r') as publishJson:
             data = publishJson.read()
     

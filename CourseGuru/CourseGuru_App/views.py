@@ -506,9 +506,16 @@ def fileParsing(request):
   def chatbot(request):
     return render(request, 'CourseGuru_App/botchat.html',)
 
+from CourseGuru_App.tasks import queuePublish
+
 def chatAnswer(request):
     question = request.GET.get('question')
     cid = request.GET.get('cid')
     botAns = cbAnswer(question, cid, chatWindow=True)
+    #queuePublish.delay()
     return HttpResponse(botAns)
+
+
+
+
 
