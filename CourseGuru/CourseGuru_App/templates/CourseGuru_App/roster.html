@@ -71,6 +71,7 @@
 		<table width="70%" align="Center" style="border-spacing: 0;  float:left; margin-left: 20%; margin-bottom: 100px;">
 			<tr>
 				<td style="padding: 10px;">
+					{%if user.status == "Teacher"%}
 					<form method="POST" action="" style="">
 						<h3 style="font-size: 16px; color: red; font-family: century gothic;">{{credentialmismatch}}</h3>
 						
@@ -104,7 +105,7 @@
 					</form>	
 					<h3 style="font-size: 16px; color: red; font-family: century gothic;">{{notAdded}}</h3>
 					<br>
-					
+					{% endif %}
 					<table class="table" style="width:100%; border-collapse: collapse " >
 	  					<thead>
 		  					<tr>
@@ -122,6 +123,7 @@
 			    				<td>{{c.user.first_name}}</td>
 			    				<td>{{c.user.last_name}}</td> 
 			    				<td>{{c.user.email}}</td>
+			    				{%if user.status == "Teacher"%}
 			    				<td>
 				    				<form method="POST" action=""> 
 										{% csrf_token %}
@@ -129,7 +131,9 @@
 									</form>
 								</td>
 			    				</tr>
+			    				{% endif %}
 			    			{% endif %}
+			    			
 	    				{% endfor %}
 	    				</tbody>
     				</table>
