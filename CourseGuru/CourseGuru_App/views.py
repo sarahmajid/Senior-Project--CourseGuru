@@ -200,7 +200,7 @@ def roster(request):
 def question(request):
     if request.user.is_authenticated:
             #Grabs the questions form the db and orders them by id in desc fashion so the newest are first
-        cid = request.GET.get('id', '')
+        cid = request.GET.get('cid', '')
         qData = questions.objects.get_queryset().filter(course_id = cid).order_by('-pk')
         page = request.GET.get('page', 1)
         cName = course.objects.get(id = cid)

@@ -75,7 +75,7 @@ $(document).ready(function() {
 			}
 			function grabAnswer() {
 				
-				var cid = $.urlParam('id');
+				var cid = $.urlParam('cid');
 				$.get('/chatAnswer/', {"question": input, "cid": cid}, function(data) {	
 					$('#CWindow').html(history + '<div class="msgContainer" align="right"><p>' + input + '</p><br><div class="msgLabel">You</div></div>' + '<div class="botmsgContainer"><p >' + data + '</p><br><div class="msgBotLabel">Chatbot</div></div>');			
 					div = $('#CWindow');

@@ -29,9 +29,11 @@
 				<li>
 					<a class="side-panel-button" href="/roster/?cid={{courseID}}">Class Roster</a>
 				</li>
+				{% if user.status == "Teacher" %}
 				<li> 
 					<a class="side-panel-button" href="/uploadDocument/?cid={{courseID}}">Upload Document</a>
 				</li>
+				{% endif %}
 			</ul>
 			
 			<div class="LiveChat">	
@@ -131,7 +133,7 @@
 				<div id="page-menu">
 					<ul id="horiz-list" class="pagination">
 						{% if content.has_previous %}
-							<li><a class="nonactive" href="?id={{courseID}}&page={{ content.previous_page_number }}">&laquo;</a></li>
+							<li><a class="nonactive" href="?cid={{courseID}}&page={{ content.previous_page_number }}">&laquo;</a></li>
 						{% else %}
 							<li class="disabled"><span>&laquo;</span></li>
 						{% endif %}
@@ -139,11 +141,11 @@
 							{% if content.number == i %}
 								<li class="active"><span>&nbsp;{{ i }}&nbsp;<span class="sr-only"></span></span></li>
 							{% else %}
-								<li>&nbsp;<a class="nonactive" href="?id={{courseID}}&page={{ i }}">{{ i }}</a>&nbsp;</li>
+								<li>&nbsp;<a class="nonactive" href="?cid={{courseID}}&page={{ i }}">{{ i }}</a>&nbsp;</li>
 							{% endif %}			
 						{% endfor %}
 						{% if content.has_next %}
-							<li><a class="nonactive" href="?id={{courseID}}&page={{ content.next_page_number }}">&raquo;</a></li>
+							<li><a class="nonactive" href="?cid={{courseID}}&page={{ content.next_page_number }}">&raquo;</a></li>
 						{% else %}
 							<li class="disabled"><span>&raquo;</span></li>
 						{% endif %}

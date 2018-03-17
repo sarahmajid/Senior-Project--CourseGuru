@@ -25,11 +25,16 @@
 			</div>
 			<ul>
 				<li>
-					<a class="side-panel-button" href="/question/?id={{courseID}}"><i id="arrow-left"></i>Back to Questions</a> 
+					<a class="side-panel-button" href="/question/?cid={{courseID}}"><i id="arrow-left"></i>Back to Questions</a> 
 				</li>
 				<li>
 					<a class="side-panel-button" href="/roster/?cid={{courseID}}">Class Roster</a>
 				</li>
+				{% if user.status == "Teacher" %}
+				<li> 
+					<a class="side-panel-button" href="/uploadDocument/?cid={{courseID}}">Upload Document</a>
+				</li>
+				{% endif %}
 			</ul>
 			
 			<div class="LiveChat">	

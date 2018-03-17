@@ -73,6 +73,11 @@ def getIntentAns(luisIntent, luisEntities, courseID=0, chatWindow=False):
     #for ind, ent in enumerate(entitiesList):
     #    entitiesList[ind] = lem.lemmatize(ent)
     
+    #Temporary until lemmatizer is fixed
+    for ind, ent in enumerate(entitiesList):
+        if ent[-1:].lower() == 's':
+            entitiesList[ind] = ent[:-1]
+    
     if courseID != 0:
         filtAns = botanswers.objects.filter(category_id = catgry.id, course_id = courseID)
     else:
