@@ -35,30 +35,13 @@ from CourseGuru_App.natLang import reformQuery
 from CourseGuru_App.pdfParser import *
 from CourseGuru_App.docxParser import *
 from CourseGuru_App.CSV import *
-from CourseGuru_App import pdfParser
 from CourseGuru_App.luisRun import publishLUIS
 from CourseGuru_App.catQuestion import *
 from CourseGuru_App.validate import *
 from CourseGuru_App.botFunctions import *
 
-from test.test_decimal import file
-from pickle import INST
-from test.test_enum import Answer
 from builtins import str
-from _ast import Str, Yield
-from string import ascii_lowercase
-from warnings import catch_warnings
-from symbol import except_clause
-from tkinter.font import BOLD
-from attr.validators import instance_of
-from docx.oxml.document import CT_Body
 
-
-from CourseGuru_App import pdfParser, catQuestion
-from pip._vendor.html5lib.constants import entities
-from _overlapped import NULL
-from attr.filters import exclude
-#from nltk.parse.featurechart import sent
 
 #Function to populate Main page
 def index(request):
@@ -114,8 +97,6 @@ def account(request):
                 return render(request, 'CourseGuru_App/account.html', {'errorMsg': errorMsg,'fname': firstname, 'lname': lastname, 'status': stat, 'email': email})
 
             else:
-                #edit possibly drop user ID from the table or allow it to be null 
-                #user.objects.create(firstName = firstname, lastName = lastname, userName = username, password = psword, status = stat)  
                 newUser = User.objects.create_user(username, email, psword) 
                 newUser.first_name = firstname
                 newUser.last_name = lastname
@@ -300,10 +281,8 @@ def publish(request):
             comm = request.POST.get('NQcom')
             questionDate = genDate()
             user = request.user    
-            categ= catQuestion.categorize(ques) 
-
-            newQ = questions.objects.create(question = ques, course_id = cid, user_id = user.id, date = questionDate, comment = comm, category=categ)
-               
+            categ= categorize(ques) 
+            newQ = questions.objects.create(question = ques, course_id = cid, user_id = user.id, date = questionDate, comment = comm, category=categ)    
             botAns = cbAnswer(ques, cid)
             answerDate = genDate()
             
@@ -441,9 +420,7 @@ def answer(request):
                         dbInfo = " ".join(data).lower()
                         botanswers.objects.create(answer = ans.answer, rating = 0, category_id = 9, entities = dbInfo, course_id = cid)
                         teachLuis(qData.question, 'Other')
-                    
-                #if ((answers.objects.filter(id = aid).exists()) and (botanswers.objects.filter(answerId = aid).exists() == False)):
-                #    botanswers.objects.create(entities = qData.question, answerId=ans , category_id = 5, answer=ans.answer)
+
                 aData = answers.objects.filter(question_id = qid).order_by( '-resolved', 'pk')
                 return render(request, 'CourseGuru_App/answer.html', {'answers': aData, 'numAnswers': ansCt, 'Title': qData, 'comments': cData, 'courseID': cid, 'resolved':resolve})
 #unresolve functionality ===================================         
@@ -496,7 +473,7 @@ def fileParsing(request):
         f.write(myfile)
         
         if docType == 'application/pdf':
-            document = pdfParser.pdfToText(f)
+            document = pdfToText(f)
         elif docType == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
             document = docxParser(f)
         else: 
@@ -512,7 +489,6 @@ def chatAnswer(request):
     question = request.GET.get('question')
     cid = request.GET.get('cid')
     botAns = cbAnswer(question, cid, chatWindow=True)
-    #queuePublish.delay()
     return HttpResponse(botAns)
 
 

@@ -69,9 +69,9 @@ def getIntentAns(luisIntent, luisEntities, courseID=0, chatWindow=False):
     catgry = category.objects.get(intent = luisIntent)
     
     #Changes plural to singular
-    lem = WordNetLemmatizer()
-    for ind, ent in enumerate(entitiesList):
-        entitiesList[ind] = lem.lemmatize(ent)
+    #lem = WordNetLemmatizer()
+    #for ind, ent in enumerate(entitiesList):
+    #    entitiesList[ind] = lem.lemmatize(ent)
     
     if courseID != 0:
         filtAns = botanswers.objects.filter(category_id = catgry.id, course_id = courseID)
