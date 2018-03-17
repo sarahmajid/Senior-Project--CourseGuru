@@ -14,7 +14,7 @@
 		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
 	</head>
 	<body>
-		<header width="80%" align="center" height="50px" style="margin-left: 7%; line-height: 56px; text-align: center; font-size: 30px; color: #444; font-family: century gothic; font-weight: normal;">
+		<header width="80%" align="center" height="50px" style="margin-left: calc(300px + 5%); margin-left: -moz-calc(300px + 5%); margin-right: 5%; line-height: 56px; text-align: center; font-size: 30px; color: #444; font-family: century gothic; font-weight: normal;">
 			Course Answers
 		</header>
 		<br>
@@ -90,7 +90,7 @@
 			</tr>	
 		</table>
 		
-		<table  width="70%" align="Center" style="border-spacing: 0; margin-left: 20%; margin-bottom: 50px;">
+		<table  width="70%" align="Center" style="border-spacing: 0; margin-left: calc(300px + 5%); margin-left: -moz-calc(300px + 5%); margin-right: 5%; margin-bottom: 50px;">
 			<tr>
 				<td style="color: grey; background-color: #EAECEE; padding:10px 10px 10px 3%; font-family: century gothic;">			
 					
@@ -120,13 +120,13 @@
 			<tr><td style="border-top: #AEADAD 3px solid;"> </td></tr>
 			
 			{% for a in answers %}
-<!-- 				{% if a.resolved == True %}
+ 				{% if a.resolved == True %}
 				<tr>
 					<td style="padding: 0px 0px 0px 3%; background-color: #EAECEE; color: grey; font-family: century gothic;">
-						<div style="font-size: 14px; color: green; float: left">Resolved Answer</div>
+						<div style="font-size: 14px; color: green; float: left">Best Answer Chosen By Original Poster</div>
 					</td>
 				</tr>
-				{%endif%} -->
+				{%endif%}
 			
 			<tr>
 				<td style="padding:10px 10px 10px 3%; color: grey; background-color: #EAECEE; font-family: century gothic;">
@@ -140,8 +140,12 @@
 			</tr>
 			<tr>
 				<td style="padding:10px 10px 10px 3%; color: grey; padding-bottom: 20px; font-family: century gothic;">
-					<div style="font-size: 18px;float: left; width: 80%;">
-						<br>{{a.answer}}
+					<div style="font-size: 18px;float: left; width: 80%; white-space: pre-line;">
+						{% if a.user.id == 38 %}	
+						{{a.answer|safe}}
+						{% else %}	
+						{{a.answer}}
+						{% endif %}
 					</div>
 					<div>
 						<form action="" method="POST" style="float: right; display: inline;">

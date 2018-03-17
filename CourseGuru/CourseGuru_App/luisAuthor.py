@@ -18,29 +18,21 @@ def addUtterance():
     # uploadFile is the file containing JSON for utterance(s) to add to the LUIS app.
     # The contents of the file must be in this format described at: https://aka.ms/add-utterance-json-format
 #    UTTERANCE_FILE   = "/static/utterances.json"
-    RESULTS_FILE     = "CourseGuru_App/static/utterances.results.json"
+    RESULTS_FILE     = "CourseGuru/CourseGuru_App/static/utterances.results.json"
     
     luis = LUISClient(LUIS_HOST, LUIS_APP_ID, LUIS_APP_VERSION,
                           LUIS_programmaticKey)
 
     try:
-        if len(sys.argv) > 1:
-            print("Adding utterance(s).")
-            luis.add_utterances().write().raise_for_status()
-            option = sys.argv[1].lower().lstrip("-")
-            if option == "train":
-                print("Adding utterance(s).")
-                luis.add_utterances()   .write().raise_for_status()
-                print("Added utterance(s). Requesting training.")
-                luis.train()            .write().raise_for_status()
-                print("Requested training. Requesting training status.")
-                luis.status()           .write().raise_for_status()
-            elif option == "status":
-                print("Requesting training status.")
-                luis.status().write().raise_for_status()
-        else:
-            print("Adding utterance(s).")
-            luis.add_utterances().write().raise_for_status()
+        print("Adding utterance(s).")
+        luis.add_utterances()   .write().raise_for_status()
+        print("Added utterance(s). Requesting training.")
+        luis.train()            .write().raise_for_status()
+        print("Requested training. Requesting training status.")
+        luis.status()           .write().raise_for_status()
+
+        
+
     except Exception as ex:
         luis.print()    # JSON response may have more details
         print("{0.__name__}: {1}".format(type(ex), ex))

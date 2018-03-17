@@ -51,7 +51,7 @@
 					<a href="/question/?id={{c.id}}" style="cursor: pointer; font-size: 24px; font-family: century gothic; text-decoration: none;">{{c.courseName}}</a>	
 					<form method="POST" action="" margin="0" style="display: inline;">
 						{% csrf_token %}
-						<button type="submit" class="btn btn-danger" name="del" value="{{c.id}}" >Delete</button>
+						<button type="submit" class="btn btn-danger" name="del" onclick="return confirm('Are you sure you want to delete this course?')" value="{{c.id}}" >Delete</button>
 					</form>
 					{% else %}			
 					<a href="/question/?id={{c.course.id}}" style="cursor: pointer; font-size: 24px; font-family: century gothic; text-decoration: none;">{{c.course.courseName}}</a>	
@@ -63,43 +63,6 @@
 			{% endfor %}
 		</table>
 		<br><br><br>
-		<style>
-			#page-menu {
-				text-align: center;
-			}
-			
-			ul#horiz-list {
-				display: inline-block;
-				text-align: left;
-			}
-			ul#horiz-list li{
-				display: inline;
-			}
-		</style>
-		
-		{% if content.has_other_pages %}
-			<div id="page-menu">
-				<ul id="horiz-list" class="pagination">
-					{% if content.has_previous %}
-						<li><a href="?page={{ content.previous_page_number }}">&laquo;</a></li>
-					{% else %}
-						<li class="disabled"><span>&laquo;</span></li>
-					{% endif %}
-					{% for i in content.paginator.page_range %}
-						{% if content.number == i %}
-							<li class="active"><span>{{ i }} <span class="sr-only"></span></span></li>
-						{% else %}
-							<li><a href="?page={{ i }}">{{ i }}</a></li>
-						{% endif %}			
-					{% endfor %}
-					{% if content.has_next %}
-						<li><a href="?page={{ content.next_page_number }}">&raquo;</a></li>
-					{% else %}
-						<li class="disabled"><span>&raquo;</span></li>
-					{% endif %}
-				</ul>
-			</div>
-		{% endif %}
 
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
 		<script src="{% static 'js/style.js' %}"></script>

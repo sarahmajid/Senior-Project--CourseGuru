@@ -5,6 +5,11 @@ import requests
 import datetime
 import io
 
+from nltk.tokenize import word_tokenize, sent_tokenize
+from nltk.corpus import stopwords
+from nltk.stem.wordnet import WordNetLemmatizer
+from nltk.tokenize.moses import MosesDetokenizer
+
 from django.shortcuts import render, _get_queryset
 from django.http.response import HttpResponseRedirect
 from django.contrib.auth import authenticate, login, logout
@@ -12,13 +17,12 @@ from django.http import HttpResponse
 from django.template.context_processors import request
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib.auth.models import User
+from django.shortcuts import redirect
 
 
 #importing models 
 from CourseGuru_App.models import questions
 from CourseGuru_App.models import answers
-from CourseGuru_App.models import keywords
-from CourseGuru_App.models import courseinfo
 from CourseGuru_App.models import course
 from CourseGuru_App.models import category
 from CourseGuru_App.models import botanswers
@@ -30,12 +34,13 @@ from CourseGuru_App.natLang import reformQuery
 from CourseGuru_App.pdfParser import *
 from CourseGuru_App.docxParser import *
 from CourseGuru_App.CSV import *
+from CourseGuru_App.luisRun import publishLUIS
 from CourseGuru_App.catQuestion import *
 from CourseGuru_App.validate import *
+from CourseGuru_App.botFunctions import *
+from CourseGuru_App.tasks import queuePublish
 
-from pip._vendor.html5lib.constants import entities
-
-#from nltk.parse.featurechart import sent
+from builtins import str
 
 #Function to populate Main page
 def index(request):
@@ -54,15 +59,7 @@ def index(request):
                         login(request, user)
                         return HttpResponseRedirect('/courses/')
                 else:
-                    return render(request, 'CourseGuru_App/index.html', {'credentialmismatch': credentialmismatch})
-        
-                #try:
-                #    
-                #    lid = user.objects.get(userName = usname, password = psword)        
-                #    if (lid.id>0):
-                #        return HttpResponseRedirect('/question/') 
-                #except:
-                #    return render(request, 'CourseGuru_App/index.html',{'credentialmismatch': credentialmismatch})      
+                    return render(request, 'CourseGuru_App/index.html', {'credentialmismatch': credentialmismatch})    
         else:
             newAct = request.GET.get('newAct', '')
             if newAct == "1":
@@ -99,8 +96,6 @@ def account(request):
                 return render(request, 'CourseGuru_App/account.html', {'errorMsg': errorMsg,'fname': firstname, 'lname': lastname, 'status': stat, 'email': email})
 
             else:
-                #edit possibly drop user ID from the table or allow it to be null 
-                #user.objects.create(firstName = firstname, lastName = lastname, userName = username, password = psword, status = stat)  
                 newUser = User.objects.create_user(username, email, psword) 
                 newUser.first_name = firstname
                 newUser.last_name = lastname
@@ -109,6 +104,7 @@ def account(request):
                 return HttpResponseRedirect('/?newAct=1')  
     else:
         return render(request, 'CourseGuru_App/account.html', {'status': stat})    
+    
 def courses(request):
     if request.user.is_authenticated:
         if request.method == "POST":
@@ -137,6 +133,9 @@ def courses(request):
                 #Delete course
                 if course.objects.filter(id = cid).exists():
                     course.objects.filter(id = cid).delete()
+                #Delete botanswers related to this course
+                if botanswers.objects.filter(course_id = cid).exists():
+                    botanswers.objects.filter(course_id = cid).delete()
         curUser = request.user
         if curUser.status == "Teacher":
             courseList = course.objects.filter(user_id = curUser.id)
@@ -154,6 +153,9 @@ def roster(request):
     if request.user.is_authenticated:
         cid = request.GET.get('cid', '')
         cName = course.objects.get(id = cid)
+        user = request.user
+        if not courseusers.objects.filter(user_id = user.id, course_id = cid).exists() and not course.objects.filter(user_id = user.id, id = cid).exists():
+            return redirect('courses')
         studentList = courseusers.objects.filter(course_id=cid)
         if request.method == "POST":
             if request.POST.get('Logout') == "Logout":
@@ -201,6 +203,10 @@ def question(request):
         qData = questions.objects.get_queryset().filter(course_id = cid).order_by('-pk')
         page = request.GET.get('page', 1)
         cName = course.objects.get(id = cid)
+        user = request.user
+        if not courseusers.objects.filter(user_id = user.id, course_id = cid).exists() and not course.objects.filter(user_id = user.id, id = cid).exists():
+            return redirect('courses')
+        
         filterCategory = 'All'
         if request.method == "POST":
             if request.POST.get('Logout') == "Logout":
@@ -224,8 +230,6 @@ def question(request):
                 filterCategory = request.POST.get('Filter')
                 if filterCategory != 'All':
                     qData = qData.filter(category=filterCategory) 
-                else: 
-                    qData = questions.objects.get_queryset().filter(course_id = cid).order_by('-pk')
                 
         #Paginator created to limit page display to 10 data items per page
         paginator = Paginator(qData, 10)
@@ -234,10 +238,7 @@ def question(request):
         except PageNotAnInteger:
             fquestions = paginator.page(1)
         except EmptyPage:
-            fquestions = paginator.page(paginator.num_pages())
-    #    return render(request, 'CourseGuru_App/question.html', {'content': fquestions})
-        user = request.user
-        
+            fquestions = paginator.page(paginator.num_pages())       
         return render(request, 'CourseGuru_App/question.html', {'content': fquestions, 'user': user, 'courseID': cid, 'courseName': cName, 'status': filterCategory})
     else:
         return HttpResponseRedirect('/')
@@ -246,38 +247,30 @@ def uploadDocument(request):
     if request.user.is_authenticated:
         cid = request.GET.get('cid', '')
         cName = course.objects.get(id = cid)
-        studentList = courseusers.objects.filter(course_id=cid)
+        user = request.user
+        if not course.objects.filter(user_id = user.id, id = cid).exists():
+            return redirect('courses')
         if request.method == "POST":
             if request.POST.get('Logout') == "Logout":
                 logout(request)
                 return HttpResponseRedirect('/')
-            else:
-                credentialmismatch = "Username does not exist"
-                return render(request, 'CourseGuru_App/uploadDocument.html', {'courseID': cid, 'credentialmismatch': credentialmismatch, 'courseName': cName})
-#MIKE BEFORE DELETING THIS DOUBLE CHECK THAT YOU ADDED THE ERROR FILE HANDLING FROM BELOW
-#                if request.method == "POST":
-#                        myfile = request.FILES.get("syllabusFile")
-#                        errorMessage="Only .pdf and .docx type are currently supported"
-#                        docType= myfile.content_type
-#                        #print(docType)
-#                        myfile=myfile.file.read()
-#                        f = tempfile.TemporaryFile('r+b')
-#                        f.write(myfile)
-#                        
-#                        if docType == 'application/pdf':
-#                            document = pdfParser.pdfToText(f)
-#                        elif docType == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
-#                            document = docxParser(f)
-#                        else: 
-#                            return render(request, 'CourseGuru_App/parse.html', {'error': errorMessage})
-############################################################################################################        
-        return render(request, 'CourseGuru_App/uploadDocument.html', {'courseID': cid, 'studentList': studentList, 'courseName': cName})
+            if len(request.FILES) != 0:
+                courseFile = request.FILES.get("courseFile").file.read()
+                docType = request.POST.get("docType")
+                catID = category.objects.get(intent = docType)
+                f = tempfile.TemporaryFile('r+b')
+                f.write(courseFile)
+                docxParser(f, cid, catID)
+        return render(request, 'CourseGuru_App/uploadDocument.html', {'courseID': cid, 'courseName': cName})
     else:
         return HttpResponseRedirect('/')
     
 def publish(request):
     if request.user.is_authenticated:
         cid = request.GET.get('cid', '')
+        user = request.user
+        if not courseusers.objects.filter(user_id = user.id, course_id = cid).exists() and not course.objects.filter(user_id = user.id, id = cid).exists():
+            return redirect('courses')
         # Passes in new question when the submit button is selected
         if request.method == "POST":
             if request.POST.get('Logout') == "Logout":
@@ -289,9 +282,8 @@ def publish(request):
             user = request.user    
             categ= categorize(ques) 
 
-            newQ = questions.objects.create(question = ques, course_id = cid, user_id = user.id, date = questionDate, comment = comm, category=categ)
-               
-            botAns = cbAnswer(ques)
+            newQ = questions.objects.create(question = ques, course_id = cid, user_id = user.id, date = questionDate, comment = comm, category=categ)    
+            botAns = cbAnswer(ques, cid)
             answerDate = genDate()
             
             if botAns is not None:
@@ -307,6 +299,9 @@ def publishAnswer(request):
         qid = request.GET.get('id', '')
         cid = request.GET.get('cid', '')
         qData = questions.objects.get(id = qid)
+        user = request.user
+        if not courseusers.objects.filter(user_id = user.id, course_id = cid).exists() and not course.objects.filter(user_id = user.id, id = cid).exists():
+            return redirect('courses')
 
         if request.method == "POST":
             if request.POST.get('Logout') == "Logout":
@@ -315,9 +310,7 @@ def publishAnswer(request):
             ans = request.POST.get('NQcom')
             answerDate = genDate()
             user = request.user
-            newAns = answers.objects.create(answer = ans, user_id = user.id, question_id = qid, date = answerDate)
-            if user.status == 'Teacher':
-                botanswers.objects.create(entities = qData.question, answerId= newAns, category_id = qData.category, answer=ans )              
+            answers.objects.create(answer = ans, user_id = user.id, question_id = qid, date = answerDate)             
             return HttpResponseRedirect('/answer/?id=%s&cid=%s' % (qid, cid))
         return render(request, 'CourseGuru_App/publishAnswer.html', {'Title': qData, 'courseID': cid, 'quesID': qid})
     else:
@@ -325,6 +318,10 @@ def publishAnswer(request):
 
 def publishCourse(request):
     if request.user.is_authenticated:
+        user = request.user
+        #If user is not an instructor then get them out
+        if user.status != "Teacher":
+            return redirect('courses')
         if request.method == "POST":
             if request.POST.get('Logout') == "Logout":
                 logout(request)
@@ -332,6 +329,9 @@ def publishCourse(request):
             newCourse = request.POST.get('NC')
             cType = request.POST.get('cType')
             user = request.user
+            if course.objects.filter(courseName = newCourse, user_id = user.id).exists():
+                errorMsg = "You already have a course with this name."
+                return render(request, 'CourseGuru_App/publishCourse.html', {'error': errorMsg})
             course.objects.create(courseName = newCourse, courseType = cType, user_id = user.id)
             cid = course.objects.last()
             courseusers.objects.create(user_id = user.id, course_id = cid.id)
@@ -347,6 +347,8 @@ def answer(request):
         qid = request.GET.get('id', '')
         cid = request.GET.get('cid', '')
         user = request.user
+        if not courseusers.objects.filter(user_id = user.id, course_id = cid).exists() and not course.objects.filter(user_id = user.id, id = cid).exists():
+            return redirect('courses')
         aData = answers.objects.filter(question_id = qid).order_by( '-resolved', 'pk')
         ansCt = aData.count()
         qData = questions.objects.get(id = qid)
@@ -402,8 +404,23 @@ def answer(request):
                 resolve = True
                 ans.resolved = True
                 ans.save()
-                if ((answers.objects.filter(id = aid).exists()) and (botanswers.objects.filter(answerId = aid).exists() == False)):
-                    botanswers.objects.create(entities = qData.question, answerId=ans , category_id = 5, answer=ans.answer)
+                profRate = False
+                if ans.user_id != 38:
+                    ansRatings = userratings.objects.filter(answer_id = ans.id)
+                    for row in ansRatings:
+                        rowUser = row.user_id
+                        rateUser = User.objects.get(id = rowUser)
+                        if rateUser.status == "Teacher":
+                            profRate = True  
+                    if ans.rating > 2 or profRate:
+                        detokenizer = MosesDetokenizer()
+                        data_list = nltk.word_tokenize(qData.question)
+                        data = [word for word in data_list if word not in stopwords.words('english')]
+                        detokenizer.detokenize(data, return_str=True)
+                        dbInfo = " ".join(data).lower()
+                        botanswers.objects.create(answer = ans.answer, rating = 0, category_id = 9, entities = dbInfo, course_id = cid)
+                        teachLuis(qData.question, 'Other')
+
                 aData = answers.objects.filter(question_id = qid).order_by( '-resolved', 'pk')
                 return render(request, 'CourseGuru_App/answer.html', {'answers': aData, 'numAnswers': ansCt, 'Title': qData, 'comments': cData, 'courseID': cid, 'resolved':resolve})
 #unresolve functionality ===================================         
@@ -443,106 +460,12 @@ def voting(request):
     record = answers.objects.get(id = answerID)
     record.rating = (uprateCt - downrateCt)
     record.save()
-    
     return HttpResponse()
-
-# returns a good match to entities answer object  
-def getIntentAns(luisIntent, luisEntities, nq):    
-    count = 0
-    answr = ""
-    
-    entitiesList = luisEntities.split(",")
-    catgry = category.objects.get(intent = luisIntent)
-    
-    filtAns = botanswers.objects.filter(category_id = catgry.id)
-    
-    for m in filtAns: 
-        if nq.lower() in m.entities.lower():
-            answer = m.answer
-            return answer
-         
-    for m in filtAns:
-        Match = 0
-        #testing, change entities name to something else later
-        ansLen = len(m.entities)
-        for ent in entitiesList:
-            #testing, change entities name to something else later
-            if ent.lower() in m.entities.lower():
-                Match += 1
-        Accuracy = (Match/ansLen)
-        if Accuracy>count:
-            count = Accuracy
-            answr = m.answer
-
-    return (answr)     
-
-
-def fileParsing(request):
-    if request.method == "POST":
-        myfile = request.FILES.get("syllabusFile")
-        errorMessage="Only .pdf and .docx type are currently supported"
-        docType= myfile.content_type
-        #print(docType)
-        myfile=myfile.file.read()
-        f = tempfile.TemporaryFile('r+b')
-        f.write(myfile)
-        
-        if docType == 'application/pdf':
-            document = pdfToText(f)
-            return render(request, 'CourseGuru_App/parse.html', {'convText': document})
-        elif docType == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
-            document = docxParser(f)
-        else: 
-            return render(request, 'CourseGuru_App/parse.html', {'error': errorMessage})
-        
-    return render(request, 'CourseGuru_App/parse.html')  
   def chatbot(request):
     return render(request, 'CourseGuru_App/botchat.html',)
 
-def cbAnswer(nq):
-    r = requests.get('https://westus.api.cognitive.microsoft.com/luis/v2.0/apps/6059c365-d88a-412b-8f33-d7393ba3bf9f?subscription-key=c574439a46e64d8cb597879499ccf8f9&verbose=true&timezoneOffset=-300&q=%s' % nq)
-    luisStr = json.loads(r.text)
-    #Grabs intent score of question
-    luisScore = float(luisStr['topScoringIntent']['score'])
-    #Grabs intent of question
-    luisIntent = luisStr['topScoringIntent']['intent']
-    #Grabs entities
-    if luisIntent == 'Greetings':
-        return('Hello, how can I help you?')
-    if not luisStr['entities']:
-        return
-    luisEntities = ""
-    
-    z = 0
-    for x in luisStr['entities']:
-        newEnt = luisStr['entities'][z]['entity']
-        if luisStr['entities'][z]['type'] == "Role" and newEnt.endswith('s'):
-            newEnt = newEnt[:-1]
-        if z == 0:
-            luisEntities += newEnt
-        else:
-            luisEntities += ',' + newEnt
-        z += 1
-        
-    #If intent receives a lower score than 75% or there is no intent, the question does not get answered
-    if luisScore < 0.75 or luisIntent == 'None':
-        return
-    #---catID = category.objects.get(intent=luisIntent)
-    #Sets cbAns to the first answer it can find matching that category (This needs to be improved)
-    #---cbAns = botanswers.objects.filter(category_id = catID.id).first()
-    #ID of the latest question created
-    #qid = questions.objects.last()
-
-    
-    entAnswer = getIntentAns(luisIntent, luisEntities, nq)
-    if entAnswer == "":
-        return
-    botAns = reformQuery(nq) + entAnswer
-    return(botAns)
-
-
 def chatAnswer(request):
     question = request.GET.get('question')
-    botAns = cbAnswer(question)
+    cid = request.GET.get('cid')
+    botAns = cbAnswer(question, cid, chatWindow=True)
     return HttpResponse(botAns)
-

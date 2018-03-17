@@ -58,7 +58,7 @@ class category(models.Model):
     
 class botanswers(models.Model):
     category = models.ForeignKey(category, on_delete=models.CASCADE)
-    answerId = models.ForeignKey(answers, on_delete=models.CASCADE)
+    course = models.ForeignKey(course, on_delete=models.CASCADE)
     answer = models.CharField(max_length=5000)
     rating = models.IntegerField(default=0)
     entities = models.CharField(max_length=5000)
