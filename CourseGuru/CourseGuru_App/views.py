@@ -3,13 +3,7 @@ import tempfile
 import json
 import requests
 import datetime
-import nltk
 import io
-
-from nltk.tokenize import word_tokenize, sent_tokenize
-from nltk.corpus import stopwords
-from nltk.stem import WordNetLemmatizer
-from nltk.tokenize.moses import MosesDetokenizer
 
 from django.shortcuts import render, _get_queryset
 from django.http.response import HttpResponseRedirect
@@ -39,23 +33,8 @@ from CourseGuru_App.CSV import *
 from CourseGuru_App.catQuestion import *
 from CourseGuru_App.validate import *
 
-
-from test.test_decimal import file
-from pickle import INST
-from test.test_enum import Answer
-from builtins import str
-from _ast import Str, Yield
-from string import ascii_lowercase
-from warnings import catch_warnings
-from symbol import except_clause
-from tkinter.font import BOLD
-from attr.validators import instance_of
-from docx.oxml.document import CT_Body
-
-from CourseGuru_App import pdfParser, catQuestion
 from pip._vendor.html5lib.constants import entities
-from _overlapped import NULL
-from attr.filters import exclude
+
 #from nltk.parse.featurechart import sent
 
 #Function to populate Main page
@@ -308,7 +287,7 @@ def publish(request):
             comm = request.POST.get('NQcom')
             questionDate = genDate()
             user = request.user    
-            categ= catQuestion.categorize(ques) 
+            categ= categorize(ques) 
 
             newQ = questions.objects.create(question = ques, course_id = cid, user_id = user.id, date = questionDate, comment = comm, category=categ)
                
@@ -338,7 +317,7 @@ def publishAnswer(request):
             user = request.user
             newAns = answers.objects.create(answer = ans, user_id = user.id, question_id = qid, date = answerDate)
             if user.status == 'Teacher':
-                botanswers.objects.create(entities = qData.question, answerId= newAns, category_id = 5, answer=ans )              
+                botanswers.objects.create(entities = qData.question, answerId= newAns, category_id = qData.category, answer=ans )              
             return HttpResponseRedirect('/answer/?id=%s&cid=%s' % (qid, cid))
         return render(request, 'CourseGuru_App/publishAnswer.html', {'Title': qData, 'courseID': cid, 'quesID': qid})
     else:
@@ -509,7 +488,7 @@ def fileParsing(request):
         f.write(myfile)
         
         if docType == 'application/pdf':
-            document = pdfParser.pdfToText(f)
+            document = pdfToText(f)
             return render(request, 'CourseGuru_App/parse.html', {'convText': document})
         elif docType == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
             document = docxParser(f)

@@ -1,14 +1,7 @@
-'''
-Created on Mar 9, 2018
-
-@author: Andriy Marynovskyy
-'''
 import csv
 import io
-
 from django.http import HttpResponse
 from django.contrib.auth.models import User
-
 from CourseGuru_App.models import courseusers
 
 def downloadCSV():
@@ -30,7 +23,7 @@ def readCSV(csvFile, cid):
     reader = csv.DictReader(((io.StringIO(csvF))), delimiter=sniffer.delimiter)   
     #converts all field names to lowercase
     reader.fieldnames = [header.strip().lower() for header in reader.fieldnames]
-            
+           
     #variable initialization 
     str1 = "The following "
     str2 = " users were not added to the course because the usernames do not exist: "

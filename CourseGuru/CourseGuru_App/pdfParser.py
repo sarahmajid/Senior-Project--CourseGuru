@@ -1,27 +1,18 @@
-'''
-Created on Mar 8, 2018
-
-@author: Andriy Marynovskyy
-'''
-import tempfile
 import nltk
 import re
 
 from pdfminer.pdfparser import PDFParser, PDFDocument
-from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter, process_pdf
+from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
 from pdfminer.layout import LAParams, LTTextBoxHorizontal
-from pdfminer.converter import PDFPageAggregator, HTMLConverter
+from pdfminer.converter import PDFPageAggregator#,HTMLConverter
 #from pdfminer.pdfpage import PDFPage
-
-from io import BytesIO
-
-from nltk.tokenize import word_tokenize, sent_tokenize
+#from io import BytesIO
+#from nltk.tokenize import word_tokenize, sent_tokenize
 from nltk.corpus import stopwords
-from nltk.stem import WordNetLemmatizer
+#from nltk.stem import WordNetLemmatizer
 from nltk.tokenize.moses import MosesDetokenizer
-
 from CourseGuru_App.models import keywords
-from CourseGuru_App.models import courseinfo
+#from CourseGuru_App.models import courseinfo
 from CourseGuru_App.models import botanswers
 
 
