@@ -3,7 +3,6 @@ import tempfile
 import json
 import requests
 import datetime
-import nltk
 import io
 
 from nltk.tokenize import word_tokenize, sent_tokenize
@@ -39,9 +38,9 @@ from CourseGuru_App.luisRun import publishLUIS
 from CourseGuru_App.catQuestion import *
 from CourseGuru_App.validate import *
 from CourseGuru_App.botFunctions import *
+from CourseGuru_App.tasks import queuePublish
 
 from builtins import str
-
 
 #Function to populate Main page
 def index(request):
@@ -282,6 +281,7 @@ def publish(request):
             questionDate = genDate()
             user = request.user    
             categ= categorize(ques) 
+
             newQ = questions.objects.create(question = ques, course_id = cid, user_id = user.id, date = questionDate, comment = comm, category=categ)    
             botAns = cbAnswer(ques, cid)
             answerDate = genDate()
@@ -461,37 +461,11 @@ def voting(request):
     record.rating = (uprateCt - downrateCt)
     record.save()
     return HttpResponse()
-
-def fileParsing(request):
-    if request.method == "POST":
-        myfile = request.FILES.get("syllabusFile")
-        errorMessage="Only .pdf and .docx type are currently supported"
-        docType= myfile.content_type
-        #print(docType)
-        myfile=myfile.file.read()
-        f = tempfile.TemporaryFile('r+b')
-        f.write(myfile)
-        
-        if docType == 'application/pdf':
-            document = pdfToText(f)
-        elif docType == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
-            document = docxParser(f)
-        else: 
-            return render(request, 'CourseGuru_App/parse.html', {'error': errorMessage})
-        
-    return render(request, 'CourseGuru_App/parse.html')  
   def chatbot(request):
     return render(request, 'CourseGuru_App/botchat.html',)
-
-from CourseGuru_App.tasks import queuePublish
 
 def chatAnswer(request):
     question = request.GET.get('question')
     cid = request.GET.get('cid')
     botAns = cbAnswer(question, cid, chatWindow=True)
     return HttpResponse(botAns)
-
-
-
-
-
