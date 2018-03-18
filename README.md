@@ -21,6 +21,7 @@ The purpose of Amesite Chat Responder (ACR) is to have students become more invo
 6. pip install celery==3.1.24
 7. pip install django-celery 
 8. pip install requests
+9. pip install psycopg2
 
 ## Deployment
 1. 
