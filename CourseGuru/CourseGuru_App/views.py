@@ -243,6 +243,8 @@ def question(request):
     else:
         return HttpResponseRedirect('/')
 
+from CourseGuru_App.models import document
+
 def uploadDocument(request):
     if request.user.is_authenticated:
         cid = request.GET.get('cid', '')
@@ -261,6 +263,8 @@ def uploadDocument(request):
                 f = tempfile.TemporaryFile('r+b')
                 f.write(courseFile)
                 docxParser(f, cid, catID)
+                newFile = document(docfile = request.FILES['courseFile'], uploaded_by_id = user.id, course_id = cid, category_id = catID.id)
+                newFile.save()
         return render(request, 'CourseGuru_App/uploadDocument.html', {'courseID': cid, 'courseName': cName})
     else:
         return HttpResponseRedirect('/')

@@ -77,6 +77,11 @@ class courseinfo(models.Model):
     infoData = models.TextField()
     courseId = models.CharField(max_length = 15)
 
-    
+class document(models.Model):
+    docfile = models.FileField(upload_to='documents/%Y')
+    uploaded_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    date_added = models.DateTimeField(auto_now_add=True)
+    course = models.ForeignKey(course, on_delete=models.CASCADE)
+    category = models.ForeignKey(category, on_delete=models.CASCADE)
     
     
