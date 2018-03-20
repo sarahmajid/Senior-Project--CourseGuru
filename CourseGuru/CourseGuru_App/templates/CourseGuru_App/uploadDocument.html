@@ -80,18 +80,23 @@
 						{% csrf_token %}
 						<br>
 						<label style="font-size: 16px; color: grey; font-family: century gothic;">Upload a course file for the Chatbot to learn: </label><br>
-						<span style="color:red;">(File must be in docx format)</span><br>
+						<span style="color:red;">(File must be in docx or pdf format)</span><br>
 						<input type="file" name="courseFile" required><br><br>
 						<label style="font-size: 16px; color: grey; font-family: century gothic;">What type of course file is this?: </label><br>
-						<select name="docType" class="form-control select-short" required="required" >
+						<select name="docType" id="docType" class="form-control select-short" required="required" >
 							<option></option>
 							<option value="Syllabus">Syllabus</option>
 							<option value="Assignment">Assignment</option>
 							<option value="Lecture">Lecture</option>
-						</select><br><br>
-						<button type="submit" name="submit" class="btn basic-btn" id="login-btn" value="Upload" >Upload File</button>
+						</select><br>
+						{% if error != "" %}
+						<h3 style="font-size: 16px; color: red; font-family: century gothic;">{{error}}</h3>
+						{% elif success != "" %}
+						<h3 style="font-size: 16px; color: green; font-family: century gothic;">{{success}}</h3>
+						{% endif %}
+						<br>
+						<button type="submit" name="submit" class="btn basic-btn" id="chkType" value="Upload" >Upload File</button>
 					</form>	
-
 				</td>
 			</tr>
 

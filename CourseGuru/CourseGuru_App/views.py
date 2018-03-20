@@ -250,6 +250,8 @@ def uploadDocument(request):
         cid = request.GET.get('cid', '')
         cName = course.objects.get(id = cid)
         user = request.user
+        error = ""
+        success = ""
         if not course.objects.filter(user_id = user.id, id = cid).exists():
             return redirect('courses')
         if request.method == "POST":
@@ -257,15 +259,23 @@ def uploadDocument(request):
                 logout(request)
                 return HttpResponseRedirect('/')
             if len(request.FILES) != 0:
-                courseFile = request.FILES.get("courseFile").file.read()
-                docType = request.POST.get("docType")
-                catID = category.objects.get(intent = docType)
-                f = tempfile.TemporaryFile('r+b')
-                f.write(courseFile)
-                docxParser(f, cid, catID)
-                newFile = document(docfile = request.FILES['courseFile'], uploaded_by_id = user.id, course_id = cid, category_id = catID.id)
-                newFile.save()
-        return render(request, 'CourseGuru_App/uploadDocument.html', {'courseID': cid, 'courseName': cName})
+                upFile = request.FILES['courseFile']
+                upFileName = upFile.name
+                if upFileName.endswith('.docx') or upFileName.endswith('.pdf'):
+                    courseFile = upFile.file.read()
+                    docType = request.POST.get("docType")
+                    if docType == 'Syllabus' and document.objects.filter(course_id = cid, category_id = 6).exists():
+                        document.objects.filter(course_id = cid, category_id = 6).delete()
+                    catID = category.objects.get(intent = docType)
+                    f = tempfile.TemporaryFile('r+b')
+                    f.write(courseFile)
+                    #docxParser(f, cid, catID)
+                    newFile = document(docfile = upFile, uploaded_by_id = user.id, course_id = cid, category_id = catID.id)
+                    newFile.save()
+                    success = 'Course file successfully uploaded.'
+                else:
+                    error = 'Course file must be in docx or pdf format.'
+        return render(request, 'CourseGuru_App/uploadDocument.html', {'courseID': cid, 'courseName': cName, 'error': error, 'success': success})
     else:
         return HttpResponseRedirect('/')
     
@@ -292,7 +302,6 @@ def publish(request):
             
             if botAns is not None:
                 answers.objects.create(answer = botAns, user_id = 38, question_id = newQ.id, date = answerDate)
-            #teachLuis(ques, "Name")
             return HttpResponseRedirect('/answer/?id=%s&cid=%s' % (newQ.id, cid)) 
         return render(request, 'CourseGuru_App/publish.html', {'courseID': cid})
     else:
@@ -336,9 +345,10 @@ def publishCourse(request):
             if course.objects.filter(courseName = newCourse, user_id = user.id).exists():
                 errorMsg = "You already have a course with this name."
                 return render(request, 'CourseGuru_App/publishCourse.html', {'error': errorMsg})
-            course.objects.create(courseName = newCourse, courseType = cType, user_id = user.id)
-            cid = course.objects.last()
-            courseusers.objects.create(user_id = user.id, course_id = cid.id)
+            newCourse = course.objects.create(courseName = newCourse, courseType = cType, user_id = user.id)
+            cid = newCourse.id
+            courseusers.objects.create(user_id = user.id, course_id = cid)
+            #botanswers.objects.create(answer = 'Instructor Name: ' + user.first_name + ' ' + user.last_name, rating = 0, category_id = 6, entities = 'instructor name', course_id = cid)
             return HttpResponseRedirect('/courses/')
         return render(request, 'CourseGuru_App/publishCourse.html')
     else:
@@ -401,7 +411,7 @@ def answer(request):
                     answers.objects.filter(question_id = qid).delete()
                 if questions.objects.filter(id = qid).exists():
                     questions.objects.filter(id = qid).delete()
-                return HttpResponseRedirect('/question/?id=%s' % cid)   
+                return HttpResponseRedirect('/question/?cid=%s' % cid)   
             elif 'resolve' in request.POST:
                 aid = request.POST.get('resolve')
                 ans = answers.objects.get(id = aid)

@@ -66,7 +66,7 @@
 			</tr>
 			<tr> 
 				<td>
-				<label style="font-size: 16px; color: grey; font-family: century gothic;">Category:</label><br>
+				<label style="font-size: 16px; color: grey; font-family: century gothic;">Filter Questions:</label><br>
 				<div style="padding-bottom: 60px">
 						<form method = "POST" style="float:left; width:50%">
 								{% csrf_token %}
@@ -75,11 +75,14 @@
 								{% if status != "All"%}
 								<option value="All">All</option>
 								{%endif%}
-								{% if status != "Assignment"%}
-								<option value="Assignment">Assignment</option>
-								{%endif%}
 								{% if status != "Syllabus"%}
 								<option value="Syllabus">Syllabus</option>
+								{%endif%}
+								{% if status != "Assessments"%}
+								<option value="Assessments">Assessments</option>
+								{%endif%}
+								{% if status != "Lectures"%}
+								<option value="Lectures">Lectures</option>
 								{%endif%}
 								{% if status != "Other"%}
 								<option value="Other">Other</option>

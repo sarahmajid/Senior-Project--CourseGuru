@@ -15,6 +15,12 @@
 	border-radius: 0; 
 }
 
+#chkType {
+	padding: 5px 15px;
+	font-size: 16px; 
+	border-radius: 0; 
+}
+
 #publish-btn {
 	padding: 5px 15px;
 	font-size: 18px; 
