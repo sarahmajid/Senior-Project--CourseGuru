@@ -17,6 +17,7 @@ from django.http import HttpResponse
 from django.template.context_processors import request
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib.auth.models import User
+from django.db.models import Q
 from django.shortcuts import redirect
 
 
@@ -41,6 +42,7 @@ from CourseGuru_App.botFunctions import *
 from CourseGuru_App.tasks import queuePublish
 
 from builtins import str
+from _overlapped import NULL
 
 #Function to populate Main page
 def index(request):
@@ -202,6 +204,9 @@ def question(request):
         page = request.GET.get('page', 1)
         cName = course.objects.get(id = cid)
         user = request.user
+        
+        query = request.GET.get('query')
+        emptyPostCheck = request.POST.get('query')
         if not courseusers.objects.filter(user_id = user.id, course_id = cid).exists() and not course.objects.filter(user_id = user.id, id = cid).exists():
             return redirect('courses')
         
@@ -219,16 +224,20 @@ def question(request):
                 if answers.objects.filter(question_id = qid).exists():
                     answers.objects.filter(question_id = qid).delete()
                 if questions.objects.filter(id = qid).exists():
-                    questions.objects.filter(id = qid).delete()
-            if request.POST.get('query'):
-                query = request.POST.get('query')
-                if query: 
-                    qData = qData.filter(question__icontains=query)
+                    questions.objects.filter(id = qid).delete()            
             if request.POST.get('Filter'):
                 filterCategory = request.POST.get('Filter')
                 if filterCategory != 'All':
                     qData = qData.filter(category=filterCategory) 
-                
+        if request.POST.get('query'):
+            query = request.POST.get('query')
+            if query:
+                qData = qData.filter(Q(question__icontains=query) | Q(comment__icontains=query))    
+        if emptyPostCheck == '':
+            query = ''
+            qData = questions.objects.get_queryset().filter(course_id = cid).order_by('-pk')       
+        if query and query != '': 
+            qData = qData.filter(Q(question__icontains=query) | Q(comment__icontains=query))        
         #Paginator created to limit page display to 10 data items per page
         paginator = Paginator(qData, 10)
         try:
@@ -237,7 +246,7 @@ def question(request):
             fquestions = paginator.page(1)
         except EmptyPage:
             fquestions = paginator.page(paginator.num_pages())       
-        return render(request, 'CourseGuru_App/question.html', {'content': fquestions, 'user': user, 'courseID': cid, 'courseName': cName, 'status': filterCategory})
+        return render(request, 'CourseGuru_App/question.html', {'content': fquestions, 'user': user, 'courseID': cid, 'courseName': cName, 'status': filterCategory, 'query': query})
     else:
         return HttpResponseRedirect('/')
 
@@ -310,7 +319,7 @@ def publish(request):
             #questionDate = genDate()
             user = request.user    
             categ= categorize(ques) 
-
+            
             newQ = questions.objects.create(question = ques, course_id = cid, user_id = user.id, comment = comm, category=categ)    
             botAns = cbAnswer(ques, cid)
            # answerDate = genDate()

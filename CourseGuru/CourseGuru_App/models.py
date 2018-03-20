@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.template.defaultfilters import default
+from django.conf.global_settings import DATE_INPUT_FORMATS
+from _datetime import date, datetime
 
 
 #from email.policy import default
