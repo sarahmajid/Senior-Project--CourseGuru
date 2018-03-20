@@ -33,7 +33,7 @@
 						<h3 style="font-size: 16px; color: green; font-family: century gothic;">{{newAct}}</h3>
 						<label for="usr" style="font-size: 16px; color: grey; font-family: century gothic;">Username: </label><br>
 						{% csrf_token %}
-						<input id="usr" class="form-control" type="text" required="required" name="username" maxlength="20" style="width: 100%;"></input>
+						<input id="usr" class="form-control" type="text" required="required" name="username" maxlength="20" value="{{usrname}}" style="width: 100%;"></input>
 						<br>
 						<label style="font-size: 16px; color: grey; font-family: century gothic;">Password: </label><br>
 						{% csrf_token %}

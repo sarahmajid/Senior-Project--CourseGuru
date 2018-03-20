@@ -59,7 +59,7 @@ def index(request):
                         login(request, user)
                         return HttpResponseRedirect('/courses/')
                 else:
-                    return render(request, 'CourseGuru_App/index.html', {'credentialmismatch': credentialmismatch})    
+                    return render(request, 'CourseGuru_App/index.html', {'credentialmismatch': credentialmismatch, 'usrname': usname})    
         else:
             newAct = request.GET.get('newAct', '')
             if newAct == "1":
@@ -90,11 +90,9 @@ def account(request):
             if (passwordValidator(psword) != None):
                 errorMsg =  passwordValidator(psword)
                 return render(request, 'CourseGuru_App/account.html', {'errorMsg': errorMsg,'fname': firstname, 'lname': lastname, 'status': stat, 'email': email})
-            
             if User.objects.filter(username = username).exists():
                 errorMsg = "Username taken"
                 return render(request, 'CourseGuru_App/account.html', {'errorMsg': errorMsg,'fname': firstname, 'lname': lastname, 'status': stat, 'email': email})
-
             else:
                 newUser = User.objects.create_user(username, email, psword) 
                 newUser.first_name = firstname
@@ -144,11 +142,11 @@ def courses(request):
         return render(request, 'CourseGuru_App/courses.html', {'courses': courseList})
     else:
         return HttpResponseRedirect('/')
-def genDate():
+#def genDate():
     #This needs to be removed. SQL can do it automatically
-    curDate = datetime.datetime.now().strftime("%m-%d-%Y %I:%M %p")
+#    curDate = datetime.datetime.now().strftime("%m-%d-%Y %I:%M %p")
 
-    return (curDate)
+#    return (curDate)
 def roster(request):
     if request.user.is_authenticated:
         cid = request.GET.get('cid', '')
@@ -244,10 +242,18 @@ def question(request):
         return HttpResponseRedirect('/')
 
 def uploadDocument(request):
+    
+#Need to add the Following to the new upload function for security reasons to make sure     
+#fileType = upFile.content_type
+#if docType == 'application/pdf':
+#elif docType == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+
     if request.user.is_authenticated:
         cid = request.GET.get('cid', '')
         cName = course.objects.get(id = cid)
         user = request.user
+        error = ""
+        success = ""
         if not course.objects.filter(user_id = user.id, id = cid).exists():
             return redirect('courses')
         if request.method == "POST":
@@ -255,13 +261,36 @@ def uploadDocument(request):
                 logout(request)
                 return HttpResponseRedirect('/')
             if len(request.FILES) != 0:
-                courseFile = request.FILES.get("courseFile").file.read()
-                docType = request.POST.get("docType")
-                catID = category.objects.get(intent = docType)
-                f = tempfile.TemporaryFile('r+b')
-                f.write(courseFile)
-                docxParser(f, cid, catID)
-        return render(request, 'CourseGuru_App/uploadDocument.html', {'courseID': cid, 'courseName': cName})
+                upFile = request.FILES['courseFile']
+                upFileName = upFile.name
+                fileType = upFile.content_type                
+                if upFileName.endswith('.docx') and fileType == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+                    courseFile = upFile.file.read()
+                    docType = request.POST.get("docType")
+#                    if docType == 'Syllabus' and document.objects.filter(course_id = cid, category_id = 6).exists():
+#                        document.objects.filter(course_id = cid, category_id = 6).delete()
+                    catID = category.objects.get(intent = docType)
+                    f = tempfile.TemporaryFile('r+b')
+#                    f.write(courseFile)
+                    #docxParser(f, cid, catID)
+#                    newFile = document(docfile = upFile, uploaded_by_id = user.id, course_id = cid, category_id = catID.id)
+#                    newFile.save()
+                    success = 'Course file successfully uploaded.'
+                elif upFileName.endswith('.pdf') and fileType == 'application/pdf' :
+                    courseFile = upFile.file.read()
+                    docType = request.POST.get("docType")
+#                    if docType == 'Syllabus' and document.objects.filter(course_id = cid, category_id = 6).exists():
+#                        document.objects.filter(course_id = cid, category_id = 6).delete()
+                    catID = category.objects.get(intent = docType)
+                    f = tempfile.TemporaryFile('r+b')
+#                    f.write(courseFile)
+                    #pdfParser(f, cid, catID)
+#                    newFile = document(docfile = upFile, uploaded_by_id = user.id, course_id = cid, category_id = catID.id)
+#                    newFile.save()
+                    success = 'Course file successfully uploaded.'
+                else:
+                    error = 'Course file must be in docx or pdf format.'
+        return render(request, 'CourseGuru_App/uploadDocument.html', {'courseID': cid, 'courseName': cName, 'error': error, 'success': success})
     else:
         return HttpResponseRedirect('/')
     
@@ -278,16 +307,16 @@ def publish(request):
                 return HttpResponseRedirect('/')
             ques = request.POST.get('NQ')
             comm = request.POST.get('NQcom')
-            questionDate = genDate()
+            #questionDate = genDate()
             user = request.user    
             categ= categorize(ques) 
 
-            newQ = questions.objects.create(question = ques, course_id = cid, user_id = user.id, date = questionDate, comment = comm, category=categ)    
+            newQ = questions.objects.create(question = ques, course_id = cid, user_id = user.id, comment = comm, category=categ)    
             botAns = cbAnswer(ques, cid)
-            answerDate = genDate()
+           # answerDate = genDate()
             
             if botAns is not None:
-                answers.objects.create(answer = botAns, user_id = 38, question_id = newQ.id, date = answerDate)
+                answers.objects.create(answer = botAns, user_id = 38, question_id = newQ.id)
             #teachLuis(ques, "Name")
             return HttpResponseRedirect('/answer/?id=%s&cid=%s' % (newQ.id, cid)) 
         return render(request, 'CourseGuru_App/publish.html', {'courseID': cid})
@@ -308,9 +337,9 @@ def publishAnswer(request):
                 logout(request)
                 return HttpResponseRedirect('/')
             ans = request.POST.get('NQcom')
-            answerDate = genDate()
+           #answerDate = genDate()
             user = request.user
-            answers.objects.create(answer = ans, user_id = user.id, question_id = qid, date = answerDate)             
+            answers.objects.create(answer = ans, user_id = user.id, question_id = qid)             
             return HttpResponseRedirect('/answer/?id=%s&cid=%s' % (qid, cid))
         return render(request, 'CourseGuru_App/publishAnswer.html', {'Title': qData, 'courseID': cid, 'quesID': qid})
     else:
@@ -397,7 +426,7 @@ def answer(request):
                     answers.objects.filter(question_id = qid).delete()
                 if questions.objects.filter(id = qid).exists():
                     questions.objects.filter(id = qid).delete()
-                return HttpResponseRedirect('/question/?id=%s' % cid)   
+                return HttpResponseRedirect('/question/?cid=%s' % cid)   
             elif 'resolve' in request.POST:
                 aid = request.POST.get('resolve')
                 ans = answers.objects.get(id = aid)
