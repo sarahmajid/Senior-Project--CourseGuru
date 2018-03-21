@@ -178,8 +178,10 @@ def roster(request):
              
             elif 'delete' in request.POST:
                 user = request.POST.get('delete')
-                courseusers.objects.filter(id = int(user)).delete()                
-                return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'studentList': studentList})
+                rmvUser = courseusers.objects.get(id = int(user))
+                courseusers.objects.filter(id = int(user)).delete() 
+                remvUserMsg = rmvUser.user.first_name + ' ' + rmvUser.user.last_name + ' has been removed from the course.'            
+                return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'studentList': studentList, 'notAdded': remvUserMsg})
             elif 'dlCSV' in request.POST:
                 response = downloadCSV()
                 return response
@@ -229,6 +231,10 @@ def question(request):
                 filterCategory = request.POST.get('Filter')
                 if filterCategory != 'All':
                     qData = qData.filter(category=filterCategory) 
+                    query = ''
+                else:
+                    qData = questions.objects.get_queryset().filter(course_id = cid).order_by('-pk')
+                    query = ''
         if request.POST.get('query'):
             query = request.POST.get('query')
             if query:
