@@ -45,6 +45,7 @@ from CourseGuru_App.viewFuncs import *
 from builtins import str
 from _overlapped import NULL
 
+
 #Function to populate Main page
 def index(request):
     if request.user.is_authenticated:
@@ -92,8 +93,6 @@ def account(request):
                 return render(request, 'CourseGuru_App/account.html', {'errorMsg': errorMsg,'fname': firstname, 'lname': lastname, 'status': stat, 'email': email})
             if User.objects.filter(username = username).exists():
                 errorMsg = "Username taken"
-                return render(request, 'CourseGuru_App/account.html', {'errorMsg': errorMsg,'fname': firstname, 'lname': lastname, 'status': stat, 'email': email})
-
             else:
                 newUser = User.objects.create_user(username, email, psword) 
                 newUser.first_name = firstname
@@ -252,14 +251,13 @@ def uploadDocument(request):
                 upFile = request.FILES['courseFile']
                 upFileName = upFile.name
                 fileType = upFile.content_type
-
                 docType = request.POST.get("docType")
                 if docType == 'Assignment' and document.objects.filter(course_id = cid, category_id = 7).count() > 14:
                     error = "You've reached the maximum number of assignments for this course. (15)"
                 elif docType == 'Lecture' and document.objects.filter(course_id = cid, category_id = 8).count() > 14:
-                    error = "You've reached the maximum number of lectures for this course. (15)"
-                    
+                    error = "You've reached the maximum number of lectures for this course. (15)"    
                 elif (upFileName.endswith('.docx') and fileType == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') or (upFileName.endswith('.pdf') and fileType == 'application/pdf'):
+
                     courseFile = upFile.file.read()
                     if docType == 'Syllabus' and document.objects.filter(course_id = cid, category_id = 6).exists():
                         document.objects.filter(course_id = cid, category_id = 6).delete()
@@ -270,6 +268,7 @@ def uploadDocument(request):
                     newFile = document(docfile = upFile, uploaded_by_id = user.id, course_id = cid, category_id = catID.id)
                     newFile.save()
                     if upFileName.endswith('.docx') and fileType == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+
                         docxParser(f, cid, catID, newFile.id)
                     else:
                         pdfToText(f, cid, catID, newFile.id)
@@ -299,8 +298,7 @@ def publish(request):
             
             newQ = questions.objects.create(question = ques, course_id = cid, user_id = user.id, comment = comm, category=categ)    
             botAns = cbAnswer(ques, cid)
-           # answerDate = genDate()
-            
+
             if botAns is not None:
                 answers.objects.create(answer = botAns, user_id = 38, question_id = newQ.id)
             #teachLuis(ques, "Name")
