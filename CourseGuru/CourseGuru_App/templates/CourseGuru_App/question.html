@@ -93,8 +93,16 @@
 						</form>
 						<form method = "POST" action="" style="float: right; width:50%" >
 							{% csrf_token %}
+							{% if query.NoneType == None and request.POST.query == NULL and request.GET.query == NULL or query == '' %} 
 							<button type="submit" class="btn btn-primary" value="SEARCH" style="float:right;">SEARCH</button>
-							<input type="text" class="form-control" name="query" placeholder="Search Posts" style="width:40%; float:right; margin-right: 10px;"></input>
+							<input type="text" class="form-control" name="query" placeholder="Search Posted Questions" style="width:40%; float:right; margin-right: 10px;"></input>
+							{% elif query.NoneType != None and request.GET.query != NULL %} 
+							<button type="submit" class="btn btn-primary" value="SEARCH" style="float:right;">SEARCH</button>
+							<input type="text" class="form-control" name="query" placeholder="Search Posted Questions" value="{{request.GET.query}}" style="width:40%; float:right; margin-right: 10px;"></input>
+							{% else%} 
+							<button type="submit" class="btn btn-primary" value="SEARCH" style="float:right;">SEARCH</button>
+							<input type="text" class="form-control" name="query" placeholder="Search Posted Questions" value="{{query}}" style="width:40%; float:right; margin-right: 10px;"></input>
+							{%endif%}
 						</form>
 					</div>
 				</td>
@@ -136,7 +144,7 @@
 				<div id="page-menu">
 					<ul id="horiz-list" class="pagination">
 						{% if content.has_previous %}
-							<li><a class="nonactive" href="?cid={{courseID}}&page={{ content.previous_page_number }}">&laquo;</a></li>
+							<li><a class="nonactive" href="?cid={{courseID}}&query={{query}}&page={{ content.previous_page_number }}">&laquo;</a></li>
 						{% else %}
 							<li class="disabled"><span>&laquo;</span></li>
 						{% endif %}
@@ -144,11 +152,11 @@
 							{% if content.number == i %}
 								<li class="active"><span>&nbsp;{{ i }}&nbsp;<span class="sr-only"></span></span></li>
 							{% else %}
-								<li>&nbsp;<a class="nonactive" href="?cid={{courseID}}&page={{ i }}">{{ i }}</a>&nbsp;</li>
+								<li>&nbsp;<a class="nonactive" href="?cid={{courseID}}&query={{query}}&page={{ i }}">{{ i }}</a>&nbsp;</li>
 							{% endif %}			
 						{% endfor %}
 						{% if content.has_next %}
-							<li><a class="nonactive" href="?cid={{courseID}}&page={{ content.next_page_number }}">&raquo;</a></li>
+							<li><a class="nonactive" href="?cid={{courseID}}&query={{query}}&page={{ content.next_page_number }}">&raquo;</a></li>
 						{% else %}
 							<li class="disabled"><span>&raquo;</span></li>
 						{% endif %}

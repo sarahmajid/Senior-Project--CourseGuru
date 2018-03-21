@@ -17,6 +17,7 @@ from django.http import HttpResponse
 from django.template.context_processors import request
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib.auth.models import User
+from django.db.models import Q
 from django.shortcuts import redirect
 
 
@@ -42,6 +43,8 @@ from CourseGuru_App.tasks import queuePublish
 from CourseGuru_App.viewFuncs import *
 
 from builtins import str
+from _overlapped import NULL
+
 
 #Function to populate Main page
 def index(request):
@@ -60,7 +63,7 @@ def index(request):
                         login(request, user)
                         return HttpResponseRedirect('/courses/')
                 else:
-                    return render(request, 'CourseGuru_App/index.html', {'credentialmismatch': credentialmismatch})    
+                    return render(request, 'CourseGuru_App/index.html', {'credentialmismatch': credentialmismatch, 'usrname': usname})    
         else:
             newAct = request.GET.get('newAct', '')
             if newAct == "1":
@@ -87,6 +90,7 @@ def account(request):
         else:
             if (passwordValidator(psword) != None):
                 errorMsg =  passwordValidator(psword)
+                return render(request, 'CourseGuru_App/account.html', {'errorMsg': errorMsg,'fname': firstname, 'lname': lastname, 'status': stat, 'email': email})
             if User.objects.filter(username = username).exists():
                 errorMsg = "Username taken"
             else:
@@ -118,11 +122,11 @@ def courses(request):
         return render(request, 'CourseGuru_App/courses.html', {'courses': courseList})
     else:
         return HttpResponseRedirect('/')
-def genDate():
+#def genDate():
     #This needs to be removed. SQL can do it automatically
-    curDate = datetime.datetime.now().strftime("%m-%d-%Y %I:%M %p")
+#    curDate = datetime.datetime.now().strftime("%m-%d-%Y %I:%M %p")
+#    return (curDate)
 
-    return (curDate)
 def roster(request):
     if request.user.is_authenticated:
         cid = request.GET.get('cid', '')
@@ -152,8 +156,10 @@ def roster(request):
              
             elif 'delete' in request.POST:
                 user = request.POST.get('delete')
-                courseusers.objects.filter(id = int(user)).delete()                
-                return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'studentList': studentList})
+                rmvUser = courseusers.objects.get(id = int(user))
+                courseusers.objects.filter(id = int(user)).delete() 
+                remvUserMsg = rmvUser.user.first_name + ' ' + rmvUser.user.last_name + ' has been removed from the course.'            
+                return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'studentList': studentList, 'notAdded': remvUserMsg})
             elif 'dlCSV' in request.POST:
                 response = downloadCSV()
                 return response
@@ -178,6 +184,9 @@ def question(request):
         page = request.GET.get('page', 1)
         cName = course.objects.get(id = cid)
         user = request.user
+        
+        query = request.GET.get('query')
+        emptyPostCheck = request.POST.get('query')
         if not courseusers.objects.filter(user_id = user.id, course_id = cid).exists() and not course.objects.filter(user_id = user.id, id = cid).exists():
             return redirect('courses')
         
@@ -197,6 +206,19 @@ def question(request):
                 filterCategory = request.POST.get('Filter')
                 if filterCategory != 'All':
                     qData = qData.filter(category=filterCategory) 
+                    query = ''
+                else:
+                    qData = questions.objects.get_queryset().filter(course_id = cid).order_by('-pk')
+                    query = ''
+        if request.POST.get('query'):
+            query = request.POST.get('query')
+            if query:
+                qData = qData.filter(Q(question__icontains=query) | Q(comment__icontains=query))    
+        if emptyPostCheck == '':
+            query = ''
+            qData = questions.objects.get_queryset().filter(course_id = cid).order_by('-pk')       
+        if query and query != '': 
+            qData = qData.filter(Q(question__icontains=query) | Q(comment__icontains=query))        
         #Paginator created to limit page display to 10 data items per page
         paginator = Paginator(qData, 10)
         try:
@@ -205,7 +227,7 @@ def question(request):
             fquestions = paginator.page(1)
         except EmptyPage:
             fquestions = paginator.page(paginator.num_pages())       
-        return render(request, 'CourseGuru_App/question.html', {'content': fquestions, 'user': user, 'courseID': cid, 'courseName': cName, 'status': filterCategory})
+        return render(request, 'CourseGuru_App/question.html', {'content': fquestions, 'user': user, 'courseID': cid, 'courseName': cName, 'status': filterCategory, 'query': query})
     else:
         return HttpResponseRedirect('/')
 
@@ -214,6 +236,7 @@ from django.conf import settings
 import os.path
 
 def uploadDocument(request):
+
     if request.user.is_authenticated:
         cid = request.GET.get('cid', '')
         cName = course.objects.get(id = cid)
@@ -232,6 +255,7 @@ def uploadDocument(request):
             if len(request.FILES) != 0:
                 upFile = request.FILES['courseFile']
                 upFileName = upFile.name
+                fileType = upFile.content_type
                 docType = request.POST.get("docType")
                 dest =  settings.MEDIA_ROOT + "/documents/" + cid + "/"
                 print(dest + upFileName)
@@ -240,8 +264,8 @@ def uploadDocument(request):
                 elif docType == 'Assignment' and document.objects.filter(course_id = cid, category_id = 7).count() > 14:
                     error = "You've reached the maximum number of assignments for this course. (15)"
                 elif docType == 'Lecture' and document.objects.filter(course_id = cid, category_id = 8).count() > 14:
-                    error = "You've reached the maximum number of lectures for this course. (15)"
-                elif upFileName.endswith('.docx') or upFileName.endswith('.pdf'):
+                    error = "You've reached the maximum number of lectures for this course. (15)"    
+                elif (upFileName.endswith('.docx') and fileType == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') or (upFileName.endswith('.pdf') and fileType == 'application/pdf'):
                     courseFile = upFile.file.read()
                     if docType == 'Syllabus' and document.objects.filter(course_id = cid, category_id = 6).exists():
                         delFile = document.objects.get(course_id = cid, category_id = 6)
@@ -253,7 +277,7 @@ def uploadDocument(request):
                     f.write(courseFile)    
                     newFile = document(docfile = upFile, uploaded_by_id = user.id, course_id = cid, category_id = catID.id, file_name = upFileName)
                     newFile.save()
-                    if upFileName.endswith('.docx'):
+                    if upFileName.endswith('.docx') and fileType == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
                         docxParser(f, cid, catID, newFile.id)
                     else:
                         pdfToText(f, cid, catID, newFile.id)
@@ -277,16 +301,16 @@ def publish(request):
                 return HttpResponseRedirect('/')
             ques = request.POST.get('NQ')
             comm = request.POST.get('NQcom')
-            questionDate = genDate()
+            #questionDate = genDate()
             user = request.user    
             categ= categorize(ques) 
-
-            newQ = questions.objects.create(question = ques, course_id = cid, user_id = user.id, date = questionDate, comment = comm, category=categ)    
-            botAns = cbAnswer(ques, cid)
-            answerDate = genDate()
             
+            newQ = questions.objects.create(question = ques, course_id = cid, user_id = user.id, comment = comm, category=categ)    
+            botAns = cbAnswer(ques, cid)
+
             if botAns is not None:
-                answers.objects.create(answer = botAns, user_id = 38, question_id = newQ.id, date = answerDate)
+                answers.objects.create(answer = botAns, user_id = 38, question_id = newQ.id)
+            #teachLuis(ques, "Name")
             return HttpResponseRedirect('/answer/?id=%s&cid=%s' % (newQ.id, cid)) 
         return render(request, 'CourseGuru_App/publish.html', {'courseID': cid})
     else:
@@ -306,9 +330,9 @@ def publishAnswer(request):
                 logout(request)
                 return HttpResponseRedirect('/')
             ans = request.POST.get('NQcom')
-            answerDate = genDate()
+           #answerDate = genDate()
             user = request.user
-            answers.objects.create(answer = ans, user_id = user.id, question_id = qid, date = answerDate)             
+            answers.objects.create(answer = ans, user_id = user.id, question_id = qid)             
             return HttpResponseRedirect('/answer/?id=%s&cid=%s' % (qid, cid))
         return render(request, 'CourseGuru_App/publishAnswer.html', {'Title': qData, 'courseID': cid, 'quesID': qid})
     else:

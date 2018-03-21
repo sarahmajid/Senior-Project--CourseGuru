@@ -2,6 +2,8 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.template.defaultfilters import default
 import os
+from django.conf.global_settings import DATE_INPUT_FORMATS
+from _datetime import date, datetime
 
 
 #from email.policy import default
@@ -25,7 +27,7 @@ class questions(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     course = models.ForeignKey(course, on_delete=models.CASCADE)
     question = models.CharField(max_length=200)
-    date = models.CharField(max_length=20)
+    date = models.DateTimeField(auto_now_add=True)
     comment = models.CharField(max_length=400)
     category = models.CharField(max_length=20)
  
@@ -36,7 +38,7 @@ class answers(models.Model):
     answer = models.CharField(max_length=5000)
     comments = models.CharField(max_length=200)
     rating = models.IntegerField(default=0)
-    date = models.CharField(max_length=20)
+    date = models.DateTimeField(auto_now_add=True)
     resolved = models.BooleanField(default = False)
 
     class meta:
@@ -52,7 +54,7 @@ class comments(models.Model):
     question = models.ForeignKey(questions, on_delete=models.CASCADE)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     comment = models.CharField(max_length=300)
-    date = models.CharField(max_length=20) 
+    date = models.DateTimeField(auto_now_add=True) 
 
 class category(models.Model):
     intent = models.CharField(max_length=50)
