@@ -227,11 +227,16 @@ def uploadDocument(request):
             if len(request.FILES) != 0:
                 upFile = request.FILES['courseFile']
                 upFileName = upFile.name
-                if upFileName.endswith('.docx') or upFileName.endswith('.pdf'):
+                docType = request.POST.get("docType")
+                if docType == 'Assignment' and document.objects.filter(course_id = cid, category_id = 7).count() > 14:
+                    error = "You've reached the maximum number of assignments for this course. (15)"
+                elif docType == 'Lecture' and document.objects.filter(course_id = cid, category_id = 8).count() > 14:
+                    error = "You've reached the maximum number of lectures for this course. (15)"
+                elif upFileName.endswith('.docx') or upFileName.endswith('.pdf'):
                     courseFile = upFile.file.read()
-                    docType = request.POST.get("docType")
                     if docType == 'Syllabus' and document.objects.filter(course_id = cid, category_id = 6).exists():
                         document.objects.filter(course_id = cid, category_id = 6).delete()
+                        botanswers.objects.filter(course_id = cid, category_id = 6). delete()
                     catID = category.objects.get(intent = docType)
                     f = tempfile.TemporaryFile('r+b')
                     f.write(courseFile)    
@@ -370,27 +375,8 @@ def answer(request):
                 return HttpResponseRedirect('/question/?cid=%s' % cid)   
             elif 'resolve' in request.POST:
                 aid = request.POST.get('resolve')
-                ans = answers.objects.get(id = aid)
+                resolveQues(cid, aid, qData)
                 resolve = True
-                ans.resolved = True
-                ans.save()
-                profRate = False
-                if ans.user_id != 38:
-                    ansRatings = userratings.objects.filter(answer_id = ans.id)
-                    for row in ansRatings:
-                        rowUser = row.user_id
-                        rateUser = User.objects.get(id = rowUser)
-                        if rateUser.status == "Teacher":
-                            profRate = True  
-                    if ans.rating > 2 or profRate:
-                        detokenizer = MosesDetokenizer()
-                        data_list = nltk.word_tokenize(qData.question)
-                        data = [word for word in data_list if word not in stopwords.words('english')]
-                        detokenizer.detokenize(data, return_str=True)
-                        dbInfo = " ".join(data).lower()
-                        botanswers.objects.create(answer = ans.answer, rating = 0, category_id = 9, entities = dbInfo, course_id = cid)
-                        teachLuis(qData.question, 'Other')
-
                 aData = answers.objects.filter(question_id = qid).order_by( '-resolved', 'pk')
                 return render(request, 'CourseGuru_App/answer.html', {'answers': aData, 'numAnswers': ansCt, 'Title': qData, 'comments': cData, 'courseID': cid, 'resolved':resolve})        
             return HttpResponseRedirect('/answer/?id=%s&cid=%s' % (qid, cid)) 
@@ -403,21 +389,8 @@ def voting(request):
     rate = request.GET.get('rating')
     answerID = request.GET.get('answer')
     userID = request.GET.get('user')    
-    
-    if userratings.objects.filter(user_id = userID, answer_id = answerID).exists():
-        newRate = userratings.objects.get(user_id = userID, answer_id = answerID)
-        newRate.rating = rate
-        newRate.save()
-    else:
-        userratings.objects.create(user_id = userID, answer_id = answerID, rating = rate)    
-    uprateCt = userratings.objects.filter(answer_id = answerID, rating = 1).count()
-    downrateCt = userratings.objects.filter(answer_id = answerID, rating = 0).count()
-    record = answers.objects.get(id = answerID)
-    record.rating = (uprateCt - downrateCt)
-    record.save()
+    newRating(rate, answerID, userID)
     return HttpResponse()
-  def chatbot(request):
-    return render(request, 'CourseGuru_App/botchat.html',)
 
 def chatAnswer(request):
     question = request.GET.get('question')

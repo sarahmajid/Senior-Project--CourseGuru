@@ -25,7 +25,6 @@ urlpatterns = [
     path('/account/', include('CourseGuru_App.urls')),
     path('/question/', include('CourseGuru_App.urls')),
     path('/answer/', include('CourseGuru_App.urls')),
-    path('chatbot/', include('CourseGuru_App.urls')),
     path('/publish/', include('CourseGuru_App.urls')), 
     path('/publishAnswer/', include('CourseGuru_App.urls')),
     path('/publishCourse/', include('CourseGuru_App.urls')),
