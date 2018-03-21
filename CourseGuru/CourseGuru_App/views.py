@@ -210,6 +210,8 @@ def question(request):
         return HttpResponseRedirect('/')
 
 from CourseGuru_App.models import document
+from django.conf import settings
+import os.path
 
 def uploadDocument(request):
     if request.user.is_authenticated:
@@ -218,6 +220,9 @@ def uploadDocument(request):
         user = request.user
         error = ""
         success = ""
+        sFiles = document.objects.filter(course_id = cid, category_id = 6)
+        aFiles = document.objects.filter(course_id = cid, category_id = 7)
+        lFiles = document.objects.filter(course_id = cid, category_id = 8)
         if not course.objects.filter(user_id = user.id, id = cid).exists():
             return redirect('courses')
         if request.method == "POST":
@@ -228,19 +233,25 @@ def uploadDocument(request):
                 upFile = request.FILES['courseFile']
                 upFileName = upFile.name
                 docType = request.POST.get("docType")
-                if docType == 'Assignment' and document.objects.filter(course_id = cid, category_id = 7).count() > 14:
+                dest =  settings.MEDIA_ROOT + "/documents/" + cid + "/"
+                print(dest + upFileName)
+                if os.path.isfile(dest + upFileName):
+                    error = "A file with the name " + upFileName + " already exists"
+                elif docType == 'Assignment' and document.objects.filter(course_id = cid, category_id = 7).count() > 14:
                     error = "You've reached the maximum number of assignments for this course. (15)"
                 elif docType == 'Lecture' and document.objects.filter(course_id = cid, category_id = 8).count() > 14:
                     error = "You've reached the maximum number of lectures for this course. (15)"
                 elif upFileName.endswith('.docx') or upFileName.endswith('.pdf'):
                     courseFile = upFile.file.read()
                     if docType == 'Syllabus' and document.objects.filter(course_id = cid, category_id = 6).exists():
+                        delFile = document.objects.get(course_id = cid, category_id = 6)
+                        os.remove(dest + delFile.file_name)
                         document.objects.filter(course_id = cid, category_id = 6).delete()
                         botanswers.objects.filter(course_id = cid, category_id = 6). delete()
                     catID = category.objects.get(intent = docType)
                     f = tempfile.TemporaryFile('r+b')
                     f.write(courseFile)    
-                    newFile = document(docfile = upFile, uploaded_by_id = user.id, course_id = cid, category_id = catID.id)
+                    newFile = document(docfile = upFile, uploaded_by_id = user.id, course_id = cid, category_id = catID.id, file_name = upFileName)
                     newFile.save()
                     if upFileName.endswith('.docx'):
                         docxParser(f, cid, catID, newFile.id)
@@ -249,7 +260,7 @@ def uploadDocument(request):
                     success = 'Course file successfully uploaded.'
                 else:
                     error = 'Course file must be in docx or pdf format.'
-        return render(request, 'CourseGuru_App/uploadDocument.html', {'courseID': cid, 'courseName': cName, 'error': error, 'success': success})
+        return render(request, 'CourseGuru_App/uploadDocument.html', {'courseID': cid, 'courseName': cName, 'error': error, 'success': success, 'sFiles': sFiles, 'aFiles': aFiles, 'lFiles': lFiles})
     else:
         return HttpResponseRedirect('/')
     

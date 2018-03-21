@@ -72,35 +72,53 @@
 			</tr>	
 		</table>
 		
-		<table width="70%" align="Center" style="border-spacing: 0;  float:left; margin-left: calc(300px + 5%); margin-left: -moz-calc(300px + 5%); margin-right: 5%; margin-bottom: 100px;">
-			<tr>
-				<td style="padding: 10px;">
+		<div width="70%" style="min-width: 750px; padding: 20px 10px; border-spacing: 0; margin-right: 5%; margin-left: calc(300px + 5%); margin-left: -moz-calc(300px + 5%); margin-bottom: 100px;">
+			<div style="padding: 10px; float:left;">
 
-					<form method="POST" action="" enctype="multipart/form-data">
-						{% csrf_token %}
-						<br>
-						<label style="font-size: 16px; color: grey; font-family: century gothic;">Upload a course file for the Chatbot to learn: </label><br>
-						<span style="color:grey;">Upload a Syllabus or up to fifteen Assignments or Lectures.<br>Files must be in .pdf or .docx format.</span><br><br>
-						<input type="file" name="courseFile" required style="border: 1px solid grey; padding: 10px;"><br><br>
-						<label style="font-size: 16px; color: grey; font-family: century gothic;">What type of course file is this?: </label><br>
-						<select name="docType" id="docType" class="form-control select-short" required="required" >
-							<option></option>
-							<option value="Syllabus">Syllabus</option>
-							<option value="Assignment">Assignment</option>
-							<option value="Lecture">Lecture</option>
-						</select><br>
-						{% if error != "" %}
-						<h3 style="font-size: 16px; color: red; font-family: century gothic;">{{error}}</h3>
-						{% elif success != "" %}
-						<h3 style="font-size: 16px; color: green; font-family: century gothic;">{{success}}</h3>
-						{% endif %}
-						<br>
-						<button type="submit" name="submit" class="btn basic-btn" id="chkType" value="Upload" >Upload File</button>
-					</form>	
-				</td>
-			</tr>
+				<form method="POST" action="" enctype="multipart/form-data">
+					{% csrf_token %}
+					<label style="font-size: 16px; color: grey; font-family: century gothic;">Upload a course file for the Chatbot to learn: </label><br>
+					<span style="color:grey;">Upload a Syllabus or up to fifteen Assignments or Lectures.<br>Files must be in .pdf or .docx format.</span><br><br>
+					<input type="file" name="courseFile" required style="border: 1px solid grey; padding: 10px;"><br><br>
+					<label style="font-size: 16px; color: grey; font-family: century gothic;">What type of course file is this?: </label><br>
+					<select name="docType" id="docType" class="form-control select-short" required="required" >
+						<option></option>
+						<option value="Syllabus">Syllabus</option>
+						<option value="Assignment">Assignment</option>
+						<option value="Lecture">Lecture</option>
+					</select><br>
+					{% if error != "" %}
+					<h3 style="font-size: 16px; color: red; font-family: century gothic;">{{error}}</h3>
+					{% elif success != "" %}
+					<h3 style="font-size: 16px; color: green; font-family: century gothic;">{{success}}</h3>
+					{% endif %}
+					<br>
+					<button type="submit" name="submit" class="btn basic-btn" id="chkType" value="Upload" >Upload File</button>
+				</form>	
+			</div>
+			
+			<div style="width: 40%; margin-right: 5%; min-width: 300px; float: right; border: 1px solid grey; -webkit-box-shadow: 0px 0px 15px rgba(0,0,0,0.4); -moz-box-shadow: 0px 0px 15px rgba(0,0,0,0.4); padding: 10px; font-size: 16px; color: grey; font-family: century gothic;">
+				Syllabus ({{sFiles|length}}/1)
+				<hr>
+				{% for s in sFiles %}
+					{{s.file_name}}<br>
+				{% endfor %}
+				<br><br>
+				Assignments ({{aFiles|length}}/15)
+				<hr>
+				{% for a in aFiles %}
+					{{a.file_name}}<br>
+				{% endfor %}
+				<br><br>
+				Lectures ({{lFiles|length}}/15)
+				<hr>
+				{% for l in lFiles %}
+					{{l.file_name}}<br>
+				{% endfor %}
+				<br><br>
+			</div>
+		</div>
 
-		</table>
 		
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
 		<script src="{% static 'js/style.js' %}"></script>
