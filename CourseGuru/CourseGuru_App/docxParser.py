@@ -31,7 +31,7 @@ def iterBlockItems(parent):
             b = Table(c, parent)
             yield b
           
-def parsedToDB(data, header, cid, catID):
+def parsedToDB(data, header, cid, catID, fileid):
     detokenizer = MosesDetokenizer()
     regex = re.compile('[^a-zA-Z0-9 \n\.]')
     
@@ -45,7 +45,7 @@ def parsedToDB(data, header, cid, catID):
     dbInfo = (header + data).lower()
     botanswers.objects.create(answer = dbAnswer, rating = 0, category_id = catID.id, entities = dbInfo, course_id = cid)
  
-def docxParser(docxFile, cid, catID):
+def docxParser(docxFile, cid, catID, fileid):
                
     document = Document(docxFile)
             
@@ -82,7 +82,7 @@ def docxParser(docxFile, cid, catID):
                             #UNCOMMENT THIS LINE FOR TESTING
                             #####print(header + data + '\n')
                             #COMMENT THIS LINE FOR TESTING
-                            parsedToDB(data, header, cid, catID)
+                            parsedToDB(data, header, cid, catID, fileid)
                         data = ""
                         header = ' '.join(words.text.split())         
                         #newHead = True
@@ -93,7 +93,7 @@ def docxParser(docxFile, cid, catID):
                     #UNCOMMENT THIS LINE FOR TESTING
                     #####print(header + data + '\n')
                     #COMMENT THIS LINE FOR TESTING
-                    parsedToDB(data, header, cid, catID)
+                    parsedToDB(data, header, cid, catID, fileid)
                 data = ""
                 header = ' '.join(n.text.split())    
                 while(header[-1:] == ':' or header[-1:] == ' '):
@@ -140,13 +140,13 @@ def docxParser(docxFile, cid, catID):
             #COMMENT THIS LINE FOR TESTING
             #####print(header + data)
             #COMMENT THIS LINE FOR TESTING
-            parsedToDB(data, header, cid, catID)
+            parsedToDB(data, header, cid, catID, fileid)
             data = ""
     
     if header != "" and data != "":
         #COMMENT THIS LINE FOR TESTING
         #####print(header + data)
         #COMMENT THIS LINE FOR TESTING
-        parsedToDB(data, header, cid, catID)
+        parsedToDB(data, header, cid, catID, fileid)
         data = ""
 

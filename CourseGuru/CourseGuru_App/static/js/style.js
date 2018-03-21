@@ -1,6 +1,4 @@
 $(document).ready(function() {
-	
-    $("#test").html("Test!"); 
 
     //Submits a form on enter key press
 	$("#NQ").keydown(function(e) {
@@ -8,7 +6,6 @@ $(document).ready(function() {
             this.form.submit();
         }
 	});
-	
 	
 	//Changes color of upvote and rating number when clicked
 	$(".ratingArea").find("#voteUp").click(function(e) {
@@ -90,6 +87,18 @@ $(document).ready(function() {
 			div.scrollTop(div.prop('scrollHeight'))
 		}
 	});
+	
+	//Warns user uploading a syllabus that the previous will be replaced.
+	$("#chkType").click(function() {
+		if($('#docType').find(":selected").text() == "Syllabus") {
+			if(confirm("Only one syllabus is allowed per course. If uploading multiple syllabi, the previous will always be replaced.")){
+		        return true;
+		    }
+		    else{
+		    	return false;
+		    }
+		}
+	});
 });
 
 // Hide or show account drop down
@@ -105,6 +114,7 @@ function vote(elem, rating, answerID, userID) {
 //		rating.html(data);
 	});	
 }
+
 
 // Close the account drop down when click is made outside of content
 window.onclick = function(event) {

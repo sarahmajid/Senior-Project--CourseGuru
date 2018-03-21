@@ -15,6 +15,8 @@ Including another URLconf
 """
 from django.urls import include, path
 from django.contrib import admin
+from django.conf import settings
+from django.conf.urls.static import static
 
 
 
@@ -23,7 +25,6 @@ urlpatterns = [
     path('/account/', include('CourseGuru_App.urls')),
     path('/question/', include('CourseGuru_App.urls')),
     path('/answer/', include('CourseGuru_App.urls')),
-    path('chatbot/', include('CourseGuru_App.urls')),
     path('/publish/', include('CourseGuru_App.urls')), 
     path('/publishAnswer/', include('CourseGuru_App.urls')),
     path('/publishCourse/', include('CourseGuru_App.urls')),
@@ -33,4 +34,4 @@ urlpatterns = [
     path('/voting/', include('CourseGuru_App.urls')),
     path('admin/', admin.site.urls),
     path('/uploadDocument/', include('CourseGuru_App.urls')),
-    ]
+    ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

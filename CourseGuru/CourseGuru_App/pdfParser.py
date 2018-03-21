@@ -18,8 +18,8 @@ from CourseGuru_App.models import botanswers
 
 #testing PRP
 #def pdfToText(file):
-def pdfToText(file, cid, catID):
-   #Create empty string for text to be extracted into
+def pdfToText(file, cid, catID, fileid):
+    #Create empty string for text to be extracted into
     keyWordObj = keywords.objects.exclude(categoryKeyWords=None)
     
     keyWords = []
@@ -90,7 +90,7 @@ def pdfToText(file, cid, catID):
                     ansArray.append('Course Information: ' + filtText)
     
     for n in ansArray: 
-        restructForDB(n, cid, catID)
+        restructForDB(n, cid, catID, fileid)
 #        botSearchArray.append(restructForDB(n))         
                
     file.close() 
@@ -99,7 +99,7 @@ def pdfToText(file, cid, catID):
 
 #testing PRP
 #def restructForDB (text): 
-def restructForDB (text, cid, catID): 
+def restructForDB (text, cid, catID, fileid): 
     detokenizer = MosesDetokenizer() 
     dbAnswer = text 
     botSearch = text.replace('<br>', '')

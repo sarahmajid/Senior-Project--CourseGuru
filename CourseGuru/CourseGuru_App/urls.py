@@ -15,7 +15,6 @@ urlpatterns = [
     path('publish/', views.publish, name='publish'),
     path('publishAnswer/', views.publishAnswer, name='publishAnswer'),
     path('publishCourse/', views.publishCourse, name='publishCourse'),
-    path('chatbot/', views.chatbot, name='chatbot'),
     path('courses/', views.courses, name='courses'),
     path('roster/', views.roster, name='roster'),
     path('chatAnswer/', views.chatAnswer, name='chatAnswer'),

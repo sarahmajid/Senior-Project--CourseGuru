@@ -40,6 +40,7 @@ from CourseGuru_App.catQuestion import *
 from CourseGuru_App.validate import *
 from CourseGuru_App.botFunctions import *
 from CourseGuru_App.tasks import queuePublish
+from CourseGuru_App.viewFuncs import *
 
 from builtins import str
 from _overlapped import NULL
@@ -80,14 +81,11 @@ def account(request):
         stat = request.POST.get('status')
         email = request.POST.get('email')       
         if (psword != cpsword):
-            errorMsg = 'Password Mismatch'
-            return render(request, 'CourseGuru_App/account.html', {'errorMsg': errorMsg, 'fname': firstname, 'lname': lastname, 'status': stat, 'email': email})
+            errorMsg = 'Password Mismatch'      
         elif (emailValidator(email) == False): 
             errorMsg = "Invalid Email Address!"
-            return render(request, 'CourseGuru_App/account.html', {'errorMsg': errorMsg,'fname': firstname, 'lname': lastname, 'status': stat, 'email': email})
         elif(psword == username):
             errorMsg = "Username and Password can not be the same!"
-            return render(request, 'CourseGuru_App/account.html', {'errorMsg': errorMsg,'fname': firstname, 'lname': lastname, 'status': stat, 'email': email})
         else:
             if (passwordValidator(psword) != None):
                 errorMsg =  passwordValidator(psword)
@@ -95,6 +93,7 @@ def account(request):
             if User.objects.filter(username = username).exists():
                 errorMsg = "Username taken"
                 return render(request, 'CourseGuru_App/account.html', {'errorMsg': errorMsg,'fname': firstname, 'lname': lastname, 'status': stat, 'email': email})
+
             else:
                 newUser = User.objects.create_user(username, email, psword) 
                 newUser.first_name = firstname
@@ -102,6 +101,7 @@ def account(request):
                 newUser.status = stat
                 newUser.save()
                 return HttpResponseRedirect('/?newAct=1')  
+        return render(request, 'CourseGuru_App/account.html', {'errorMsg': errorMsg, 'fname': firstname, 'lname': lastname, 'status': stat, 'email': email})
     else:
         return render(request, 'CourseGuru_App/account.html', {'status': stat})    
     
@@ -114,28 +114,7 @@ def courses(request):
             elif 'del' in request.POST:
                 #Deletes the course selected and all questions, answers, and ratings associated with it
                 cid = request.POST.get('del')
-                tempQues = questions.objects.filter(course_id = cid)
-                for x in tempQues:
-                    tempAns = answers.objects.filter(question_id = x.id)
-                    #Delete user ratings in course
-                    for y in tempAns:
-                        if userratings.objects.filter(answer_id = y.id).exists():
-                            userratings.objects.filter(answer_id = y.id).delete()
-                    #Delete answers in course
-                    if answers.objects.filter(question_id = x.id).exists():
-                        answers.objects.filter(question_id = x.id).delete()
-                #Delete questions in course
-                if questions.objects.filter(course_id = cid).exists():
-                    questions.objects.filter(course_id = cid).delete()
-                #Delete course users
-                if courseusers.objects.filter(course_id = cid).exists():
-                    courseusers.objects.filter(course_id = cid).delete()
-                #Delete course
-                if course.objects.filter(id = cid).exists():
-                    course.objects.filter(id = cid).delete()
-                #Delete botanswers related to this course
-                if botanswers.objects.filter(course_id = cid).exists():
-                    botanswers.objects.filter(course_id = cid).delete()
+                delCourse(cid)
         curUser = request.user
         if curUser.status == "Teacher":
             courseList = course.objects.filter(user_id = curUser.id)
@@ -147,8 +126,8 @@ def courses(request):
 #def genDate():
     #This needs to be removed. SQL can do it automatically
 #    curDate = datetime.datetime.now().strftime("%m-%d-%Y %I:%M %p")
-
 #    return (curDate)
+
 def roster(request):
     if request.user.is_authenticated:
         cid = request.GET.get('cid', '')
@@ -219,14 +198,11 @@ def question(request):
                 return HttpResponseRedirect('/')
             elif 'del' in request.POST:
                 qid = request.POST.get('del')
-                tempAns = answers.objects.filter(question_id = qid)
-                for x in tempAns:
-                    if userratings.objects.filter(answer_id = x.id).exists():
-                        userratings.objects.filter(answer_id = x.id).delete()
-                if answers.objects.filter(question_id = qid).exists():
-                    answers.objects.filter(question_id = qid).delete()
-                if questions.objects.filter(id = qid).exists():
-                    questions.objects.filter(id = qid).delete()            
+                delQuestion(qid)
+            if request.POST.get('query'):
+                query = request.POST.get('query')
+                if query: 
+                    qData = qData.filter(question__icontains=query)
             if request.POST.get('Filter'):
                 filterCategory = request.POST.get('Filter')
                 if filterCategory != 'All':
@@ -256,12 +232,9 @@ def question(request):
     else:
         return HttpResponseRedirect('/')
 
+from CourseGuru_App.models import document
+
 def uploadDocument(request):
-    
-#Need to add the Following to the new upload function for security reasons to make sure     
-#fileType = upFile.content_type
-#if docType == 'application/pdf':
-#elif docType == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
 
     if request.user.is_authenticated:
         cid = request.GET.get('cid', '')
@@ -278,30 +251,28 @@ def uploadDocument(request):
             if len(request.FILES) != 0:
                 upFile = request.FILES['courseFile']
                 upFileName = upFile.name
-                fileType = upFile.content_type                
-                if upFileName.endswith('.docx') and fileType == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+                fileType = upFile.content_type
+
+                docType = request.POST.get("docType")
+                if docType == 'Assignment' and document.objects.filter(course_id = cid, category_id = 7).count() > 14:
+                    error = "You've reached the maximum number of assignments for this course. (15)"
+                elif docType == 'Lecture' and document.objects.filter(course_id = cid, category_id = 8).count() > 14:
+                    error = "You've reached the maximum number of lectures for this course. (15)"
+                    
+                elif (upFileName.endswith('.docx') and fileType == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') or (upFileName.endswith('.pdf') and fileType == 'application/pdf'):
                     courseFile = upFile.file.read()
-                    docType = request.POST.get("docType")
-#                    if docType == 'Syllabus' and document.objects.filter(course_id = cid, category_id = 6).exists():
-#                        document.objects.filter(course_id = cid, category_id = 6).delete()
+                    if docType == 'Syllabus' and document.objects.filter(course_id = cid, category_id = 6).exists():
+                        document.objects.filter(course_id = cid, category_id = 6).delete()
+                        botanswers.objects.filter(course_id = cid, category_id = 6). delete()
                     catID = category.objects.get(intent = docType)
                     f = tempfile.TemporaryFile('r+b')
-#                    f.write(courseFile)
-                    #docxParser(f, cid, catID)
-#                    newFile = document(docfile = upFile, uploaded_by_id = user.id, course_id = cid, category_id = catID.id)
-#                    newFile.save()
-                    success = 'Course file successfully uploaded.'
-                elif upFileName.endswith('.pdf') and fileType == 'application/pdf' :
-                    courseFile = upFile.file.read()
-                    docType = request.POST.get("docType")
-#                    if docType == 'Syllabus' and document.objects.filter(course_id = cid, category_id = 6).exists():
-#                        document.objects.filter(course_id = cid, category_id = 6).delete()
-                    catID = category.objects.get(intent = docType)
-                    f = tempfile.TemporaryFile('r+b')
-#                    f.write(courseFile)
-                    #pdfParser(f, cid, catID)
-#                    newFile = document(docfile = upFile, uploaded_by_id = user.id, course_id = cid, category_id = catID.id)
-#                    newFile.save()
+                    f.write(courseFile)    
+                    newFile = document(docfile = upFile, uploaded_by_id = user.id, course_id = cid, category_id = catID.id)
+                    newFile.save()
+                    if upFileName.endswith('.docx') and fileType == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+                        docxParser(f, cid, catID, newFile.id)
+                    else:
+                        pdfToText(f, cid, catID, newFile.id)
                     success = 'Course file successfully uploaded.'
                 else:
                     error = 'Course file must be in docx or pdf format.'
@@ -376,9 +347,10 @@ def publishCourse(request):
             if course.objects.filter(courseName = newCourse, user_id = user.id).exists():
                 errorMsg = "You already have a course with this name."
                 return render(request, 'CourseGuru_App/publishCourse.html', {'error': errorMsg})
-            course.objects.create(courseName = newCourse, courseType = cType, user_id = user.id)
-            cid = course.objects.last()
-            courseusers.objects.create(user_id = user.id, course_id = cid.id)
+            newCourse = course.objects.create(courseName = newCourse, courseType = cType, user_id = user.id)
+            cid = newCourse.id
+            courseusers.objects.create(user_id = user.id, course_id = cid)
+            #botanswers.objects.create(answer = 'Instructor Name: ' + user.first_name + ' ' + user.last_name, rating = 0, category_id = 6, entities = 'instructor name', course_id = cid)
             return HttpResponseRedirect('/courses/')
         return render(request, 'CourseGuru_App/publishCourse.html')
     else:
@@ -401,10 +373,8 @@ def answer(request):
         #-----Used for checking if post was previously rated------
         upData2 = userratings.objects.filter(user_id = user.id, rating = 1).only('answer_id')
         downData2 = userratings.objects.filter(user_id = user.id, rating = 0).only('answer_id')
-        
         upData = []
-        downData = []
-        
+        downData = []   
         for x in upData2:
             upData.append(x.answer_id)
             
@@ -427,61 +397,16 @@ def answer(request):
                 return render(request, 'CourseGuru_App/answer.html', {'answers': aData, 'numAnswers': ansCt, 'Title': qData, 'comments': cData, 'courseID': cid, 'resolved':resolve})
             elif 'delAns' in request.POST:
                 aid = request.POST.get('delAns')
-                if userratings.objects.filter(answer_id = aid).exists():
-                    userratings.objects.filter(answer_id = aid).delete()
-                if answers.objects.filter(id = aid).exists():
-                    answers.objects.filter(id = aid).delete()
-
+                delAnswers(aid)
             elif 'delQues' in request.POST:
-                tempAns = answers.objects.filter(question_id = qid)
-                for x in tempAns:
-                    if userratings.objects.filter(answer_id = x.id).exists():
-                        userratings.objects.filter(answer_id = x.id).delete()
-                if answers.objects.filter(question_id = qid).exists():
-                    answers.objects.filter(question_id = qid).delete()
-                if questions.objects.filter(id = qid).exists():
-                    questions.objects.filter(id = qid).delete()
+                delQuestion(qid)
                 return HttpResponseRedirect('/question/?cid=%s' % cid)   
             elif 'resolve' in request.POST:
                 aid = request.POST.get('resolve')
-                ans = answers.objects.get(id = aid)
+                resolveQues(cid, aid, qData)
                 resolve = True
-                ans.resolved = True
-                ans.save()
-                profRate = False
-                if ans.user_id != 38:
-                    ansRatings = userratings.objects.filter(answer_id = ans.id)
-                    for row in ansRatings:
-                        rowUser = row.user_id
-                        rateUser = User.objects.get(id = rowUser)
-                        if rateUser.status == "Teacher":
-                            profRate = True  
-                    if ans.rating > 2 or profRate:
-                        detokenizer = MosesDetokenizer()
-                        data_list = nltk.word_tokenize(qData.question)
-                        data = [word for word in data_list if word not in stopwords.words('english')]
-                        detokenizer.detokenize(data, return_str=True)
-                        dbInfo = " ".join(data).lower()
-                        botanswers.objects.create(answer = ans.answer, rating = 0, category_id = 9, entities = dbInfo, course_id = cid)
-                        teachLuis(qData.question, 'Other')
-
                 aData = answers.objects.filter(question_id = qid).order_by( '-resolved', 'pk')
-                return render(request, 'CourseGuru_App/answer.html', {'answers': aData, 'numAnswers': ansCt, 'Title': qData, 'comments': cData, 'courseID': cid, 'resolved':resolve})
-#unresolve functionality ===================================         
-            #===================================================================
-            # elif 'unresolve' in request.POST:
-            #     rslvdAnsId = answers.objects.get(resolved = True)
-            #     providedBy = User.objects.get(id = rslvdAnsId.user.id)                    
-            #     if providedBy.status != 'Teacher':
-            #         print(providedBy.status)
-            #         botanswers.objects.filter(answerId = rslvdAnsId).delete()
-            #     rslvdAnsId.resolved=False
-            #     rslvdAnsId.save()
-            #     resolve = False
-            #     aData = answers.objects.filter(question_id = qid).order_by( '-resolved', 'pk')
-            #     return render(request, 'CourseGuru_App/answer.html', {'answers': aData, 'numAnswers': ansCt, 'Title': qData, 'comments': cData, 'courseID': cid, 'resolved':resolve})
-            #===================================================================
-#=============================================================            
+                return render(request, 'CourseGuru_App/answer.html', {'answers': aData, 'numAnswers': ansCt, 'Title': qData, 'comments': cData, 'courseID': cid, 'resolved':resolve})        
             return HttpResponseRedirect('/answer/?id=%s&cid=%s' % (qid, cid)) 
         return render(request, 'CourseGuru_App/answer.html', {'answers': aData, 'numAnswers': ansCt, 'Title': qData, 'comments': cData, 'courseID': cid, 'resolved': resolve, 'upData': upData, 'downData': downData})
 
@@ -492,21 +417,8 @@ def voting(request):
     rate = request.GET.get('rating')
     answerID = request.GET.get('answer')
     userID = request.GET.get('user')    
-    
-    if userratings.objects.filter(user_id = userID, answer_id = answerID).exists():
-        newRate = userratings.objects.get(user_id = userID, answer_id = answerID)
-        newRate.rating = rate
-        newRate.save()
-    else:
-        userratings.objects.create(user_id = userID, answer_id = answerID, rating = rate)    
-    uprateCt = userratings.objects.filter(answer_id = answerID, rating = 1).count()
-    downrateCt = userratings.objects.filter(answer_id = answerID, rating = 0).count()
-    record = answers.objects.get(id = answerID)
-    record.rating = (uprateCt - downrateCt)
-    record.save()
+    newRating(rate, answerID, userID)
     return HttpResponse()
-  def chatbot(request):
-    return render(request, 'CourseGuru_App/botchat.html',)
 
 def chatAnswer(request):
     question = request.GET.get('question')
