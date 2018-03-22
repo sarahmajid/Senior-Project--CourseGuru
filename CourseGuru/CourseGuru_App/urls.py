@@ -20,5 +20,4 @@ urlpatterns = [
     path('chatAnswer/', views.chatAnswer, name='chatAnswer'),
     path('voting/', views.voting, name='voting'),
     path('uploadDocument/', views.uploadDocument, name='uploadDocument'),
-
 ]

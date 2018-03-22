@@ -44,6 +44,8 @@ from CourseGuru_App.viewFuncs import *
 
 from builtins import str
 from _overlapped import NULL
+from pip._vendor.requests.api import post
+from botocore.vendored.requests.api import request
 
 
 #Function to populate Main page
@@ -184,13 +186,14 @@ def question(request):
         page = request.GET.get('page', 1)
         cName = course.objects.get(id = cid)
         user = request.user
-        
         query = request.GET.get('query')
         emptyPostCheck = request.POST.get('query')
-        if not courseusers.objects.filter(user_id = user.id, course_id = cid).exists() and not course.objects.filter(user_id = user.id, id = cid).exists():
-            return redirect('courses')
-        
         filterCategory = 'All'
+        if request.GET.get('filterCategory'):
+            filterCategory = request.GET.get('filterCategory')
+                    
+        if not courseusers.objects.filter(user_id = user.id, course_id = cid).exists() and not course.objects.filter(user_id = user.id, id = cid).exists():
+            return redirect('courses')        
         if request.method == "POST":
             if request.POST.get('Logout') == "Logout":
                 logout(request)
@@ -198,27 +201,24 @@ def question(request):
             elif 'del' in request.POST:
                 qid = request.POST.get('del')
                 delQuestion(qid)
+            if request.POST.get('filterCategory'):
+                filterCategory = request.POST.get('filterCategory')
+                query = ''
+                
             if request.POST.get('query'):
-                query = request.POST.get('query')
-                if query: 
-                    qData = qData.filter(question__icontains=query)
-            if request.POST.get('Filter'):
-                filterCategory = request.POST.get('Filter')
-                if filterCategory != 'All':
-                    qData = qData.filter(category=filterCategory) 
-                    query = ''
-                else:
-                    qData = questions.objects.get_queryset().filter(course_id = cid).order_by('-pk')
-                    query = ''
-        if request.POST.get('query'):
-            query = request.POST.get('query')
-            if query:
-                qData = qData.filter(Q(question__icontains=query) | Q(comment__icontains=query))    
+                query = request.POST.get('query')       
+                
+        if filterCategory != 'All':
+            qData = qData.filter(category=filterCategory) 
+            #query = ''
+        else:
+            qData = questions.objects.get_queryset().filter(course_id = cid).order_by('-pk')
+            #query = ''
         if emptyPostCheck == '':
             query = ''
             qData = questions.objects.get_queryset().filter(course_id = cid).order_by('-pk')       
-        if query and query != '': 
-            qData = qData.filter(Q(question__icontains=query) | Q(comment__icontains=query))        
+        if query and query != '' and query != 'None': 
+            qData = qData.filter(Q(question__icontains=query) | Q(comment__icontains=query))       
         #Paginator created to limit page display to 10 data items per page
         paginator = Paginator(qData, 10)
         try:
@@ -227,7 +227,7 @@ def question(request):
             fquestions = paginator.page(1)
         except EmptyPage:
             fquestions = paginator.page(paginator.num_pages())       
-        return render(request, 'CourseGuru_App/question.html', {'content': fquestions, 'user': user, 'courseID': cid, 'courseName': cName, 'status': filterCategory, 'query': query})
+        return render(request, 'CourseGuru_App/question.html', {'content': fquestions, 'user': user, 'courseID': cid, 'courseName': cName, 'filterCategory': filterCategory, 'query': query})
     else:
         return HttpResponseRedirect('/')
 
