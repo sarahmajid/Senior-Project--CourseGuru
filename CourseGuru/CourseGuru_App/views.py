@@ -243,21 +243,21 @@ def uploadDocument(request):
         user = request.user
         error = ""
         success = ""
-        sFiles = document.objects.filter(course_id = cid, category_id = 6)
-        aFiles = document.objects.filter(course_id = cid, category_id = 7)
-        lFiles = document.objects.filter(course_id = cid, category_id = 8)
+        dest =  settings.MEDIA_ROOT + "/documents/" + cid + "/"
         if not course.objects.filter(user_id = user.id, id = cid).exists():
             return redirect('courses')
         if request.method == "POST":
             if request.POST.get('Logout') == "Logout":
                 logout(request)
                 return HttpResponseRedirect('/')
-            if len(request.FILES) != 0:
+            elif 'del' in request.POST:
+                fid = request.POST.get('del')
+                delFile(fid, dest)
+            elif len(request.FILES) != 0:
                 upFile = request.FILES['courseFile']
                 upFileName = upFile.name
                 fileType = upFile.content_type
                 docType = request.POST.get("docType")
-                dest =  settings.MEDIA_ROOT + "/documents/" + cid + "/"
                 print(dest + upFileName)
                 if os.path.isfile(dest + upFileName):
                     error = "A file with the name " + upFileName + " already exists"
@@ -268,10 +268,8 @@ def uploadDocument(request):
                 elif (upFileName.endswith('.docx') and fileType == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') or (upFileName.endswith('.pdf') and fileType == 'application/pdf'):
                     courseFile = upFile.file.read()
                     if docType == 'Syllabus' and document.objects.filter(course_id = cid, category_id = 6).exists():
-                        delFile = document.objects.get(course_id = cid, category_id = 6)
-                        os.remove(dest + delFile.file_name)
-                        document.objects.filter(course_id = cid, category_id = 6).delete()
-                        botanswers.objects.filter(course_id = cid, category_id = 6). delete()
+                        file = document.objects.get(course_id = cid, category_id = 6)
+                        delFile(file.id, dest)
                     catID = category.objects.get(intent = docType)
                     f = tempfile.TemporaryFile('r+b')
                     f.write(courseFile)    
@@ -284,6 +282,12 @@ def uploadDocument(request):
                     success = 'Course file successfully uploaded.'
                 else:
                     error = 'Course file must be in docx or pdf format.'
+        #Syllabus files
+        sFiles = document.objects.filter(course_id = cid, category_id = 6)
+        #Assignment files
+        aFiles = document.objects.filter(course_id = cid, category_id = 7)
+        #Lecture files
+        lFiles = document.objects.filter(course_id = cid, category_id = 8)
         return render(request, 'CourseGuru_App/uploadDocument.html', {'courseID': cid, 'courseName': cName, 'error': error, 'success': success, 'sFiles': sFiles, 'aFiles': aFiles, 'lFiles': lFiles})
     else:
         return HttpResponseRedirect('/')

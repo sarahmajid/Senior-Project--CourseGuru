@@ -43,7 +43,7 @@ def parsedToDB(data, header, cid, catID, fileid):
     detokenizer.detokenize(data, return_str=True)
     data = " ".join(data)
     dbInfo = (header + data).lower()
-    botanswers.objects.create(answer = dbAnswer, rating = 0, category_id = catID.id, entities = dbInfo, course_id = cid)
+    botanswers.objects.create(answer = dbAnswer, rating = 0, category_id = catID.id, entities = dbInfo, course_id = cid, file_id = fileid)
  
 def docxParser(docxFile, cid, catID, fileid):
                

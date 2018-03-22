@@ -98,22 +98,39 @@
 			</div>
 			
 			<div style="width: 40%; margin-right: 5%; min-width: 300px; float: right; border: 1px solid grey; -webkit-box-shadow: 0px 0px 15px rgba(0,0,0,0.4); -moz-box-shadow: 0px 0px 15px rgba(0,0,0,0.4); padding: 10px; font-size: 16px; color: grey; font-family: century gothic;">
-				Syllabus ({{sFiles|length}}/1)
+				<div style="text-align: center; font-size: 18px;">Uploaded Documents</div>
+				<br>
+				<b>Syllabus</b> ({{sFiles|length}}/1)
 				<hr>
 				{% for s in sFiles %}
-					{{s.file_name}}<br>
+					{{s.file_name}}
+					<form method="POST" action="" margin="0" style="display: inline;">
+						{% csrf_token %}
+						<button type="submit" onclick="return confirm('Are you sure you want to remove this file from the Chatbot\'s knowledge database?');" class="btn btn-danger" name="del" value="{{s.id}}" >&#10008</button>
+					</form>
+					<br><br>
 				{% endfor %}
 				<br><br>
-				Assignments ({{aFiles|length}}/15)
+				<b>Assignments</b> ({{aFiles|length}}/15)
 				<hr>
 				{% for a in aFiles %}
-					{{a.file_name}}<br>
+					{{a.file_name}}
+					<form method="POST" action="" margin="0" style="display: inline;">
+						{% csrf_token %}
+						<button type="submit" onclick="return confirm('Are you sure you want to remove this file from the Chatbot\'s knowledge database?');" class="btn btn-danger" name="del" value="{{a.id}}" >&#10008</button>
+					</form>
+					<br><br>
 				{% endfor %}
 				<br><br>
-				Lectures ({{lFiles|length}}/15)
+				<b>Lectures</b> ({{lFiles|length}}/15)
 				<hr>
 				{% for l in lFiles %}
-					{{l.file_name}}<br>
+					{{l.file_name}}
+					<form method="POST" action="" margin="0" style="display: inline;">
+						{% csrf_token %}
+						<button type="submit" onclick="return confirm('Are you sure you want to remove this file from the Chatbot\'s knowledge database?');" class="btn btn-danger" name="del" value="{{l.id}}" >&#10008</button>
+					</form>
+					<br><br>
 				{% endfor %}
 				<br><br>
 			</div>

@@ -58,16 +58,7 @@ class comments(models.Model):
 
 class category(models.Model):
     intent = models.CharField(max_length=50)
-    
-class botanswers(models.Model):
-    category = models.ForeignKey(category, on_delete=models.CASCADE)
-    course = models.ForeignKey(course, on_delete=models.CASCADE)
-    answer = models.CharField(max_length=5000)
-    rating = models.IntegerField(default=0)
-    entities = models.CharField(max_length=5000)
-
-    
-    
+      
 class keywords(models.Model):
     categoryKeyWords = models.CharField(max_length=100)
     subCategoryKeyWords = models.CharField(max_length=100) 
@@ -94,4 +85,10 @@ class document(models.Model):
     category = models.ForeignKey(category, on_delete=models.CASCADE)
     file_name = models.CharField(max_length=100)
     
-    
+class botanswers(models.Model):
+    category = models.ForeignKey(category, on_delete=models.CASCADE)
+    course = models.ForeignKey(course, on_delete=models.CASCADE)
+    answer = models.CharField(max_length=5000)
+    rating = models.IntegerField(default=0)
+    entities = models.CharField(max_length=5000)
+    file = models.ForeignKey(document, default=0, on_delete=models.CASCADE)
