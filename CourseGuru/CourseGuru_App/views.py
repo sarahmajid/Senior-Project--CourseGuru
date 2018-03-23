@@ -232,6 +232,8 @@ def question(request):
         return HttpResponseRedirect('/')
 
 from CourseGuru_App.models import document
+from django.conf import settings
+import os.path
 
 def uploadDocument(request):
 
@@ -241,41 +243,52 @@ def uploadDocument(request):
         user = request.user
         error = ""
         success = ""
+        dest =  settings.MEDIA_ROOT + "/documents/" + cid + "/"
         if not course.objects.filter(user_id = user.id, id = cid).exists():
             return redirect('courses')
         if request.method == "POST":
             if request.POST.get('Logout') == "Logout":
                 logout(request)
                 return HttpResponseRedirect('/')
-            if len(request.FILES) != 0:
+            elif 'del' in request.POST:
+                fid = request.POST.get('del')
+                delFile(fid, dest)
+            elif len(request.FILES) != 0:
                 upFile = request.FILES['courseFile']
                 upFileName = upFile.name
                 fileType = upFile.content_type
                 docType = request.POST.get("docType")
-                if docType == 'Assignment' and document.objects.filter(course_id = cid, category_id = 7).count() > 14:
+                print(dest + upFileName)
+                if os.path.isfile(dest + upFileName):
+                    error = "A file with the name " + upFileName + " already exists"
+                elif docType == 'Assignment' and document.objects.filter(course_id = cid, category_id = 7).count() > 14:
                     error = "You've reached the maximum number of assignments for this course. (15)"
                 elif docType == 'Lecture' and document.objects.filter(course_id = cid, category_id = 8).count() > 14:
                     error = "You've reached the maximum number of lectures for this course. (15)"    
                 elif (upFileName.endswith('.docx') and fileType == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') or (upFileName.endswith('.pdf') and fileType == 'application/pdf'):
-
                     courseFile = upFile.file.read()
                     if docType == 'Syllabus' and document.objects.filter(course_id = cid, category_id = 6).exists():
-                        document.objects.filter(course_id = cid, category_id = 6).delete()
-                        botanswers.objects.filter(course_id = cid, category_id = 6). delete()
+                        file = document.objects.get(course_id = cid, category_id = 6)
+                        delFile(file.id, dest)
                     catID = category.objects.get(intent = docType)
                     f = tempfile.TemporaryFile('r+b')
                     f.write(courseFile)    
-                    newFile = document(docfile = upFile, uploaded_by_id = user.id, course_id = cid, category_id = catID.id)
+                    newFile = document(docfile = upFile, uploaded_by_id = user.id, course_id = cid, category_id = catID.id, file_name = upFileName)
                     newFile.save()
                     if upFileName.endswith('.docx') and fileType == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
-
                         docxParser(f, cid, catID, newFile.id)
                     else:
                         pdfToText(f, cid, catID, newFile.id)
                     success = 'Course file successfully uploaded.'
                 else:
                     error = 'Course file must be in docx or pdf format.'
-        return render(request, 'CourseGuru_App/uploadDocument.html', {'courseID': cid, 'courseName': cName, 'error': error, 'success': success})
+        #Syllabus files
+        sFiles = document.objects.filter(course_id = cid, category_id = 6)
+        #Assignment files
+        aFiles = document.objects.filter(course_id = cid, category_id = 7)
+        #Lecture files
+        lFiles = document.objects.filter(course_id = cid, category_id = 8)
+        return render(request, 'CourseGuru_App/uploadDocument.html', {'courseID': cid, 'courseName': cName, 'error': error, 'success': success, 'sFiles': sFiles, 'aFiles': aFiles, 'lFiles': lFiles})
     else:
         return HttpResponseRedirect('/')
     

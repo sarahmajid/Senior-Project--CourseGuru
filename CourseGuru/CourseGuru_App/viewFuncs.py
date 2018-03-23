@@ -9,8 +9,10 @@ from CourseGuru_App.models import courseusers
 from CourseGuru_App.models import course
 from CourseGuru_App.models import botanswers
 from CourseGuru_App.models import User
-
+from CourseGuru_App.models import document
 from CourseGuru_App.luisRun import teachLuis
+from django.conf import settings
+import os.path
 
 def delCourse(cid):
     tempQues = questions.objects.filter(course_id = cid)
@@ -51,6 +53,12 @@ def delAnswers(aid):
         userratings.objects.filter(answer_id = aid).delete()
     if answers.objects.filter(id = aid).exists():
         answers.objects.filter(id = aid).delete()
+
+def delFile(fid, dest):
+    file = document.objects.get(id = fid)
+    os.remove(dest + file.file_name)
+    botanswers.objects.filter(file_id = file.id).delete()
+    document.objects.filter(id = file.id).delete()
         
 def resolveQues(cid, aid, qData):
     ans = answers.objects.get(id = aid)

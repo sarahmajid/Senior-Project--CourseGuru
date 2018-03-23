@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.template.defaultfilters import default
+import os
 from django.conf.global_settings import DATE_INPUT_FORMATS
 from _datetime import date, datetime
 
@@ -57,16 +58,7 @@ class comments(models.Model):
 
 class category(models.Model):
     intent = models.CharField(max_length=50)
-    
-class botanswers(models.Model):
-    category = models.ForeignKey(category, on_delete=models.CASCADE)
-    course = models.ForeignKey(course, on_delete=models.CASCADE)
-    answer = models.CharField(max_length=5000)
-    rating = models.IntegerField(default=0)
-    entities = models.CharField(max_length=5000)
-
-    
-    
+      
 class keywords(models.Model):
     categoryKeyWords = models.CharField(max_length=100)
     subCategoryKeyWords = models.CharField(max_length=100) 
@@ -78,12 +70,25 @@ class courseinfo(models.Model):
     entities = models.CharField(max_length=200)    
     infoData = models.TextField()
     courseId = models.CharField(max_length = 15)
+    
+def fileUpload(instance, filename):
+    #ext = filename.split('.')[-1]
+    filename = "%s/%s" % (instance.course.id, filename)
+    #cid = instance.course.id
+    return os.path.join('documents/', filename)
 
 class document(models.Model):
-    docfile = models.FileField(upload_to='documents/%Y')
+    docfile = models.FileField(upload_to=fileUpload)
     uploaded_by = models.ForeignKey(User, on_delete=models.CASCADE)
     date_added = models.DateTimeField(auto_now_add=True)
     course = models.ForeignKey(course, on_delete=models.CASCADE)
     category = models.ForeignKey(category, on_delete=models.CASCADE)
+    file_name = models.CharField(max_length=100)
     
-    
+class botanswers(models.Model):
+    category = models.ForeignKey(category, on_delete=models.CASCADE)
+    course = models.ForeignKey(course, on_delete=models.CASCADE)
+    answer = models.CharField(max_length=5000)
+    rating = models.IntegerField(default=0)
+    entities = models.CharField(max_length=5000)
+    file = models.ForeignKey(document, default=0, on_delete=models.CASCADE)

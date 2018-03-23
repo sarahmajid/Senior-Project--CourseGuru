@@ -114,7 +114,7 @@ def restructForDB (text, cid, catID, fileid):
     botSearch = ' '.join(botSearch)
     botSearch = botSearch.lower()
     
-    botanswers.objects.create(answer = dbAnswer, rating = 0, category_id = catID.id, entities = botSearch, course_id = cid)
+    botanswers.objects.create(answer = dbAnswer, rating = 0, category_id = catID.id, entities = botSearch, course_id = cid, file_id = fileid)
 #testing PRP    
 #     print(botSearch)
 
