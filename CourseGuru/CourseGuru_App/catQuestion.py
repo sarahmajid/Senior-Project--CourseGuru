@@ -18,7 +18,7 @@ def categorize(nq):
     luisIntent = luisStr['topScoringIntent']['intent']
 
     #If intent receives a lower score than 75% or there is no intent, the question does not get answered
-    if luisScore < 0.75 or luisIntent == 'None':
+    if luisIntent == 'None':
         return noCat
     else: 
         return luisIntent
