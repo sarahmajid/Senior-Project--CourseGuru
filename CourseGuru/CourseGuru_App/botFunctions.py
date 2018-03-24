@@ -1,6 +1,8 @@
-import requests, json
+import requests, json, nltk, re, string
 from nltk.stem.wordnet import WordNetLemmatizer
 from CourseGuru_App.models import category, botanswers
+from nltk.corpus import stopwords
+from nltk.tokenize.moses import MosesDetokenizer
 
 
 def cbAnswer(nq, courseID=0, chatWindow=False):
@@ -15,29 +17,38 @@ def cbAnswer(nq, courseID=0, chatWindow=False):
         return('Hello, how can I help you?')
     elif luisIntent == 'Greetings':
         return
-    elif luisIntent == 'Name' or luisIntent == 'Course Policies':
-        luisIntent = 'Syllabus'
     #If intent receives a lower score than 75% or there is no intent, the question does not get answered
-    elif (luisIntent == "None" or not luisStr['entities'] or luisScore < 0.75) and chatWindow == True:
+    elif luisIntent == "None" and chatWindow == True:
         return("Sorry, I didn't understand that.")
-    elif luisIntent == "None" or not luisStr['entities'] or luisScore < 0.75:
+    elif luisIntent == "None":
         return
-      
+    
     #teachLuis(nq, 'Other')
-    #publishLUIS()
     
     luisEntities = ""
-    z = 0
+    
     #regex = re.compile('[^a-zA-Z]')
-
-    for x in luisStr['entities']:
-        newEnt = luisStr['entities'][z]['entity']
-        #newEnt = regex.sub('', newEnt)
-        if z == 0:
-            luisEntities += newEnt
-        else:
-            luisEntities += ',' + newEnt
-        z += 1
+    if luisIntent != 'Other':
+        z = 0
+        for x in luisStr['entities']:
+            newEnt = luisStr['entities'][z]['entity']
+            #newEnt = regex.sub('', newEnt)
+            if z == 0:
+                luisEntities += newEnt
+            else:
+                luisEntities += ',' + newEnt
+            z += 1
+    else: 
+        #Manual stripping question for entities
+        detokenizer = MosesDetokenizer()
+        ent_list = nltk.word_tokenize(nq)
+        ent_list = [word for word in ent_list if word not in stopwords.words('english')]
+        detokenizer.detokenize(ent_list, return_str=True)
+        ent_str = " ".join(ent_list).lower()
+        #Removes punctuation from string
+        regex = re.compile('[%s]' % re.escape(string.punctuation))
+        ent_str = regex.sub('', ent_str)
+        luisEntities = re.sub("\s+", ",", ent_str.strip())   
     
     #Add variations of names a student would call the teacher if one is found
     profNames = ['instructor','teacher','professor']

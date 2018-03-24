@@ -1,4 +1,4 @@
-import re
+import re, string
 import nltk
 
 from CourseGuru_App.models import botanswers
@@ -41,7 +41,7 @@ def parsedToDB(data, header, cid, catID, fileid):
     data_list = nltk.word_tokenize(data)
     data = [word for word in data_list if word not in stopwords.words('english')]
     detokenizer.detokenize(data, return_str=True)
-    data = " ".join(data)
+    data = " ".join(data)    
     dbInfo = (header + data).lower()
     botanswers.objects.create(answer = dbAnswer, rating = 0, category_id = catID.id, entities = dbInfo, course_id = cid, file_id = fileid)
  

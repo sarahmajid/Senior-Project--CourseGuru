@@ -46,19 +46,10 @@
 			<tr>
 				<td style="padding: 10px;">
 					<form method="POST" action="" style="">
-						<br>
+						<br><br>
 						<label style="font-size: 16px; color: grey; font-family: century gothic;">Course Name: </label><br>
 						{% csrf_token %}
 						<input type="text" name="NC" class="form-control" required="required" maxlength="30" style="width: 50%;"></input>
-						<br><br>
-						<label style="font-size: 16px; color: grey; font-family: century gothic;">Course Type: </label><br>
-						{% csrf_token %}
-						<select name="cType" class="form-control select-short" style="" required="required" >
-							<option>{{status}}</option>
-							<option value="MATH">Math</option>
-							<option value="SCIENCE">Science</option>
-							<option value="COMPUTER SCIENCE">Computer Science</option>
-						</select>
 						<br><h3 style="font-size: 16px; color: red; font-family: century gothic;">{{error}}</h3><br>		
 						<button type="submit" name="submit" class="btn basic-btn" id="login-btn" value="Publish" >Publish</button>					
 					</form>

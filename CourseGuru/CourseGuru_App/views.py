@@ -227,6 +227,10 @@ def question(request):
     else:
         return HttpResponseRedirect('/')
 
+from CourseGuru_App.models import document
+from django.conf import settings
+from django.core.files import File
+
 def uploadDocument(request):
 
     if request.user.is_authenticated:
@@ -258,15 +262,18 @@ def uploadDocument(request):
                 elif docType == 'Lecture' and document.objects.filter(course_id = cid, category_id = 8).count() > 14:
                     error = "You've reached the maximum number of lectures for this course. (15)"    
                 elif (upFileName.endswith('.docx') and fileType == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') or (upFileName.endswith('.pdf') and fileType == 'application/pdf'):
-                    courseFile = upFile.file.read()
                     if docType == 'Syllabus' and document.objects.filter(course_id = cid, category_id = 6).exists():
                         file = document.objects.get(course_id = cid, category_id = 6)
                         delFile(file.id, dest)
                     catID = category.objects.get(intent = docType)
-                    f = tempfile.TemporaryFile('r+b')
-                    f.write(courseFile)    
                     newFile = document(docfile = upFile, uploaded_by_id = user.id, course_id = cid, category_id = catID.id, file_name = upFileName)
                     newFile.save()
+                    #if upFileName.endswith('.doc'):
+                    #    docToDocx(dest, upFileName)
+                    courseFile = newFile.docfile.read()
+                    f = tempfile.TemporaryFile('r+b')
+                    f.write(courseFile)    
+                                        
                     if upFileName.endswith('.docx') and fileType == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
                         docxParser(f, cid, catID, newFile.id)
                     else:
@@ -343,12 +350,12 @@ def publishCourse(request):
                 logout(request)
                 return HttpResponseRedirect('/')
             newCourse = request.POST.get('NC')
-            cType = request.POST.get('cType')
+            #cType = request.POST.get('cType')
             user = request.user
             if course.objects.filter(courseName = newCourse, user_id = user.id).exists():
                 errorMsg = "You already have a course with this name."
                 return render(request, 'CourseGuru_App/publishCourse.html', {'error': errorMsg})
-            newCourse = course.objects.create(courseName = newCourse, courseType = cType, user_id = user.id)
+            newCourse = course.objects.create(courseName = newCourse, user_id = user.id)
             cid = newCourse.id
             courseusers.objects.create(user_id = user.id, course_id = cid)
             return HttpResponseRedirect('/courses/')
