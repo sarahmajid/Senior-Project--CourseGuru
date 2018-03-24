@@ -3,7 +3,7 @@
 #### Table of Contents 
 
 1. [Description](#description) 
-2. [Required Installations](#required installations)
+2. [Required Installations](#requiredInst)
 3. [Setup](#setup) 
 4. [Demployment](#deployment)
 	* [Local](#local) 
@@ -33,8 +33,8 @@ The purpose of Amesite Chat Responder (ACR) is to have students become more invo
 ## Requirements 
 
 ## Deployment
-###Local 
-###AWS 
+### Local 
+### AWS 
 1. Amazon Elastic Beanstalk Command Line Interface
 1. SSH (PuTTY)
 1. NLTK
