@@ -4,6 +4,7 @@ import json
 import requests
 import datetime
 import io
+import os.path
 
 from nltk.tokenize import word_tokenize, sent_tokenize
 from nltk.corpus import stopwords
@@ -19,7 +20,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib.auth.models import User
 from django.db.models import Q
 from django.shortcuts import redirect
-
+from django.conf import settings
 
 #importing models 
 from CourseGuru_App.models import questions
@@ -30,6 +31,7 @@ from CourseGuru_App.models import botanswers
 from CourseGuru_App.models import comments
 from CourseGuru_App.models import courseusers
 from CourseGuru_App.models import userratings
+from CourseGuru_App.models import document
 from CourseGuru_App.luisRun import teachLuis
 from CourseGuru_App.natLang import reformQuery
 from CourseGuru_App.pdfParser import *
@@ -44,6 +46,8 @@ from CourseGuru_App.viewFuncs import *
 
 from builtins import str
 from _overlapped import NULL
+from pip._vendor.requests.api import post
+from botocore.vendored.requests.api import request
 
 
 #Function to populate Main page
@@ -122,10 +126,6 @@ def courses(request):
         return render(request, 'CourseGuru_App/courses.html', {'courses': courseList})
     else:
         return HttpResponseRedirect('/')
-#def genDate():
-    #This needs to be removed. SQL can do it automatically
-#    curDate = datetime.datetime.now().strftime("%m-%d-%Y %I:%M %p")
-#    return (curDate)
 
 def roster(request):
     if request.user.is_authenticated:
@@ -184,13 +184,14 @@ def question(request):
         page = request.GET.get('page', 1)
         cName = course.objects.get(id = cid)
         user = request.user
-        
         query = request.GET.get('query')
         emptyPostCheck = request.POST.get('query')
-        if not courseusers.objects.filter(user_id = user.id, course_id = cid).exists() and not course.objects.filter(user_id = user.id, id = cid).exists():
-            return redirect('courses')
-        
         filterCategory = 'All'
+        if request.GET.get('filterCategory'):
+            filterCategory = request.GET.get('filterCategory')
+                    
+        if not courseusers.objects.filter(user_id = user.id, course_id = cid).exists() and not course.objects.filter(user_id = user.id, id = cid).exists():
+            return redirect('courses')        
         if request.method == "POST":
             if request.POST.get('Logout') == "Logout":
                 logout(request)
@@ -198,27 +199,22 @@ def question(request):
             elif 'del' in request.POST:
                 qid = request.POST.get('del')
                 delQuestion(qid)
+            if request.POST.get('filterCategory'):
+                filterCategory = request.POST.get('filterCategory')
+                query = ''
             if request.POST.get('query'):
-                query = request.POST.get('query')
-                if query: 
-                    qData = qData.filter(question__icontains=query)
-            if request.POST.get('Filter'):
-                filterCategory = request.POST.get('Filter')
-                if filterCategory != 'All':
-                    qData = qData.filter(category=filterCategory) 
-                    query = ''
-                else:
-                    qData = questions.objects.get_queryset().filter(course_id = cid).order_by('-pk')
-                    query = ''
-        if request.POST.get('query'):
-            query = request.POST.get('query')
-            if query:
-                qData = qData.filter(Q(question__icontains=query) | Q(comment__icontains=query))    
+                query = request.POST.get('query')       
+
+        if filterCategory != 'All':
+            qData = qData.filter(category=filterCategory) 
+        else:
+            qData = questions.objects.get_queryset().filter(course_id = cid).order_by('-pk')
         if emptyPostCheck == '':
             query = ''
             qData = questions.objects.get_queryset().filter(course_id = cid).order_by('-pk')       
-        if query and query != '': 
-            qData = qData.filter(Q(question__icontains=query) | Q(comment__icontains=query))        
+        if query and query != '' and query != 'None': 
+            qData = qData.filter(Q(question__icontains=query) | Q(comment__icontains=query))  
+                
         #Paginator created to limit page display to 10 data items per page
         paginator = Paginator(qData, 10)
         try:
@@ -227,7 +223,7 @@ def question(request):
             fquestions = paginator.page(1)
         except EmptyPage:
             fquestions = paginator.page(paginator.num_pages())       
-        return render(request, 'CourseGuru_App/question.html', {'content': fquestions, 'user': user, 'courseID': cid, 'courseName': cName, 'status': filterCategory, 'query': query})
+        return render(request, 'CourseGuru_App/question.html', {'content': fquestions, 'user': user, 'courseID': cid, 'courseName': cName, 'filterCategory': filterCategory, 'query': query})
     else:
         return HttpResponseRedirect('/')
 
@@ -331,13 +327,11 @@ def publishAnswer(request):
         user = request.user
         if not courseusers.objects.filter(user_id = user.id, course_id = cid).exists() and not course.objects.filter(user_id = user.id, id = cid).exists():
             return redirect('courses')
-
         if request.method == "POST":
             if request.POST.get('Logout') == "Logout":
                 logout(request)
                 return HttpResponseRedirect('/')
             ans = request.POST.get('NQcom')
-           #answerDate = genDate()
             user = request.user
             answers.objects.create(answer = ans, user_id = user.id, question_id = qid)             
             return HttpResponseRedirect('/answer/?id=%s&cid=%s' % (qid, cid))
@@ -364,7 +358,6 @@ def publishCourse(request):
             newCourse = course.objects.create(courseName = newCourse, user_id = user.id)
             cid = newCourse.id
             courseusers.objects.create(user_id = user.id, course_id = cid)
-            #botanswers.objects.create(answer = 'Instructor Name: ' + user.first_name + ' ' + user.last_name, rating = 0, category_id = 6, entities = 'instructor name', course_id = cid)
             return HttpResponseRedirect('/courses/')
         return render(request, 'CourseGuru_App/publishCourse.html')
     else:
@@ -373,7 +366,6 @@ def publishCourse(request):
 # Function to populate Answers page
 def answer(request):
     if request.user.is_authenticated:
-    #    if request.method=='GET':
         qid = request.GET.get('id', '')
         cid = request.GET.get('cid', '')
         user = request.user
@@ -423,7 +415,6 @@ def answer(request):
                 return render(request, 'CourseGuru_App/answer.html', {'answers': aData, 'numAnswers': ansCt, 'Title': qData, 'comments': cData, 'courseID': cid, 'resolved':resolve})        
             return HttpResponseRedirect('/answer/?id=%s&cid=%s' % (qid, cid)) 
         return render(request, 'CourseGuru_App/answer.html', {'answers': aData, 'numAnswers': ansCt, 'Title': qData, 'comments': cData, 'courseID': cid, 'resolved': resolve, 'upData': upData, 'downData': downData})
-
     else:
         return HttpResponseRedirect('/')
     
