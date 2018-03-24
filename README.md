@@ -1,4 +1,4 @@
-# AmesiteCR
+# Amesite Chat Responder
 
 #### Table of Contents 
 
