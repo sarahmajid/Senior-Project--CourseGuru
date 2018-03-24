@@ -1,4 +1,4 @@
-import nltk
+import nltk, re
 from nltk.corpus import stopwords
 from nltk.tokenize.moses import MosesDetokenizer
 
@@ -13,6 +13,11 @@ from CourseGuru_App.models import document
 from CourseGuru_App.luisRun import teachLuis
 from django.conf import settings
 import os.path
+
+import win32com.client as win32
+from win32com.client import constants
+import pythoncom
+import win32com.client as client
 
 def delCourse(cid):
     tempQues = questions.objects.filter(course_id = cid)
@@ -98,3 +103,15 @@ def newRating(rate, answerID, userID):
     record = answers.objects.get(id = answerID)
     record.rating = (uprateCt - downrateCt)
     record.save()
+    
+def docToDocx(dest, upFileName):
+    pythoncom.CoInitialize()
+    word = win32.gencache.EnsureDispatch('Word.Application')
+    doc = word.Documents.Open(dest + upFileName)
+    doc.Activate ()
+    newName = dest + os.path.splitext(upFileName)[0] + 'NEW'
+    new_file_abs = re.sub(r'\.\w+$', '.docx', newName)
+    word.ActiveDocument.SaveAs(
+        new_file_abs, FileFormat=constants.wdFormatXMLDocument
+    )
+    doc.Close(False)

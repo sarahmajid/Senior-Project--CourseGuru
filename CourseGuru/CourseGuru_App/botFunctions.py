@@ -17,12 +17,10 @@ def cbAnswer(nq, courseID=0, chatWindow=False):
         return('Hello, how can I help you?')
     elif luisIntent == 'Greetings':
         return
-    elif luisIntent == 'Name' or luisIntent == 'Course Policies':
-        luisIntent = 'Syllabus'
     #If intent receives a lower score than 75% or there is no intent, the question does not get answered
     elif luisIntent == "None" and chatWindow == True:
         return("Sorry, I didn't understand that.")
-    elif luisIntent == "None" or (not luisStr['entities'] and luisIntent != 'Other'):
+    elif luisIntent == "None":
         return
     
     #teachLuis(nq, 'Other')
@@ -50,7 +48,7 @@ def cbAnswer(nq, courseID=0, chatWindow=False):
         #Removes punctuation from string
         regex = re.compile('[%s]' % re.escape(string.punctuation))
         ent_str = regex.sub('', ent_str)
-        luisEntities = re.sub("\s+", ",", ent_str.strip())      
+        luisEntities = re.sub("\s+", ",", ent_str.strip())   
     
     #Add variations of names a student would call the teacher if one is found
     profNames = ['instructor','teacher','professor']
