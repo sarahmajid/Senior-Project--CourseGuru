@@ -67,11 +67,14 @@ def resolveQues(cid, aid, qData):
     profRate = False
     if ans.user_id != 38:
         ansRatings = userratings.objects.filter(answer_id = ans.id)
-        for row in ansRatings:
-            rowUser = row.user_id
-            rateUser = User.objects.get(id = rowUser)
-            if rateUser.status == "Teacher":
-                profRate = True  
+        if ans.user.status == "Teacher":
+            profRate = True
+        else:
+            for row in ansRatings:
+                rowUser = row.user_id
+                rateUser = User.objects.get(id = rowUser)
+                if rateUser.status == "Teacher":
+                    profRate = True  
         rostSize = courseusers.objects.filter(course_id = cid).count()
         weight = (ans.rating / rostSize) * 100
         if weight >= 5 or profRate:
