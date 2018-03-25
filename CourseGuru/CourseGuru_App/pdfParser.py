@@ -4,17 +4,33 @@ import re
 from pdfminer.pdfparser import PDFParser, PDFDocument
 from pdfminer.pdfinterp import PDFResourceManager, PDFPageInterpreter
 from pdfminer.layout import LAParams, LTTextBoxHorizontal
-from pdfminer.converter import PDFPageAggregator#,HTMLConverter
-#from pdfminer.pdfpage import PDFPage
-#from io import BytesIO
-#from nltk.tokenize import word_tokenize, sent_tokenize
+from pdfminer.converter import PDFPageAggregator
+
 from nltk.corpus import stopwords
-#from nltk.stem import WordNetLemmatizer
 from nltk.tokenize.moses import MosesDetokenizer
+
 from CourseGuru_App.models import keywords
-#from CourseGuru_App.models import courseinfo
 from CourseGuru_App.models import botanswers
 
+#testing PRP
+#def restructForDB (text): 
+def restructForDB (text, cid, catID, fileid): 
+    detokenizer = MosesDetokenizer() 
+    botSearch = text.replace('<br>', '')
+    rgx = re.compile('[^a-zA-Z0-9 \n\.]')
+    
+    botSearch = rgx.sub('', botSearch)
+    searchList = nltk.word_tokenize(botSearch, 'english')
+    
+    botSearch = [word for word in searchList if word not in stopwords.words('english')]
+    
+    detokenizer.detokenize(botSearch, return_str=True)
+    botSearch = ' '.join(botSearch)
+    botSearch = botSearch.lower()
+    
+    botanswers.objects.create(answer = text, rating = 0, category_id = catID.id, entities = botSearch, course_id = cid, file_id = fileid)
+#testing PRP    
+#     print(botSearch)
 
 #testing PRP
 #def pdfToText(file):
@@ -46,7 +62,7 @@ def pdfToText(file, cid, catID, fileid):
     device = PDFPageAggregator(rsrcmgr, laparams=laparams)
     interpreter = PDFPageInterpreter(rsrcmgr, device)
     
-    ansArray = []     
+    dataArray = []     
      
 #testing PRP
 #    botSearchArray = []
@@ -69,27 +85,27 @@ def pdfToText(file, cid, catID, fileid):
                 
                 for n in keyWords:
                     if (n.lower() in filtText.lower()) and (added == False) and (len(n) > 2 ):
-                        ansArray.append(filtText)
+                        dataArray.append(filtText)
                         keyWords.remove(n)
                         added=True
                     elif (len(n) < 3) and (re.match(('[a-zA-Z]*' + re.escape(n) +'[a-zA-Z]*'), filtText) != None):
                         if (n in filtText) and (added == False):
-                            ansArray.append(filtText)
+                            dataArray.append(filtText)
                             keyWords.remove(n)
                             added=True
 
                     elif(n.lower() in filtText.lower()) and (added == True):
                         keyWords.remove(n)
                         
-                if (len(ansArray) > 0) and (added == False):
+                if (len(dataArray) > 0) and (added == False):
                     #checking for empty lines or lines with just a page number
                     if (filtText != ' <br>') and (re.match('[0-9]* <br>', filtText) == None):
-                        ansArray[-1] = ansArray[-1] + ' ' + filtText
+                        dataArray[-1] = dataArray[-1] + ' ' + filtText
                     
-                elif len(ansArray)==0: 
-                    ansArray.append('Course Information: ' + filtText)
+                elif len(dataArray)==0: 
+                    dataArray.append('Course Information: ' + filtText)
     
-    for n in ansArray: 
+    for n in dataArray: 
         restructForDB(n, cid, catID, fileid)
 #        botSearchArray.append(restructForDB(n))         
                
@@ -97,24 +113,5 @@ def pdfToText(file, cid, catID, fileid):
     #return textFile
 
 
-#testing PRP
-#def restructForDB (text): 
-def restructForDB (text, cid, catID, fileid): 
-    detokenizer = MosesDetokenizer() 
-    dbAnswer = text 
-    botSearch = text.replace('<br>', '')
-    rgx = re.compile('[^a-zA-Z0-9 \n\.]')
-    
-    botSearch = rgx.sub('', botSearch)
-    searchList = nltk.word_tokenize(botSearch, 'english')
-    
-    botSearch = [word for word in searchList if word not in stopwords.words('english')]
-    
-    detokenizer.detokenize(botSearch, return_str=True)
-    botSearch = ' '.join(botSearch)
-    botSearch = botSearch.lower()
-    
-    botanswers.objects.create(answer = dbAnswer, rating = 0, category_id = catID.id, entities = botSearch, course_id = cid, file_id = fileid)
-#testing PRP    
-#     print(botSearch)
+
 
