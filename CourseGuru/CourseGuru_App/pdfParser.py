@@ -93,7 +93,7 @@ def pdfToText(file, cid, catID, fileid):
         restructForDB(n, cid, catID, fileid)
 #        botSearchArray.append(restructForDB(n))         
                
-    file.close() 
+    file.close()
     #return textFile
 
 

@@ -36,6 +36,7 @@ from CourseGuru_App.luisRun import teachLuis
 from CourseGuru_App.natLang import reformQuery
 from CourseGuru_App.pdfParser import *
 from CourseGuru_App.docxParser import *
+from CourseGuru_App.pptxParser import *
 from CourseGuru_App.CSV import *
 from CourseGuru_App.luisRun import publishLUIS
 from CourseGuru_App.catQuestion import *
@@ -48,6 +49,7 @@ from builtins import str
 from _overlapped import NULL
 from pip._vendor.requests.api import post
 from botocore.vendored.requests.api import request
+
 
 
 #Function to populate Main page
@@ -261,13 +263,13 @@ def uploadDocument(request):
                     error = "You've reached the maximum number of assignments for this course. (15)"
                 elif docType == 'Lecture' and document.objects.filter(course_id = cid, category_id = 8).count() > 14:
                     error = "You've reached the maximum number of lectures for this course. (15)"    
-                elif (upFileName.endswith('.docx') and fileType == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') or (upFileName.endswith('.pdf') and fileType == 'application/pdf'):
+                elif (upFileName.endswith('.docx') and fileType == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') or (upFileName.endswith('.pdf') and fileType == 'application/pdf') or (upFileName.endswith('.pptx') and fileType == 'application/vnd.openxmlformats-officedocument.presentationml.presentation'):
                     if docType == 'Syllabus' and document.objects.filter(course_id = cid, category_id = 6).exists():
                         file = document.objects.get(course_id = cid, category_id = 6)
                         delFile(file.id, dest)
                     catID = category.objects.get(intent = docType)
                     newFile = document(docfile = upFile, uploaded_by_id = user.id, course_id = cid, category_id = catID.id, file_name = upFileName)
-                    newFile.save()
+                    #newFile.save()
                     #if upFileName.endswith('.doc'):
                     #    docToDocx(dest, upFileName)
                     courseFile = newFile.docfile.read()
@@ -276,8 +278,14 @@ def uploadDocument(request):
                                         
                     if upFileName.endswith('.docx') and fileType == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
                         docxParser(f, cid, catID, newFile.id)
-                    else:
+                    elif upFileName.endswith('.pdf') and fileType == 'application/pdf':
                         pdfToText(f, cid, catID, newFile.id)
+                    else: 
+                        parsePPTX(upFile, cid, catID, newFile.id)  
+                        
+                    newFile.docfile.close()
+                    f.close()
+                    upFile.close()
                     success = 'Course file successfully uploaded.'
                 else:
                     error = 'Course file must be in docx or pdf format.'
