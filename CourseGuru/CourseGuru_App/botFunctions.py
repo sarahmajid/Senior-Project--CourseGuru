@@ -50,6 +50,11 @@ def cbAnswer(nq, courseID=0, chatWindow=False):
         ent_str = regex.sub('', ent_str)
         luisEntities = re.sub("\s+", ",", ent_str.strip())   
     
+    if luisEntities == "" and chatWindow == True:
+        return("Sorry, I didn't understand that.")
+    elif luisEntities == "":
+        return
+    
     #Add variations of names a student would call the teacher if one is found
     profNames = ['instructor','teacher','professor']
     for name in profNames:

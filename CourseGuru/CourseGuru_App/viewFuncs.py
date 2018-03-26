@@ -59,9 +59,9 @@ def delAnswers(aid):
     if answers.objects.filter(id = aid).exists():
         answers.objects.filter(id = aid).delete()
 
-def delFile(fid, dest):
+def delFile(fid):
     file = document.objects.get(id = fid)
-    os.remove(dest + file.file_name)
+    file.docfile.delete()
     botanswers.objects.filter(file_id = file.id).delete()
     document.objects.filter(id = file.id).delete()
         
