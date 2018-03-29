@@ -30,7 +30,7 @@ def restructForDB (text, cid, catID, fileid):
 #    print(botSearch)
 
 
-def parsePPTX(file, cid, catID, fileid):
+def parsePPTX(file, cid, catID, fileid, docType):
     parseFile = Presentation(file)
     
     dataArray = [] 
@@ -46,9 +46,9 @@ def parsePPTX(file, cid, catID, fileid):
                     if paragraph.text != '' and paragraph.text != title:
                         text = paragraph.text
                         if paragraph.text == '.':
-                            dataArray[-1] = dataArray[-1] + '' + (text)
+                            dataArray[-1] += '' + (text)
                         else: 
-                            dataArray[-1] = dataArray[-1] + ' ' + (text) + '<br>'
+                            dataArray[-1] += ' ' + (text) + '<br>'
 #testing PRP   
 #                            print(text)
             elif shape.has_table:
@@ -74,7 +74,7 @@ def parsePPTX(file, cid, catID, fileid):
                             text = text + '<br>'
                         j+=1
                     i+=1
-                dataArray[-1] = dataArray[-1] + ' ' + (text) 
+                dataArray[-1] += ' ' + (text) 
                 
     file.close()
     for n in dataArray:

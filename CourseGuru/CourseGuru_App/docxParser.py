@@ -45,7 +45,7 @@ def parsedToDB(data, header, cid, catID, fileid):
     dbInfo = (header + data).lower()
     botanswers.objects.create(answer = dbAnswer, rating = 0, category_id = catID.id, entities = dbInfo, course_id = cid, file_id = fileid)
  
-def docxParser(docxFile, cid, catID, fileid):
+def docxParser(docxFile, cid, catID, fileid, docType):
                
     document = Document(docxFile)
             

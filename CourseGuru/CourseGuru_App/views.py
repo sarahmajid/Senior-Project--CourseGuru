@@ -46,7 +46,6 @@ from CourseGuru_App.tasks import queuePublish
 from CourseGuru_App.viewFuncs import *
 
 from builtins import str
-from _overlapped import NULL
 from pip._vendor.requests.api import post
 from botocore.vendored.requests.api import request
 
@@ -277,11 +276,11 @@ def uploadDocument(request):
                     f.write(courseFile)    
                                         
                     if upFileName.endswith('.docx') and fileType == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
-                        docxParser(f, cid, catID, newFile.id)
+                        docxParser(f, cid, catID, newFile.id, docType)
                     elif upFileName.endswith('.pdf') and fileType == 'application/pdf':
-                        pdfToText(f, cid, catID, newFile.id)
+                        pdfToText(f, cid, catID, newFile.id, docType)
                     else: 
-                        parsePPTX(upFile, cid, catID, newFile.id)  
+                        parsePPTX(upFile, cid, catID, newFile.id, docType)  
                         
                     newFile.docfile.close()
                     f.close()
