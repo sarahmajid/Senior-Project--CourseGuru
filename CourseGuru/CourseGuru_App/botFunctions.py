@@ -6,10 +6,11 @@ from nltk.tokenize.moses import MosesDetokenizer
 
 import spacy
 from nltk.corpus import wordnet
+from spacy.lang.en.stop_words import STOP_WORDS
 
 
 def cbAnswer(nq, courseID=0, chatWindow=False):
-    r = requests.get('https://westus.api.cognitive.microsoft.com/luis/v2.0/apps/6059c365-d88a-412b-8f33-d7393ba3bf9f?subscription-key=c574439a46e64d8cb597879499ccf8f9&verbose=true&timezoneOffset=-300&q=%s' % nq)
+    r = requests.get('https://eastus.api.cognitive.microsoft.com/luis/v2.0/apps/6059c365-d88a-412b-8f33-d7393ba3bf9f?subscription-key=d0c059aabdca45679b36ed0351d4f83b&verbose=true&timezoneOffset=0&q=%s' % nq)
     luisStr = json.loads(r.text)
     #Grabs intent score of question
     ####luisScore = float(luisStr['topScoringIntent']['score'])
@@ -35,19 +36,25 @@ def cbAnswer(nq, courseID=0, chatWindow=False):
     luisEntities = []
     nlp = spacy.load('en')
     #regex = re.compile('[^a-zA-Z]')
-#     if luisIntent != 'Other':
+
+#LUIS ENTITY METHOD
 #         z = 0
 #         for x in luisStr['entities']:
 #             newEnt = luisStr['entities'][z]['entity']
 #             luisEntities.append(newEnt)
 #             z += 1
-#     else: 
-    #Manual stripping question for entities
+
+#NLTK/SPACY METHOD
     detokenizer = MosesDetokenizer()
     ent_list = nltk.word_tokenize(nq)
+    #NLTK Stop Word Removal
     ent_list = [word for word in ent_list if word not in stopwords.words('english')]
+    #Spacy Stop Word Removal
+    for ind,ent in enumerate(ent_list):
+        if ent in STOP_WORDS:
+            del ent_list[ind]
+        
     detokenizer.detokenize(ent_list, return_str=True)
-    #ent_str = " ".join(ent_list).lower()
     #Removes punctuation from string
     regex = re.compile('[%s]' % re.escape(string.punctuation))
     for ind,ent in enumerate(ent_list):
@@ -55,12 +62,10 @@ def cbAnswer(nq, courseID=0, chatWindow=False):
         entTemp = regex.sub('', doc[0].lemma_)
         if entTemp != '':
             luisEntities.append(entTemp)
+            if entTemp != doc[0].text:
+                luisEntities.append(doc[0].text)
         
     luisEntities = [word for word in luisEntities if word not in stopwords.words('english')]
-    
-    #ent_str = regex.sub('', ent_str)
-    #tempStr = re.sub("\s+", ",", ent_str.strip())   
-    #luisEntities = tempStr.split(',')
     
     if luisEntities == [] and chatWindow == True:
         return("Sorry, I didn't understand that.")
@@ -87,7 +92,7 @@ def cbAnswer(nq, courseID=0, chatWindow=False):
     entAnswer = getIntentAns(luisIntent, luisEntities, courseID, chatWindow)
     if entAnswer == "":
         return
-    #botAns = reformQuery(nq) + entAnswer
+
     botAns = entAnswer
     return(botAns)
 

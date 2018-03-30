@@ -131,18 +131,25 @@ li a {
 
 /* LiveChat containers */
 .msgContainer {
-    
+    height:auto;
+    padding-bottom: 10px;
+}
+
+.botmsgContainer {
+	height:auto;
+    padding-bottom: 10px;
 }
 
 .msgContainer p {
 	border: 1px solid #dedede;
-    background-color: #f1f1f1;
+    background-color: #d9d9d9;
     border-radius: 5px;
     display: inline-block;
     margin: 5px;
     padding: 5px;
     font-size: 14px;
-    word-break: break-all;
+    word-break: keep-all;
+    text-align:left;
 }
 
 .botmsgContainer p {
@@ -153,7 +160,7 @@ li a {
     margin: 5px;
     padding: 5px;
     font-size: 14px;
-    word-break: break-all;
+    word-break: keep-all;
     text-align: left;
 }
 

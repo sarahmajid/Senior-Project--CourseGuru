@@ -42,6 +42,10 @@ def delCourse(cid):
     #Delete botanswers related to this course
     if botanswers.objects.filter(course_id = cid).exists():
         botanswers.objects.filter(course_id = cid).delete()
+    #Delete files associated with this course
+    if document.objects.filter(course_id = cid).exists():
+        document.objects.filter(course_id = cid).delete()
+            
         
 def delQuestion(qid):
     tempAns = answers.objects.filter(question_id = qid)
@@ -60,10 +64,8 @@ def delAnswers(aid):
         answers.objects.filter(id = aid).delete()
 
 def delFile(fid):
-    file = document.objects.get(id = fid)
-    file.docfile.delete()
-    botanswers.objects.filter(file_id = file.id).delete()
-    document.objects.filter(id = file.id).delete()
+    botanswers.objects.filter(file_id = fid).delete()
+    document.objects.filter(id = fid).delete()
         
 def resolveQues(cid, aid, qData):
     ans = answers.objects.get(id = aid)
