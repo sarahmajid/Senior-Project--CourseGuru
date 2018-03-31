@@ -32,6 +32,22 @@ def restructForDB (text, cid, catID, fileid):
     botanswers.objects.create(answer = text, rating = 0, category_id = catID.id, entities = botSearch, course_id = cid, file_id = fileid)
 #testing PRP    
 #    print(botSearch)
+#    print(text)
+    
+def restructString(text):
+    #change \n to <br>
+    filtText = re.sub('\\n', '<br>', text)
+    #getting rid of non ASCII unicode characters which cause errors
+    filtText= ''.join(i for i in filtText if ord(i)<128)
+    #getting rid on any unnecessary extra spaces or <br> tags 
+    filtText = re.sub(' +', ' ', filtText)
+    filtText = re.sub('<br>\ ', '<br>', filtText)
+    filtText = re.sub('(<br>)+', '<br>', filtText)
+    #get rid of first character in the string if its a space 
+    if filtText[0] == ' ': 
+        filtText=filtText[1:]
+    
+    return filtText
 
 def pdfToText(file, cid, catID, fileid, docType):
     #Create empty string for text to be extracted into
@@ -49,6 +65,7 @@ def pdfToText(file, cid, catID, fileid, docType):
     parser.set_document(doc)
     doc.set_parser(parser)
     doc.initialize('')
+   # doc.encode('utf-8')
     rsrcmgr = PDFResourceManager()
     #sets parameters for analysis 
     laparams = LAParams()
@@ -73,15 +90,9 @@ def pdfToText(file, cid, catID, fileid, docType):
                 #if isinstance(lt_obj, LTTextBox) or isinstance(lt_obj, LTTextLine):
                 if isinstance(lt_obj, LTTextBoxHorizontal):
                     extracted_text = lt_obj.get_text()
-                    #change \n to <br>
-                    filtText = re.sub('\\n', '<br>', extracted_text)
-                    #getting rid of unicode characters 
-                    filtText = re.sub('\\uf0b7|\\uf020', '', filtText)
-                    #getting rid on any extra spaces
-                    filtText = re.sub(' +', ' ', filtText)
+                    filtText = restructString(extracted_text)                  
                     added = False
-                      
-                      
+                        
                     for n in keyWords:
                         if (n.lower() in filtText.lower()) and (added == False) and (len(n) > 2 ):
                             dataArray.append(filtText)
@@ -98,7 +109,7 @@ def pdfToText(file, cid, catID, fileid, docType):
                               
                     if (len(dataArray) > 0) and (added == False):
                         #checking for empty lines or lines with just a page number
-                        if (filtText != ' <br>') and (re.match('[0-9]* <br>', filtText) == None):
+                        if (filtText != ' <br>') and (re.match('[0-9]* <br>', filtText) == None) and (filtText != '<br>'):
                             dataArray[-1] += ' ' + filtText
                           
                     elif len(dataArray)==0: 
@@ -112,13 +123,9 @@ def pdfToText(file, cid, catID, fileid, docType):
                 #if isinstance(lt_obj, LTTextBox) or isinstance(lt_obj, LTTextLine):
                 if isinstance(lt_obj, LTTextBoxHorizontal):
                     extracted_text = lt_obj.get_text()
-                    #change \n to <br>
-                    filtText = re.sub('\\n', '<br>', extracted_text)
-                    #getting rid of unicode characters 
-                    filtText = re.sub('\\uf0b7|\\uf020', '', filtText)
-                    #getting rid on any extra spaces
-                    filtText = re.sub(' +', ' ', filtText)
-                    if (filtText != ' <br>') and (re.match('[0-9]* <br>', filtText) == None):
+                    filtText = restructString(extracted_text)    
+                    #checking for empty lines or lines with just a page number
+                    if (filtText != ' <br>') and (re.match('[0-9]* <br>', filtText) == None) and (filtText != '<br>'):
                         dataArray[-1] +='' + filtText
     
     for n in dataArray: 
