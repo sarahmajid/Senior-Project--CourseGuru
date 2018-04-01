@@ -7,6 +7,11 @@ $(document).ready(function() {
         }
 	});
 	
+	$("Form").submit(function() {
+        $("#login-btn").attr("disabled", true);
+        return true;
+    });
+	
 	//Changes color of upvote and rating number when clicked
 	$(".ratingArea").find("#voteUp").click(function(e) {
 		rateDiv = $(this).closest("div");

@@ -249,7 +249,7 @@ def uploadDocument(request):
                 return HttpResponseRedirect('/')
             elif 'del' in request.POST:
                 fid = request.POST.get('del')
-                delFile(fid, dest)
+                delFile(fid)
             elif len(request.FILES) != 0:
                 upFile = request.FILES['courseFile']
                 upFileName = upFile.name
@@ -265,10 +265,10 @@ def uploadDocument(request):
                 elif (upFileName.endswith('.docx') and fileType == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') or (upFileName.endswith('.pdf') and fileType == 'application/pdf') or (upFileName.endswith('.pptx') and fileType == 'application/vnd.openxmlformats-officedocument.presentationml.presentation'):
                     if docType == 'Syllabus' and document.objects.filter(course_id = cid, category_id = 6).exists():
                         file = document.objects.get(course_id = cid, category_id = 6)
-                        delFile(file.id, dest)
+                        delFile(file.id)
                     catID = category.objects.get(intent = docType)
                     newFile = document(docfile = upFile, uploaded_by_id = user.id, course_id = cid, category_id = catID.id, file_name = upFileName)
-#                    newFile.save()
+                    newFile.save()
                     #if upFileName.endswith('.doc'):
                     #    docToDocx(dest, upFileName)
                     courseFile = newFile.docfile.read()
