@@ -293,6 +293,33 @@ def uploadDocument(request):
     else:
         return HttpResponseRedirect('/')
     
+def courseFiles(request):
+    if request.user.is_authenticated:
+        cid = request.GET.get('cid', '')
+        curCourse = course.objects.get(id = cid)
+        user = request.user
+        if not course.objects.filter(user_id = user.id, id = cid).exists():
+            return redirect('courses')
+        if request.method == "POST":
+            if request.POST.get('Logout') == "Logout":
+                logout(request)
+                return HttpResponseRedirect('/')
+            elif 'download' in request.POST:
+                fid = request.POST.get('download')
+                file = document.objects.get(id = fid)
+                fileRtn = HttpResponse(file.docfile, content_type='text/plain')
+                fileRtn['Content-Disposition'] = 'attachment; filename=%s' % file.file_name      
+                return fileRtn
+        #Syllabus files
+        sFiles = document.objects.filter(course_id = cid, category_id = 6)
+        #Assignment files
+        aFiles = document.objects.filter(course_id = cid, category_id = 7)
+        #Lecture files
+        lFiles = document.objects.filter(course_id = cid, category_id = 8)
+        return render(request, 'CourseGuru_App/courseFiles.html', {'course': curCourse, 'sFiles': sFiles, 'aFiles': aFiles, 'lFiles': lFiles})
+    else:
+        return HttpResponseRedirect('/')
+
 def publish(request):
     if request.user.is_authenticated:
         cid = request.GET.get('cid', '')
