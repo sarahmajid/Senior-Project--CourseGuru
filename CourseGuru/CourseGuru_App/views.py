@@ -21,6 +21,7 @@ from django.contrib.auth.models import User
 from django.db.models import Q
 from django.shortcuts import redirect
 from django.conf import settings
+from django.core.files import File
 
 #importing models 
 from CourseGuru_App.models import questions
@@ -228,10 +229,6 @@ def question(request):
     else:
         return HttpResponseRedirect('/')
 
-from CourseGuru_App.models import document
-from django.conf import settings
-from django.core.files import File
-
 def uploadDocument(request):
 
     if request.user.is_authenticated:
@@ -255,7 +252,6 @@ def uploadDocument(request):
                 upFileName = upFile.name
                 fileType = upFile.content_type
                 docType = request.POST.get("docType")
-                print(dest + upFileName)
                 if os.path.isfile(dest + upFileName):
                     error = "A file with the name " + upFileName + " already exists"
                 elif docType == 'Assignment' and document.objects.filter(course_id = cid, category_id = 7).count() > 14:
