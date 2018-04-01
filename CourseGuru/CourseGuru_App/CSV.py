@@ -3,10 +3,12 @@ import io
 
 from django.http import HttpResponse
 from django.contrib.auth.models import User
-from django.core.mail import send_mail
 
 from CourseGuru_App.models import courseusers
-from CourseGuru import settings
+from CourseGuru_App.models import course
+from CourseGuru_App.sendEmail import *
+from CourseGuru_App.validate import *
+
 
 def downloadCSV():
     file = HttpResponse(content_type='text/csv')
@@ -18,19 +20,6 @@ def downloadCSV():
     writer.writerow(["User3 Email"])
     writer.writerow(["..."])
     return file
-def sendEmailExistingUser(courseName, email):
-    send_mail(subject='You Have Been Added To ' + courseName, 
-              message='Hello there, you have been added to ' + courseName + 'please click the link to be directed to the login page.', 
-              from_email=settings.EMAIL_HOST_USER, 
-              recipient_list=email, 
-              fail_silently =False)
-    
-def sendEmailNonExistingUser(courseName, email):
-    send_mail('You Have Been Added To ' + courseName, 
-              'Hello there, you have been added to ' + courseName + '.\nHowever our records indicate that you do not currently have an account. Please click the following link to be directed to a page where you can create an account.', 
-              from_email=settings.EMAIL_HOST_USER, 
-              recipient_list=email, 
-              fail_silently =False)
     
 def readCSV(csvFile, cid):
     csvF = csvFile.read().decode()
@@ -46,6 +35,7 @@ def readCSV(csvFile, cid):
     str2 = " users will need to create an account: "
     strNotAdded = ""
     notAddedUsers = []
+    addedUsers = []
     numUserNotAdded=0
     
     #Adds students according to the csv content. If DictReader is changed code below must be edited.            
@@ -55,12 +45,35 @@ def readCSV(csvFile, cid):
                 addUser = User.objects.get(email = n['email'])
                 if (courseusers.objects.filter(user_id = addUser.id, course_id = cid).exists()==False):
                     courseusers.objects.create(user_id = addUser.id, course_id = cid)
+                    addedUsers.append(n['email'])
             else: 
                 notAddedUsers.append(n['email']) 
                 numUserNotAdded+=1   
                 strNotAdded = str1 + str(numUserNotAdded) + str2
         except KeyError: 
             return 'CSV header error! Please make sure CSV file contain "Email" as the header for all of the emails.'
+    
+    #sending out emails to the added users  
+    cName = course.objects.get(id = cid)
+    sendEmailExistingUser(cName.courseName, addedUsers)
+    for n in not addedUsers: 
+        notRegistered = 'No-Credential'
+        userName = autoCredential()
+        while userName == User.objects.filter(username = userName).exists():
+            userName = autoCredential()
+        password = autoCredential()
+        newUser = User.objects.create_user(userName, n['email'], password) 
+        newUser.first_name = notRegistered
+        newUser.last_name = notRegistered
+        newUser.status = notRegistered
+        newUser.save()
+        addUser = User.objects.get(email = n)
+        courseusers.objects.create(user_id = addUser.id, course_id = cid)
+        sendEmailNonExistingUser(cName.courseName, n, userName, password)
+    
+
+    
+    
     #creates a list of none existing users.         
     if(len(notAddedUsers)>0):
         for n in notAddedUsers:

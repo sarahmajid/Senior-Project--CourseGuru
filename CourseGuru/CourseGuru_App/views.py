@@ -45,10 +45,12 @@ from CourseGuru_App.validate import *
 from CourseGuru_App.botFunctions import *
 from CourseGuru_App.tasks import queuePublish
 from CourseGuru_App.viewFuncs import *
+from CourseGuru_App.sendEmail import *
 
 from builtins import str
 from pip._vendor.requests.api import post
 from botocore.vendored.requests.api import request
+#from pywin.dialogs.login import newpassword
 
 
 
@@ -75,6 +77,9 @@ def index(request):
             if newAct == "1":
                 newAct = "Account successfully created"
                 return render(request, 'CourseGuru_App/index.html',{'newAct': newAct}) 
+            elif newAct =='2':
+                newAct = "Account successfully updated"
+                return render(request, 'CourseGuru_App/index.html',{'newAct': newAct}) 
             return render(request, 'CourseGuru_App/index.html')
 
 def account(request):
@@ -98,7 +103,7 @@ def account(request):
                 errorMsg =  passwordValidator(psword)
                 return render(request, 'CourseGuru_App/account.html', {'errorMsg': errorMsg,'fname': firstname, 'lname': lastname, 'status': stat, 'email': email})
             if User.objects.filter(username = username).exists():
-                errorMsg = "Username taken"
+                errorMsg = "Username taken" 
             else:
                 newUser = User.objects.create_user(username, email, psword) 
                 newUser.first_name = firstname
@@ -109,13 +114,64 @@ def account(request):
         return render(request, 'CourseGuru_App/account.html', {'errorMsg': errorMsg, 'fname': firstname, 'lname': lastname, 'status': stat, 'email': email})
     else:
         return render(request, 'CourseGuru_App/account.html', {'status': stat})    
-    
+
+def editAccount(request):
+    if request.user.is_authenticated:
+        curUser = request.user
+        stat = 'Student'
+        if request.method == "POST":
+            if request.POST.get('Logout') == "Logout":
+                logout(request)
+                return HttpResponseRedirect('/')
+            oldusername = request.POST.get('oldusername')
+            oldpassword = request.POST.get('oldpassword')
+            firstname = request.POST.get('firstname')
+            lastname = request.POST.get('lastname')
+            username = request.POST.get('username')
+            psword = request.POST.get('password')
+            cpsword = request.POST.get('cpassword')
+            stat = request.POST.get('status')
+            email = curUser.email  
+            if authenticate(username=oldusername, password=oldpassword) is not None:
+                if (psword != cpsword):
+                    errorMsg = 'Password Mismatch'
+                elif (oldpassword == psword or oldusername == username):
+                    errorMsg = 'New password or username can not be the same as the old password or username!'      
+                elif (emailValidator(email) == False): 
+                    errorMsg = "Invalid Email Address!"
+                elif(psword == username):
+                    errorMsg = "Username and Password can not be the same!"
+                else:
+                    if (passwordValidator(psword) != None):
+                        errorMsg =  passwordValidator(psword)
+                        return render(request, 'CourseGuru_App/editAccount.html', {'errorMsg': errorMsg,'fname': firstname, 'lname': lastname, 'status': stat, 'email': email})
+                    if User.objects.filter(username = username).exists():
+                        errorMsg = "Username taken" 
+                    else:
+                        newUserInfo = User.objects.get(email = email) 
+                        newUserInfo.username = username 
+                        newUserInfo.set_password(psword)
+                        newUserInfo.first_name = firstname
+                        newUserInfo.last_name = lastname
+                        newUserInfo.status = stat
+                        newUserInfo.save()
+                        return HttpResponseRedirect('/?newAct=2')  
+            else: 
+                errorMsg = "Could not verify old username and password."
+            return render(request, 'CourseGuru_App/editAccount.html', {'errorMsg': errorMsg, 'user': curUser})
+        else:
+            return render(request, 'CourseGuru_App/editAccount.html', {'user': curUser})    
+    else:
+        return render(request, 'CourseGuru_App/editAccount.html')
+   
 def courses(request):
     if request.user.is_authenticated:
         if request.method == "POST":
             if request.POST.get('Logout') == "Logout":
                 logout(request)
                 return HttpResponseRedirect('/')
+            elif request.POST.get('Edit') == 'Edit': 
+                return HttpResponseRedirect('/editAccount/')
             elif 'del' in request.POST:
                 #Deletes the course selected and all questions, answers, and ratings associated with it
                 cid = request.POST.get('del')
@@ -141,19 +197,35 @@ def roster(request):
             if request.POST.get('Logout') == "Logout":
                 logout(request)
                 return HttpResponseRedirect('/')
+            elif request.POST.get('Edit') == 'Edit': 
+                return HttpResponseRedirect('/editAccount/')
             if 'newUser' in request.POST:
                 newUser = request.POST.get('newUser')
-                if User.objects.filter(username = newUser).exists():
-                    addUser = User.objects.get(username = newUser)
+                if User.objects.filter(email = newUser).exists():
+                    addUser = User.objects.get(email = newUser)
                     if courseusers.objects.filter(user_id = addUser.id, course_id = cid).exists():
                         credentialmismatch = "User is already in the course"
                         return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'credentialmismatch': credentialmismatch, 'studentList': studentList})
                     else:
                         userAdded = "User has been successfully added to the course"
                         courseusers.objects.create(user_id = addUser.id, course_id = cid)
+                        sendEmailExistingUser(cName.courseName, newUser)
                         return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'userAdded': userAdded, 'studentList': studentList})
                 else:
-                    credentialmismatch = "Username does not exist"
+                    credentialmismatch = "Email address not yet registered. We have sent an email asking the individual to register."
+                    notRegistered = 'No-Credential'
+                    userName = autoCredential()
+                    while userName == User.objects.filter(username = userName).exists():
+                        userName = autoCredential()
+                    password = autoCredential()
+                    addUser = User.objects.create_user(userName, newUser, password) 
+                    addUser.first_name = notRegistered
+                    addUser.last_name = notRegistered
+                    addUser.status = notRegistered
+                    addUser.save()
+                    addUser = User.objects.get(email = newUser)
+                    courseusers.objects.create(user_id = addUser.id, course_id = cid)
+                    sendEmailNonExistingUser(cName.courseName, newUser, userName, password)
                     return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'credentialmismatch': credentialmismatch, 'studentList': studentList})
              
             elif 'delete' in request.POST:
@@ -198,6 +270,8 @@ def question(request):
             if request.POST.get('Logout') == "Logout":
                 logout(request)
                 return HttpResponseRedirect('/')
+            elif request.POST.get('Edit') == 'Edit': 
+                return HttpResponseRedirect('/editAccount/')
             elif 'del' in request.POST:
                 qid = request.POST.get('del')
                 delQuestion(qid)
@@ -244,6 +318,8 @@ def uploadDocument(request):
             if request.POST.get('Logout') == "Logout":
                 logout(request)
                 return HttpResponseRedirect('/')
+            elif request.POST.get('Edit') == 'Edit': 
+                return HttpResponseRedirect('/editAccount/')
             elif 'del' in request.POST:
                 fid = request.POST.get('del')
                 delFile(fid)
@@ -305,6 +381,8 @@ def publish(request):
             if request.POST.get('Logout') == "Logout":
                 logout(request)
                 return HttpResponseRedirect('/')
+            elif request.POST.get('Edit') == 'Edit': 
+                return HttpResponseRedirect('/editAccount/')
             ques = request.POST.get('NQ')
             comm = request.POST.get('NQcom')
             #questionDate = genDate()
@@ -334,6 +412,8 @@ def publishAnswer(request):
             if request.POST.get('Logout') == "Logout":
                 logout(request)
                 return HttpResponseRedirect('/')
+            elif request.POST.get('Edit') == 'Edit': 
+                return HttpResponseRedirect('/editAccount/')
             ans = request.POST.get('NQcom')
             user = request.user
             answers.objects.create(answer = ans, user_id = user.id, question_id = qid)             
@@ -352,6 +432,8 @@ def publishCourse(request):
             if request.POST.get('Logout') == "Logout":
                 logout(request)
                 return HttpResponseRedirect('/')
+            elif request.POST.get('Edit') == 'Edit': 
+                return HttpResponseRedirect('/editAccount/')
             newCourse = request.POST.get('NC')
             #cType = request.POST.get('cType')
             user = request.user

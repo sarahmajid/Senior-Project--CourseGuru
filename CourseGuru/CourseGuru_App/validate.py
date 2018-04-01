@@ -6,6 +6,7 @@ Created on Mar 11, 2018
 import re 
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
+from django.contrib.auth.models import User
 
 def passwordValidator(password):
     passRegCheck = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)"
@@ -25,4 +26,7 @@ def emailValidator(email):
     except ValidationError:
         return False     
 
-    
+def autoCredential():
+    genCredential = User.objects.make_random_password(8)
+    print(genCredential)
+    return genCredential    
