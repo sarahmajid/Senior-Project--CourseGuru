@@ -268,7 +268,7 @@ def uploadDocument(request):
                         delFile(file.id, dest)
                     catID = category.objects.get(intent = docType)
                     newFile = document(docfile = upFile, uploaded_by_id = user.id, course_id = cid, category_id = catID.id, file_name = upFileName)
-                    newFile.save()
+#                    newFile.save()
                     #if upFileName.endswith('.doc'):
                     #    docToDocx(dest, upFileName)
                     courseFile = newFile.docfile.read()

@@ -78,8 +78,8 @@
 				<form method="POST" action="" enctype="multipart/form-data">
 					{% csrf_token %}
 					<label style="font-size: 16px; color: grey; font-family: century gothic;">Upload a course file for the Chatbot to learn: </label><br>
-					<span style="color:grey;">Upload a Syllabus or up to fifteen Assignments or Lectures.<br>Files must be in .pdf or .docx format.</span><br><br>
-					<input type="file" name="courseFile" required style="border: 1px solid grey; padding: 10px;"><br><br>
+					<span style="color:grey;">Upload a Syllabus or up to fifteen Assignments or Lectures.<br>Files must be in .pdf, pptx, or .docx format.</span><br><br>
+					<input type="file" name="courseFile" style="border: 1px solid grey; padding: 10px;" required = "required"><br><br>
 					<label style="font-size: 16px; color: grey; font-family: century gothic;">What type of course file is this?: </label><br>
 					<select name="docType" id="docType" class="form-control select-short" required="required" >
 						<option></option>
