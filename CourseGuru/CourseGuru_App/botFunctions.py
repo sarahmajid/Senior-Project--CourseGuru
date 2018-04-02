@@ -7,6 +7,7 @@ from nltk.tokenize.moses import MosesDetokenizer
 import spacy
 from nltk.corpus import wordnet
 from spacy.lang.en.stop_words import STOP_WORDS
+from CourseGuru_App.luisRun import *
 
 
 def cbAnswer(nq, courseID=0, chatWindow=False):
@@ -32,7 +33,6 @@ def cbAnswer(nq, courseID=0, chatWindow=False):
     #for a in synStr['noun']['syn']:
     #    print(a)
 
-    
     luisEntities = []
     nlp = spacy.load('en')
     #regex = re.compile('[^a-zA-Z]')

@@ -87,24 +87,24 @@
 								{% csrf_token %}
 								<button type="submit" class="btn-link" name="download" value="{{s.id}}" >{{s.file_name}}</button>
 							</form>
-							<br><br>
 						{% endfor %}
+						<br>
 						<h3><b><u>Assignments</u></b></h3>
 						{% for a in aFiles %}
 							<form method="POST" action="" style="padding: 10px 0;">
 								{% csrf_token %}
 								<button type="submit" class="btn-link" name="download" value="{{a.id}}" >{{a.file_name}}</button>
 							</form>
-							<br><br>
 						{% endfor %}
+						<br>
 						<h3><b><u>Lectures</u></b></h3>
 						{% for l in lFiles %}
 							<form method="POST" action="" style="padding: 10px 0;">
 								{% csrf_token %}
 								<button type="submit" class="btn-link" name="download" value="{{l.id}}" >{{l.file_name}}</button>
 							</form>
-							<br><br>
 						{% endfor %}
+						<br>
 					</div>
 				</td>
 			</tr>
