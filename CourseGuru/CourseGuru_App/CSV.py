@@ -5,10 +5,8 @@ from django.http import HttpResponse
 from django.contrib.auth.models import User
 
 from CourseGuru_App.models import courseusers
-from CourseGuru_App.models import course
-from CourseGuru_App.sendEmail import *
-from CourseGuru_App.validate import *
-
+from CourseGuru_App.sendEmail import sendEmailExistingUser
+from CourseGuru_App.createTempUser import createUser
 
 def downloadCSV():
     file = HttpResponse(content_type='text/csv')
@@ -21,7 +19,7 @@ def downloadCSV():
     writer.writerow(["..."])
     return file
     
-def readCSV(csvFile, cid):
+def readCSV(csvFile, courseId, courseName):
     csvF = csvFile.read().decode()
     #sniffing for the delimiter in csv
     sniffer = csv.Sniffer().sniff(csvF)         
@@ -43,8 +41,8 @@ def readCSV(csvFile, cid):
         try:
             if(User.objects.filter(email = n['email'])):
                 addUser = User.objects.get(email = n['email'])
-                if (courseusers.objects.filter(user_id = addUser.id, course_id = cid).exists()==False):
-                    courseusers.objects.create(user_id = addUser.id, course_id = cid)
+                if (courseusers.objects.filter(user_id = addUser.id, course_id = courseId).exists()==False):
+                    courseusers.objects.create(user_id = addUser.id, course_id = courseId)
                     addedUsers.append(n['email'])
             else: 
                 notAddedUsers.append(n['email']) 
@@ -54,25 +52,25 @@ def readCSV(csvFile, cid):
             return 'CSV header error! Please make sure CSV file contain "Email" as the header for all of the emails.'
     
     #sending out emails to the added users  
-    cName = course.objects.get(id = cid)
-    sendEmailExistingUser(cName.courseName, addedUsers)
-    for n in not addedUsers: 
-        notRegistered = 'No-Credential'
-        userName = autoCredential()
-        while userName == User.objects.filter(username = userName).exists():
-            userName = autoCredential()
-        password = autoCredential()
-        newUser = User.objects.create_user(userName, n['email'], password) 
-        newUser.first_name = notRegistered
-        newUser.last_name = notRegistered
-        newUser.status = notRegistered
-        newUser.save()
-        addUser = User.objects.get(email = n)
-        courseusers.objects.create(user_id = addUser.id, course_id = cid)
-        sendEmailNonExistingUser(cName.courseName, n, userName, password)
-    
-
-    
+    for n in addedUsers: 
+        sendEmailExistingUser(courseName, n)
+    for n in notAddedUsers: 
+        createUser(n, courseId, courseName)
+        #=======================================================================
+        # notRegistered = 'No-Credential'
+        # userName = autoCredential()
+        # while userName == User.objects.filter(username = userName).exists():
+        #     userName = autoCredential()
+        # password = autoCredential()
+        # newUser = User.objects.create_user(userName, n, password) 
+        # newUser.first_name = notRegistered
+        # newUser.last_name = notRegistered
+        # newUser.status = notRegistered
+        # newUser.save()
+        # addUser = User.objects.get(email = n)
+        # courseusers.objects.create(user_id = addUser.id, course_id = cid)
+        # sendEmailNonExistingUser(cName.courseName, n, userName, password)
+        #=======================================================================
     
     #creates a list of none existing users.         
     if(len(notAddedUsers)>0):

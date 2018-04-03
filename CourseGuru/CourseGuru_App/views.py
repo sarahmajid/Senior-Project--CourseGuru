@@ -46,6 +46,7 @@ from CourseGuru_App.botFunctions import *
 from CourseGuru_App.tasks import queuePublish
 from CourseGuru_App.viewFuncs import *
 from CourseGuru_App.sendEmail import *
+from CourseGuru_App.createTempUser import createUser
 
 from builtins import str
 from pip._vendor.requests.api import post
@@ -213,19 +214,22 @@ def roster(request):
                         return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'userAdded': userAdded, 'studentList': studentList})
                 else:
                     credentialmismatch = "Email address not yet registered. We have sent an email asking the individual to register."
-                    notRegistered = 'No-Credential'
-                    userName = autoCredential()
-                    while userName == User.objects.filter(username = userName).exists():
-                        userName = autoCredential()
-                    password = autoCredential()
-                    addUser = User.objects.create_user(userName, newUser, password) 
-                    addUser.first_name = notRegistered
-                    addUser.last_name = notRegistered
-                    addUser.status = notRegistered
-                    addUser.save()
-                    addUser = User.objects.get(email = newUser)
-                    courseusers.objects.create(user_id = addUser.id, course_id = cid)
-                    sendEmailNonExistingUser(cName.courseName, newUser, userName, password)
+                    createUser(newUser, cid, cName.courseName)
+                    #===========================================================
+                    #notRegistered = 'No-Credential'
+                    # userName = autoCredential()
+                    # while userName == User.objects.filter(username = userName).exists():
+                    #     userName = autoCredential()
+                    # password = autoCredential()
+                    # addUser = User.objects.create_user(userName, newUser, password) 
+                    # addUser.first_name = notRegistered
+                    # addUser.last_name = notRegistered
+                    # addUser.status = notRegistered
+                    # addUser.save()
+                    # addUser = User.objects.get(email = newUser)
+                    # courseusers.objects.create(user_id = addUser.id, course_id = cid)
+                    # sendEmailNonExistingUser(cName.courseName, newUser, userName, password)
+                    #===========================================================
                     return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'credentialmismatch': credentialmismatch, 'studentList': studentList})
              
             elif 'delete' in request.POST:
@@ -238,9 +242,9 @@ def roster(request):
                 response = downloadCSV()
                 return response
             elif request.method == 'POST' and request.FILES['csvFile']:
-                #decoding the file for reading 
+                #getting file and reading it
                 csvF = request.FILES['csvFile']
-                strNotAdded = readCSV(csvF, cid)
+                strNotAdded = readCSV(csvF, cid, cName.courseName)
                 return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'studentList': studentList, 'notAdded': strNotAdded})
             else:
                 credentialmismatch = "Username does not exist"
