@@ -29,7 +29,7 @@
 				<li>
 					<a class="side-panel-button" href="/roster/?cid={{course.id}}">Class Roster</a>
 				</li>
-				{% if user.status == "Teacher" %}
+				{% if user.status == "Teacher" or user.status == "TA" %}
 				<li> 
 					<a class="side-panel-button" href="/uploadDocument/?cid={{course.id}}">Upload Document</a>
 				</li>
@@ -67,7 +67,7 @@
 			</tr>
 			<tr>
 				<td style="padding:5px; font-size: 26px; color: #444; font-family: century gothic;">
-					{{course.courseName}} Course Files
+					{{course.courseName}} - Files
 				</td>
 				
 			</tr>
@@ -80,7 +80,7 @@
 			<tr>
 				<td style="padding: 10px; font-size: 18px; color: grey; font-family: century gothic;">
 					<br>
-					<div>
+					<div style="float: left; padding-right: 20%;">
 						<h3><b><u>Syllabus</u></b></h3>
 						{% for s in sFiles %}
 							<form method="POST" action="" style="padding: 10px 0;">
@@ -88,7 +88,8 @@
 								<button type="submit" class="btn-link" name="download" value="{{s.id}}" >{{s.file_name}}</button>
 							</form>
 						{% endfor %}
-						<br>
+					</div>
+					<div style="float: left; padding-right: 20%;">
 						<h3><b><u>Assignments</u></b></h3>
 						{% for a in aFiles %}
 							<form method="POST" action="" style="padding: 10px 0;">
@@ -96,7 +97,8 @@
 								<button type="submit" class="btn-link" name="download" value="{{a.id}}" >{{a.file_name}}</button>
 							</form>
 						{% endfor %}
-						<br>
+					</div>
+					<div style="float: left; padding-right: 20%;">
 						<h3><b><u>Lectures</u></b></h3>
 						{% for l in lFiles %}
 							<form method="POST" action="" style="padding: 10px 0;">
@@ -104,7 +106,6 @@
 								<button type="submit" class="btn-link" name="download" value="{{l.id}}" >{{l.file_name}}</button>
 							</form>
 						{% endfor %}
-						<br>
 					</div>
 				</td>
 			</tr>

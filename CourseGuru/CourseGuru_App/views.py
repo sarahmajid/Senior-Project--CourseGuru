@@ -240,7 +240,7 @@ def uploadDocument(request):
         error = ""
         success = ""
         dest =  settings.MEDIA_ROOT + "/documents/" + cid + "/"
-        if not course.objects.filter(user_id = user.id, id = cid).exists():
+        if not course.objects.filter(user_id = user.id, id = cid).exists() and (courseusers.objects.filter(user_id = user.id, id = cid).exists() and user.status == "TA"):
             return redirect('courses')
         if request.method == "POST":
             if request.POST.get('Logout') == "Logout":
@@ -298,7 +298,7 @@ def courseFiles(request):
         cid = request.GET.get('cid', '')
         curCourse = course.objects.get(id = cid)
         user = request.user
-        if not course.objects.filter(user_id = user.id, id = cid).exists():
+        if not courseusers.objects.filter(user_id = user.id, course_id = cid).exists() and not course.objects.filter(user_id = user.id, id = cid).exists():
             return redirect('courses')
         if request.method == "POST":
             if request.POST.get('Logout') == "Logout":

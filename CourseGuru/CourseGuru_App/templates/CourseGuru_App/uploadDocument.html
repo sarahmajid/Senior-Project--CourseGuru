@@ -29,7 +29,7 @@
 				<li>
 					<a class="side-panel-button" href="/roster/?cid={{courseID}}">Class Roster</a>
 				</li>
-				{% if user.status == "Teacher" %}
+				{% if user.status == "Teacher" or user.status == "TA" %}
 				<li> 
 					<a class="side-panel-button" href="/uploadDocument/?cid={{courseID}}">Upload Document</a>
 				</li>

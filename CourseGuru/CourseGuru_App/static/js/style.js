@@ -9,6 +9,7 @@ $(document).ready(function() {
 	
 	$("Form").submit(function() {
         $("#login-btn").attr("disabled", true);
+        $("#chkType").attr("disabled", true);
         return true;
     });
 	
