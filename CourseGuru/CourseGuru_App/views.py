@@ -45,8 +45,8 @@ from CourseGuru_App.validate import *
 from CourseGuru_App.botFunctions import *
 from CourseGuru_App.tasks import queuePublish
 from CourseGuru_App.viewFuncs import *
-from CourseGuru_App.sendEmail import *
-from CourseGuru_App.createTempUser import createUser
+from CourseGuru_App.sendEmail import sendEmailExistingUser
+from CourseGuru_App.createUsersFunctions import createNewUser, createTempUser, updateUserInfo
 
 from builtins import str
 from pip._vendor.requests.api import post
@@ -106,11 +106,7 @@ def account(request):
             if User.objects.filter(username = username).exists():
                 errorMsg = "Username taken" 
             else:
-                newUser = User.objects.create_user(username, email, psword) 
-                newUser.first_name = firstname
-                newUser.last_name = lastname
-                newUser.status = stat
-                newUser.save()
+                createNewUser(username, email, psword, firstname, lastname, stat)
                 return HttpResponseRedirect('/?newAct=1')  
         return render(request, 'CourseGuru_App/account.html', {'errorMsg': errorMsg, 'fname': firstname, 'lname': lastname, 'status': stat, 'email': email})
     else:
@@ -149,13 +145,7 @@ def editAccount(request):
                     if User.objects.filter(username = username).exists():
                         errorMsg = "Username taken" 
                     else:
-                        newUserInfo = User.objects.get(email = email) 
-                        newUserInfo.username = username 
-                        newUserInfo.set_password(psword)
-                        newUserInfo.first_name = firstname
-                        newUserInfo.last_name = lastname
-                        newUserInfo.status = stat
-                        newUserInfo.save()
+                        updateUserInfo(username, email, psword, firstname, lastname, stat)
                         return HttpResponseRedirect('/?newAct=2')  
             else: 
                 errorMsg = "Could not verify old username and password."
@@ -214,22 +204,9 @@ def roster(request):
                         return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'userAdded': userAdded, 'studentList': studentList})
                 else:
                     credentialmismatch = "Email address not yet registered. We have sent an email asking the individual to register."
-                    createUser(newUser, cid, cName.courseName)
-                    #===========================================================
-                    #notRegistered = 'No-Credential'
-                    # userName = autoCredential()
-                    # while userName == User.objects.filter(username = userName).exists():
-                    #     userName = autoCredential()
-                    # password = autoCredential()
-                    # addUser = User.objects.create_user(userName, newUser, password) 
-                    # addUser.first_name = notRegistered
-                    # addUser.last_name = notRegistered
-                    # addUser.status = notRegistered
-                    # addUser.save()
-                    # addUser = User.objects.get(email = newUser)
-                    # courseusers.objects.create(user_id = addUser.id, course_id = cid)
-                    # sendEmailNonExistingUser(cName.courseName, newUser, userName, password)
-                    #===========================================================
+                    createTempUser(newUser, cid, cName.courseName)
+                    addUser = User.objects.get(email = newUser)
+                    courseusers.objects.create(user_id = addUser.id, course_id = cid)
                     return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'credentialmismatch': credentialmismatch, 'studentList': studentList})
              
             elif 'delete' in request.POST:
