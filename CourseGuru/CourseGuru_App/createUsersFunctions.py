@@ -6,7 +6,6 @@ from CourseGuru_App.sendEmail import sendEmailNonExistingUser
 
 def autoCredential():
     genCredential = User.objects.make_random_password(8)
-    print(genCredential)
     return genCredential  
 
 def createTempUser(userEmail, courseId, courseName):

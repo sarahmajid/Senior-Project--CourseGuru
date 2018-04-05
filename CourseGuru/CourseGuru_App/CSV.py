@@ -6,7 +6,7 @@ from django.contrib.auth.models import User
 
 from CourseGuru_App.models import courseusers
 from CourseGuru_App.sendEmail import sendEmailExistingUser
-from CourseGuru_App.createTempUser import createUser
+from CourseGuru_App.createUsersFunctions import createTempUser
 
 def downloadCSV():
     file = HttpResponse(content_type='text/csv')
@@ -55,22 +55,7 @@ def readCSV(csvFile, courseId, courseName):
     for n in addedUsers: 
         sendEmailExistingUser(courseName, n)
     for n in notAddedUsers: 
-        createUser(n, courseId, courseName)
-        #=======================================================================
-        # notRegistered = 'No-Credential'
-        # userName = autoCredential()
-        # while userName == User.objects.filter(username = userName).exists():
-        #     userName = autoCredential()
-        # password = autoCredential()
-        # newUser = User.objects.create_user(userName, n, password) 
-        # newUser.first_name = notRegistered
-        # newUser.last_name = notRegistered
-        # newUser.status = notRegistered
-        # newUser.save()
-        # addUser = User.objects.get(email = n)
-        # courseusers.objects.create(user_id = addUser.id, course_id = cid)
-        # sendEmailNonExistingUser(cName.courseName, n, userName, password)
-        #=======================================================================
+        createTempUser(n, courseId, courseName)
     
     #creates a list of none existing users.         
     if(len(notAddedUsers)>0):
