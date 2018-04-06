@@ -1,4 +1,4 @@
-import nltk, re
+import nltk, re, tempfile
 from nltk.corpus import stopwords
 from nltk.tokenize.moses import MosesDetokenizer
 
@@ -10,7 +10,10 @@ from CourseGuru_App.models import course
 from CourseGuru_App.models import botanswers
 from CourseGuru_App.models import User
 from CourseGuru_App.models import document
+from CourseGuru_App.models import category
 from CourseGuru_App.luisRun import teachLuis
+from CourseGuru_App.pdfParser import pdfToText
+from CourseGuru_App.docxParser import docxParser
 from django.conf import settings
 import os.path
 
@@ -105,6 +108,26 @@ def newRating(rate, answerID, userID):
     record = answers.objects.get(id = answerID)
     record.rating = (uprateCt - downrateCt)
     record.save()
+    
+def fileUpload(cid, docType, upFile, upFileName, fileType, user):
+    if docType == 'Syllabus' and document.objects.filter(course_id = cid, category_id = 6).exists():
+        file = document.objects.get(course_id = cid, category_id = 6)
+        delFile(file.id)
+    catID = category.objects.get(intent = docType)
+    newFile = document(docfile = upFile, uploaded_by_id = user.id, course_id = cid, category_id = catID.id, file_name = upFileName)
+    newFile.save()
+    
+    #if upFileName.endswith('.doc'):
+    #    docToDocx(dest, upFileName)
+    courseFile = newFile.docfile.read()
+    f = tempfile.TemporaryFile('r+b')
+    f.write(courseFile)    
+                        
+    if upFileName.endswith('.docx') and fileType == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+        docxParser(f, cid, catID, newFile.id)
+    else:
+        pdfToText(f, cid, catID, newFile.id, docType)
+    newFile.docfile.close()
     
 def docToDocx(dest, upFileName):
     pythoncom.CoInitialize()

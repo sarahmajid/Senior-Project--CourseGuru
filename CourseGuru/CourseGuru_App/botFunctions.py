@@ -45,6 +45,7 @@ def cbAnswer(nq, courseID=0, chatWindow=False):
 #             z += 1
 
 #NLTK/SPACY METHOD
+    nq = nq.replace('-',' ')
     detokenizer = MosesDetokenizer()
     ent_list = nltk.word_tokenize(nq)
     #NLTK Stop Word Removal
@@ -60,7 +61,7 @@ def cbAnswer(nq, courseID=0, chatWindow=False):
     for ind,ent in enumerate(ent_list):
         doc = nlp(ent)
         entTemp = regex.sub('', doc[0].lemma_)
-        if entTemp != '':
+        if entTemp != '' and len(entTemp) > 2:
             luisEntities.append(entTemp)
             if entTemp != doc[0].text:
                 luisEntities.append(doc[0].text)

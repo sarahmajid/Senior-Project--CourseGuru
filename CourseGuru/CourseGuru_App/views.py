@@ -232,7 +232,6 @@ from django.conf import settings
 from django.core.files import File
 
 def uploadDocument(request):
-
     if request.user.is_authenticated:
         cid = request.GET.get('cid', '')
         cName = course.objects.get(id = cid)
@@ -254,7 +253,7 @@ def uploadDocument(request):
                 upFileName = upFile.name
                 fileType = upFile.content_type
                 docType = request.POST.get("docType")
-                print(dest + upFileName)
+                print(dest + upFileName)   
                 if os.path.isfile(dest + upFileName):
                     error = "A file with the name " + upFileName + " already exists"
                 elif docType == 'Assignment' and document.objects.filter(course_id = cid, category_id = 7).count() > 14:
@@ -262,24 +261,7 @@ def uploadDocument(request):
                 elif docType == 'Lecture' and document.objects.filter(course_id = cid, category_id = 8).count() > 14:
                     error = "You've reached the maximum number of lectures for this course. (15)"    
                 elif (upFileName.endswith('.docx') and fileType == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') or (upFileName.endswith('.pdf') and fileType == 'application/pdf'):
-                    if docType == 'Syllabus' and document.objects.filter(course_id = cid, category_id = 6).exists():
-                        file = document.objects.get(course_id = cid, category_id = 6)
-                        delFile(file.id)
-                    catID = category.objects.get(intent = docType)
-                    newFile = document(docfile = upFile, uploaded_by_id = user.id, course_id = cid, category_id = catID.id, file_name = upFileName)
-                    newFile.save()
-                    
-                    #if upFileName.endswith('.doc'):
-                    #    docToDocx(dest, upFileName)
-                    courseFile = newFile.docfile.read()
-                    f = tempfile.TemporaryFile('r+b')
-                    f.write(courseFile)    
-                                        
-                    if upFileName.endswith('.docx') and fileType == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
-                        docxParser(f, cid, catID, newFile.id)
-                    else:
-                        pdfToText(f, cid, catID, newFile.id, docType)
-                    newFile.docfile.close()
+                    fileUpload(cid, docType, upFile, upFileName, fileType, user)
                     success = 'Course file successfully uploaded.'
                 else:
                     error = 'Course file must be in docx or pdf format.'
