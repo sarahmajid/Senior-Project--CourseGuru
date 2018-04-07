@@ -53,7 +53,8 @@ def readCSV(csvFile, courseId, courseName):
     
     #sending out emails to the added users  
     for n in addedUsers: 
-        sendEmailExistingUser(courseName, n)
+        userInfo = User.objects.get(email = n)
+        sendEmailExistingUser(courseName, userInfo)
     for n in notAddedUsers: 
         createTempUser(n, courseId, courseName)
     

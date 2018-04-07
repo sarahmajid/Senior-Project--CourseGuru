@@ -4,16 +4,20 @@ from CourseGuru_App.models import courseusers
 from CourseGuru_App.sendEmail import sendEmailNonExistingUser
 
 
-def autoCredential():
+def autoGenUsernameCredential():
+    username = User.objects.make_random_password(8, 'abcdefghijklmnopqrstuvwxyz0123456789')
+    return username
+
+def autoGenPasswordCredential():
     genCredential = User.objects.make_random_password(8)
     return genCredential  
 
 def createTempUser(userEmail, courseId, courseName):
     notRegistered = 'No-Credential'
-    userName = autoCredential()
+    userName = autoGenUsernameCredential()
     while userName == User.objects.filter(username = userName).exists():
-        userName = autoCredential()
-    password = autoCredential()
+        userName = autoGenUsernameCredential()
+    password = autoGenPasswordCredential()
     createNewUser(userName, userEmail, password, notRegistered, notRegistered, notRegistered)
     addUser = User.objects.get(email = userEmail)
     courseusers.objects.create(user_id = addUser.id, course_id = courseId)

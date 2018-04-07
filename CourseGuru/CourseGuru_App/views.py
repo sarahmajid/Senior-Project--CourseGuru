@@ -64,7 +64,7 @@ def index(request):
         if request.method == "POST":
             submit = request.POST.get('submit')
             if (submit == "Login"): 
-                usname = request.POST.get('username')
+                usname = request.POST.get('username').lower()
                 psword = request.POST.get('password')
                 user = authenticate(username=usname, password=psword)
                 if user is not None:
@@ -86,9 +86,9 @@ def index(request):
 def account(request):
     stat = 'Student'
     if request.method == "POST":
-        firstname = request.POST.get('firstname')
-        lastname = request.POST.get('lastname')
-        username = request.POST.get('username')
+        firstname = request.POST.get('firstname').strip()
+        lastname = request.POST.get('lastname').strip()
+        username = request.POST.get('username').lower()
         psword = request.POST.get('password')
         cpsword = request.POST.get('cpassword')
         stat = request.POST.get('status')
@@ -122,9 +122,9 @@ def editAccount(request):
                 return HttpResponseRedirect('/')
             oldusername = request.POST.get('oldusername')
             oldpassword = request.POST.get('oldpassword')
-            firstname = request.POST.get('firstname')
-            lastname = request.POST.get('lastname')
-            username = request.POST.get('username')
+            firstname = request.POST.get('firstname').strip()
+            lastname = request.POST.get('lastname').strip()
+            username = request.POST.get('username').lower()
             psword = request.POST.get('password')
             cpsword = request.POST.get('cpassword')
             stat = request.POST.get('status')
@@ -200,7 +200,7 @@ def roster(request):
                     else:
                         userAdded = "User has been successfully added to the course"
                         courseusers.objects.create(user_id = addUser.id, course_id = cid)
-                        sendEmailExistingUser(cName.courseName, newUser)
+                        sendEmailExistingUser(cName.courseName, addUser)
                         return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'userAdded': userAdded, 'studentList': studentList})
                 else:
                     credentialmismatch = "Email address not yet registered. We have sent an email asking the individual to register."
@@ -415,7 +415,7 @@ def publishCourse(request):
                 return HttpResponseRedirect('/')
             elif request.POST.get('Edit') == 'Edit': 
                 return HttpResponseRedirect('/editAccount/')
-            newCourse = request.POST.get('NC')
+            newCourse = request.POST.get('NC').strip()
             #cType = request.POST.get('cType')
             user = request.user
             if course.objects.filter(courseName = newCourse, user_id = user.id).exists():

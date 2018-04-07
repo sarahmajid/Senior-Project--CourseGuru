@@ -107,7 +107,7 @@ def newRating(rate, answerID, userID):
     record = answers.objects.get(id = answerID)
     record.rating = (uprateCt - downrateCt)
     record.save()
-    
+
 #===============================================================================
 # def docToDocx(dest, upFileName):
 #     pythoncom.CoInitialize()
