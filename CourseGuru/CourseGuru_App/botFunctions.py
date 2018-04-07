@@ -4,7 +4,7 @@ from CourseGuru_App.models import category, botanswers
 from nltk.corpus import stopwords
 from nltk.tokenize.moses import MosesDetokenizer
 
-import spacy
+import spacy 
 from nltk.corpus import wordnet
 from spacy.lang.en.stop_words import STOP_WORDS
 from CourseGuru_App.luisRun import *

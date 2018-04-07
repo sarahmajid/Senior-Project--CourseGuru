@@ -14,6 +14,7 @@ from CourseGuru_App.models import category
 from CourseGuru_App.luisRun import teachLuis
 from CourseGuru_App.pdfParser import pdfToText
 from CourseGuru_App.docxParser import docxParser
+from CourseGuru_App.pptxParser import parsePPTX
 from django.conf import settings
 import os.path
 
@@ -108,7 +109,7 @@ def newRating(rate, answerID, userID):
     record = answers.objects.get(id = answerID)
     record.rating = (uprateCt - downrateCt)
     record.save()
-    
+
 def fileUpload(cid, docType, upFile, upFileName, fileType, user):
     if docType == 'Syllabus' and document.objects.filter(course_id = cid, category_id = 6).exists():
         file = document.objects.get(course_id = cid, category_id = 6)
@@ -124,9 +125,11 @@ def fileUpload(cid, docType, upFile, upFileName, fileType, user):
     f.write(courseFile)    
                         
     if upFileName.endswith('.docx') and fileType == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
-        docxParser(f, cid, catID, newFile.id)
-    else:
+        docxParser(f, cid, catID, newFile.id, docType)
+    elif upFileName.endswith('.pdf') and fileType == 'application/pdf':
         pdfToText(f, cid, catID, newFile.id, docType)
+    else: 
+        parsePPTX(upFile, cid, catID, newFile.id, docType)
     newFile.docfile.close()
     
 def docToDocx(dest, upFileName):

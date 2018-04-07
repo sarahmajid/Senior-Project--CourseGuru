@@ -36,6 +36,7 @@ from CourseGuru_App.luisRun import teachLuis
 from CourseGuru_App.natLang import reformQuery
 from CourseGuru_App.pdfParser import *
 from CourseGuru_App.docxParser import *
+from CourseGuru_App.pptxParser import *
 from CourseGuru_App.CSV import *
 from CourseGuru_App.luisRun import publishLUIS
 from CourseGuru_App.catQuestion import *
@@ -45,9 +46,9 @@ from CourseGuru_App.tasks import queuePublish
 from CourseGuru_App.viewFuncs import *
 
 from builtins import str
-from _overlapped import NULL
 from pip._vendor.requests.api import post
 from botocore.vendored.requests.api import request
+
 
 
 #Function to populate Main page
