@@ -21,4 +21,5 @@ urlpatterns = [
     path('reset-password/done/', password_reset_done,  {'template_name': 'CourseGuru_App/emailedPassMessage.html'}, name='password_reset_done'),
     path('reset-password/confirm/<uidb64>/<token>/', password_reset_confirm,  {'template_name': 'CourseGuru_App/newPassword.html'}, name='password_reset_confirm'),
     path('reset-password/complete/', password_reset_complete, {'template_name': 'CourseGuru_App/passwordResetComplete.html'}, name='password_reset_complete'),
+    path('courseFiles/', views.courseFiles, name='courseFiles'),
 ]

@@ -35,4 +35,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('/uploadDocument/', include('CourseGuru_App.urls')),
     path('/editAccount/', include('CourseGuru_App.urls')),
+    path('/courseFiles/', include('CourseGuru_App.urls')),
     ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

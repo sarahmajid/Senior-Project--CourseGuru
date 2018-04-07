@@ -29,22 +29,15 @@
 				<li>
 					<a class="side-panel-button" href="/roster/?cid={{courseID}}">Class Roster</a>
 				</li>
-				{% if user.status == "Teacher" %}
+				{% if user.status == "Teacher" or user.status == "TA" %}
 				<li> 
 					<a class="side-panel-button" href="/uploadDocument/?cid={{courseID}}">Upload Document</a>
 				</li>
 				{% endif %}
+				<li>
+					<a class="side-panel-button" href="/courseFiles/?cid={{courseID}}">Course Files</a>
+				</li>
 			</ul>
-			
-			<div class="LiveChat">	
-				<h4 class="LiveChat-head">Amesite Chatbot</h4>	
-				<div id="CWindow">
-				
-				</div>
-				<div id="InpArea">	
-					<input type="text" class="form-control Form" id="inp" name="cb" maxlength="180">
-				</div>
-			</div>
 		</div>
 		
 		<table class="head-table">
@@ -145,8 +138,18 @@
     				</table>
 				</td>
 			</tr>
-
 		</table>
+		
+		<div class="LiveChat">	
+			<button id="LiveChat-close">Amesite Chatbot</button>	
+			<div id="CWindow">
+				<div class="botmsgContainer"><p>Ask me anything about the course!</p><br><div class="msgBotLabel">Chatbot</div></div>
+			</div>
+			<div id="InpArea">	
+				<input type="text" class="form-control Form" id="inp" name="cb" maxlength="180">
+			</div>
+		</div>
+		<button id="LiveChat-open">Amesite Chatbot<span class="circle"><p>1</p></span></button>
 		
 		<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
 		<script src="{% static 'js/style.js' %}"></script>

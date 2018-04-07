@@ -37,6 +37,7 @@ def parsedToDB(data, header, cid, catID, fileid):
     
     dbAnswer = header + data
     data = data.replace('<br>',' ')
+    header = header.replace("-",'')
     data = regex.sub('', data)
     data_list = nltk.word_tokenize(data)
     data = [word for word in data_list if word not in stopwords.words('english')]

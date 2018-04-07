@@ -285,7 +285,6 @@ def question(request):
         return HttpResponseRedirect('/')
 
 def uploadDocument(request):
-
     if request.user.is_authenticated:
         cid = request.GET.get('cid', '')
         cName = course.objects.get(id = cid)
@@ -293,7 +292,7 @@ def uploadDocument(request):
         error = ""
         success = ""
         dest =  settings.MEDIA_ROOT + "/documents/" + cid + "/"
-        if not course.objects.filter(user_id = user.id, id = cid).exists():
+        if not course.objects.filter(user_id = user.id, id = cid).exists() and (courseusers.objects.filter(user_id = user.id, id = cid).exists() and user.status == "TA"):
             return redirect('courses')
         if request.method == "POST":
             if request.POST.get('Logout') == "Logout":
@@ -309,35 +308,15 @@ def uploadDocument(request):
                 upFileName = upFile.name
                 fileType = upFile.content_type
                 docType = request.POST.get("docType")
+
                 if os.path.isfile(dest + upFileName):
                     error = "A file with the name " + upFileName + " already exists"
                 elif docType == 'Assignment' and document.objects.filter(course_id = cid, category_id = 7).count() > 14:
                     error = "You've reached the maximum number of assignments for this course. (15)"
                 elif docType == 'Lecture' and document.objects.filter(course_id = cid, category_id = 8).count() > 14:
                     error = "You've reached the maximum number of lectures for this course. (15)"    
-                elif (upFileName.endswith('.docx') and fileType == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') or (upFileName.endswith('.pdf') and fileType == 'application/pdf') or (upFileName.endswith('.pptx') and fileType == 'application/vnd.openxmlformats-officedocument.presentationml.presentation'):
-                    if docType == 'Syllabus' and document.objects.filter(course_id = cid, category_id = 6).exists():
-                        file = document.objects.get(course_id = cid, category_id = 6)
-                        delFile(file.id)
-                    catID = category.objects.get(intent = docType)
-                    newFile = document(docfile = upFile, uploaded_by_id = user.id, course_id = cid, category_id = catID.id, file_name = upFileName)
-                    newFile.save()
-                    #if upFileName.endswith('.doc'):
-                    #    docToDocx(dest, upFileName)
-                    courseFile = newFile.docfile.read()
-                    f = tempfile.TemporaryFile('r+b')
-                    f.write(courseFile)    
-                                        
-                    if upFileName.endswith('.docx') and fileType == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
-                        docxParser(f, cid, catID, newFile.id, docType)
-                    elif upFileName.endswith('.pdf') and fileType == 'application/pdf':
-                        pdfToText(f, cid, catID, newFile.id, docType)
-                    else: 
-                        parsePPTX(upFile, cid, catID, newFile.id, docType)  
-                        
-                    newFile.docfile.close()
-                    f.close()
-                    upFile.close()
+                elif (upFileName.endswith('.docx') and fileType == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') or (upFileName.endswith('.pdf') and fileType == 'application/pdf'):
+                    fileUpload(cid, docType, upFile, upFileName, fileType, user)
                     success = 'Course file successfully uploaded.'
                 else:
                     error = 'Course file must be in docx or pdf format.'
@@ -351,6 +330,33 @@ def uploadDocument(request):
     else:
         return HttpResponseRedirect('/')
     
+def courseFiles(request):
+    if request.user.is_authenticated:
+        cid = request.GET.get('cid', '')
+        curCourse = course.objects.get(id = cid)
+        user = request.user
+        if not courseusers.objects.filter(user_id = user.id, course_id = cid).exists() and not course.objects.filter(user_id = user.id, id = cid).exists():
+            return redirect('courses')
+        if request.method == "POST":
+            if request.POST.get('Logout') == "Logout":
+                logout(request)
+                return HttpResponseRedirect('/')
+            elif 'download' in request.POST:
+                fid = request.POST.get('download')
+                file = document.objects.get(id = fid)
+                fileRtn = HttpResponse(file.docfile, content_type='text/plain')
+                fileRtn['Content-Disposition'] = 'attachment; filename=%s' % file.file_name      
+                return fileRtn
+        #Syllabus files
+        sFiles = document.objects.filter(course_id = cid, category_id = 6)
+        #Assignment files
+        aFiles = document.objects.filter(course_id = cid, category_id = 7)
+        #Lecture files
+        lFiles = document.objects.filter(course_id = cid, category_id = 8)
+        return render(request, 'CourseGuru_App/courseFiles.html', {'course': curCourse, 'sFiles': sFiles, 'aFiles': aFiles, 'lFiles': lFiles})
+    else:
+        return HttpResponseRedirect('/')
+
 def publish(request):
     if request.user.is_authenticated:
         cid = request.GET.get('cid', '')

@@ -3,14 +3,26 @@ $(document).ready(function() {
     //Submits a form on enter key press
 	$("#NQ").keydown(function(e) {
         if(e.which == 13) {
-            this.form.submit();
+        	this.form.submit();
         }
 	});
 	
 	$("Form").submit(function() {
         $("#login-btn").attr("disabled", true);
+        $("#chkType").attr("disabled", true);
         return true;
     });
+	
+	$("#LiveChat-open").click(function(e) {
+		$("#LiveChat-open").hide();
+		$(".LiveChat").show();
+		$(".circle").hide();
+	});
+	
+	$("#LiveChat-close").click(function(e) {
+		$(".LiveChat").hide();
+		$("#LiveChat-open").show();
+	});
 	
 	//Changes color of upvote and rating number when clicked
 	$(".ratingArea").find("#voteUp").click(function(e) {
@@ -57,39 +69,38 @@ $(document).ready(function() {
 	
 /*	$('#submit').click(function(){ */
 	$('#inp').keydown(function(e) {
-		if(e.which == 13) {
-			
-			$("#inp").prop("readonly", true);
-			
-			var input = escape($('input#inp').val());
-			$('#inp').val('');
-			var history = $('#CWindow').html();	
-			$('#CWindow').html(history + '<div class="msgContainer" align="right"><p>' + input + '</p><br><div class="msgLabel">You</div></div>');
-			function loadGif() {
-				$('#CWindow').html(history + '<div class="msgContainer" align="right"><p>' + input + '</p><br><div class="msgLabel">You</div></div>' + '<div class="botmsgContainer"><img src="http://www.witchdoctorcomic.com/wp-content/plugins/funny-chat-bot/images/load.gif" style="max-height: 50px; max-width: 50px;" /></div>');
-				div = $('#CWindow');
-				div.scrollTop(div.prop('scrollHeight'))
-			}
-			/*Extracts url parameters*/
-			$.urlParam = function(name){
-				var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
-				return results[1] || 0;
-			}
-			function grabAnswer() {
+		if((e.which == 13) && (!$('#inp').is('[readonly]')) && $('#inp').val()) {
+				$("#inp").prop("readonly", true);
 				
-				var cid = $.urlParam('cid');
-				$.get('/chatAnswer/', {"question": input, "cid": cid}, function(data) {	
-					$('#CWindow').html(history + '<div class="msgContainer" align="right"><p>' + input + '</p><br><div class="msgLabel">You</div></div>' + '<div class="botmsgContainer"><p >' + data + '</p><br><div class="msgBotLabel">Chatbot</div></div>');			
+				var input = escape($('input#inp').val());
+				$('#inp').val('');
+				var history = $('#CWindow').html();	
+				$('#CWindow').html(history + '<div class="msgContainer" align="right"><p>' + input + '</p><br><div class="msgLabel">You</div></div>');
+				function loadGif() {
+					$('#CWindow').html(history + '<div class="msgContainer" align="right"><p>' + input + '</p><br><div class="msgLabel">You</div></div>' + '<div class="botmsgContainer"><img src="http://www.witchdoctorcomic.com/wp-content/plugins/funny-chat-bot/images/load.gif" style="max-height: 50px; max-width: 50px; margin-left: 5px;" /></div>');
 					div = $('#CWindow');
 					div.scrollTop(div.prop('scrollHeight'))
-					$("#inp").prop("readonly", false);
-				});			
-			}
-			setTimeout(loadGif, 500);
-			setTimeout(grabAnswer, 500);
-			
-			div = $('#CWindow');
-			div.scrollTop(div.prop('scrollHeight'))
+				}
+				/*Extracts url parameters*/
+				$.urlParam = function(name){
+					var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
+					return results[1] || 0;
+				}
+				function grabAnswer() {
+					
+					var cid = $.urlParam('cid');
+					$.get('/chatAnswer/', {"question": input, "cid": cid}, function(data) {	
+						$('#CWindow').html(history + '<div class="msgContainer" align="right"><p>' + input + '</p><br><div class="msgLabel">You</div></div>' + '<div class="botmsgContainer"><p >' + data + '</p><br><div class="msgBotLabel">Chatbot</div></div>');			
+						div = $('#CWindow');
+						div.scrollTop(div.prop('scrollHeight'))
+						$("#inp").prop("readonly", false);
+					});			
+				}
+				setTimeout(loadGif, 500);
+				setTimeout(grabAnswer, 500);
+				
+				div = $('#CWindow');
+				div.scrollTop(div.prop('scrollHeight'))
 		}
 	});
 	

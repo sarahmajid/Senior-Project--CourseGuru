@@ -7,6 +7,7 @@ from nltk.tokenize.moses import MosesDetokenizer
 import spacy 
 from nltk.corpus import wordnet
 from spacy.lang.en.stop_words import STOP_WORDS
+from CourseGuru_App.luisRun import *
 
 
 def cbAnswer(nq, courseID=0, chatWindow=False):
@@ -32,7 +33,6 @@ def cbAnswer(nq, courseID=0, chatWindow=False):
     #for a in synStr['noun']['syn']:
     #    print(a)
 
-    
     luisEntities = []
     nlp = spacy.load('en')
     #regex = re.compile('[^a-zA-Z]')
@@ -45,6 +45,7 @@ def cbAnswer(nq, courseID=0, chatWindow=False):
 #             z += 1
 
 #NLTK/SPACY METHOD
+    nq = nq.replace('-',' ')
     detokenizer = MosesDetokenizer()
     ent_list = nltk.word_tokenize(nq)
     #NLTK Stop Word Removal
@@ -60,7 +61,7 @@ def cbAnswer(nq, courseID=0, chatWindow=False):
     for ind,ent in enumerate(ent_list):
         doc = nlp(ent)
         entTemp = regex.sub('', doc[0].lemma_)
-        if entTemp != '':
+        if entTemp != '' and len(entTemp) > 2:
             luisEntities.append(entTemp)
             if entTemp != doc[0].text:
                 luisEntities.append(doc[0].text)

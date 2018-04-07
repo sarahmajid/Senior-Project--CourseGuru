@@ -9,6 +9,17 @@
 	background-color: #A9A9A9;
 }
 
+.btn-link {
+	background:none;
+    color:inherit;
+    border:none; 
+    padding:0;
+    margin:0;
+    font: inherit;
+    cursor: pointer;
+    outline-color: transparent;
+}
+
 #login-btn {
 	padding: 5px 15px;
 	font-size: 16px; 
@@ -94,34 +105,64 @@ li a {
 .LiveChat{
 	 position:fixed;
 	 bottom:0;
-	 left:0;
-	 height:30%;
-	 min-height: 200px;
-	 width: 300px;
+	 right:2%;
+	 height:40%;
+	 min-height: 300px;
+	 width: 400px;
 	 background-color: white;
-	 border-right: #223A5E 0.5px solid;		
+	 border: #223A5E 0.5px solid;		
 	 table-layout:fixed;	 
 	 min-width: 300px;
+	 display: none;
  }
  
-.LiveChat-head{
-	text-align: center;
-	background-color: #223A5E;
-}
+/* .LiveChat-head{ */
+/* 	text-align: center; */
+/* 	background-color: #223A5E; */
+/* 	color:white;  */
+/* 	padding: 0; */
+/* 	margin: 0; */
+/* 	display: none; */
+/* } */
  
 #CWindow {
   	text-align: left;
   	color: black;
  	width: 100%; 
- 	height: 60%; 
+ 	height: 65%; 
  	display: inline-block; 
  	overflow-y: auto;	
+ 	margin: 10px 0;
 }
  
 #InpArea {
- 	bottom: 5%; 
- 	position: absolute; 
+ 	position: relative; 
  	width:100%;
+}
+
+#LiveChat-close{
+	text-align: center;
+	background-color: #223A5E;
+	color:white; 
+	width: 100%;
+	height: 35px;
+	border: 0;
+	font-family: century gothic; 
+	font-size: 16px;
+}
+
+#LiveChat-open{
+	position: fixed;
+	right:2%;
+	bottom: 0;
+	text-align: center;
+	background-color: #223A5E;
+	color:white; 
+	width: 250px;
+	height: 40px;
+	border: 0;
+	font-family: century gothic; 
+	font-size: 16px;
 }
 
 .LiveChat .Form {
@@ -129,15 +170,39 @@ li a {
 	margin: 0 5%; 
 }
 
+.circle{
+	right: 0;
+	bottom: 5px;
+	margin: 0 5px;
+	width: 25px;
+    height: 25px;
+    background: red;
+    color: white;
+    border-radius: 50%;
+    display: inline-block;
+    position: absolute;
+    vertical-align: middle;
+}
+
+.circle p {
+	margin: 0;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
 /* LiveChat containers */
 .msgContainer {
     height:auto;
     padding-bottom: 10px;
+    margin-right: 3px;
 }
 
 .botmsgContainer {
 	height:auto;
     padding-bottom: 10px;
+    margin-left: 3px;
 }
 
 .msgContainer p {
@@ -165,14 +230,14 @@ li a {
 }
 
 .msgLabel {
-	font-size: 10px;
+	font-size: 11px;
 	color: green;
 	margin-right: 5px;
 	line-height: 5px;
 }
 
 .msgBotLabel {
-	font-size: 10px;
+	font-size: 11px;
 	color: blue;
 	margin-left: 5px;
 	line-height: 5px;
