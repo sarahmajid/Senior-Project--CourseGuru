@@ -45,9 +45,10 @@ def readCSV(csvFile, courseId, courseName):
                     courseusers.objects.create(user_id = addUser.id, course_id = courseId)
                     addedUsers.append(n['email'])
             else: 
-                notAddedUsers.append(n['email']) 
-                numUserNotAdded+=1   
-                strNotAdded = str1 + str(numUserNotAdded) + str2
+                if n['email'] not in notAddedUsers: 
+                    notAddedUsers.append(n['email']) 
+                    numUserNotAdded+=1   
+                    strNotAdded = str1 + str(numUserNotAdded) + str2
         except KeyError: 
             return 'CSV header error! Please make sure CSV file contain "Email" as the header for all of the emails.'
     

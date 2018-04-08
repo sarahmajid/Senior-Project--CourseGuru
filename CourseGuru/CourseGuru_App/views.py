@@ -315,7 +315,7 @@ def uploadDocument(request):
                     error = "You've reached the maximum number of assignments for this course. (15)"
                 elif docType == 'Lecture' and document.objects.filter(course_id = cid, category_id = 8).count() > 14:
                     error = "You've reached the maximum number of lectures for this course. (15)"    
-                elif (upFileName.endswith('.docx') and fileType == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') or (upFileName.endswith('.pdf') and fileType == 'application/pdf'):
+                elif (upFileName.endswith('.docx') and fileType == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') or (upFileName.endswith('.pdf') and fileType == 'application/pdf') or (upFileName.endswith('.pptx') and fileType == 'application/vnd.openxmlformats-officedocument.presentationml.presentation'):
                     fileUpload(cid, docType, upFile, upFileName, fileType, user)
                     success = 'Course file successfully uploaded.'
                 else:
