@@ -3,12 +3,11 @@ from nltk.stem.wordnet import WordNetLemmatizer
 from CourseGuru_App.models import category, botanswers
 from nltk.corpus import stopwords
 from nltk.tokenize.moses import MosesDetokenizer
+from nltk.corpus import wordnet
 
 import spacy 
-from nltk.corpus import wordnet
 from spacy.lang.en.stop_words import STOP_WORDS
 from CourseGuru_App.luisRun import *
-
 
 def cbAnswer(nq, courseID=0, chatWindow=False):
     r = requests.get('https://eastus.api.cognitive.microsoft.com/luis/v2.0/apps/6059c365-d88a-412b-8f33-d7393ba3bf9f?subscription-key=d0c059aabdca45679b36ed0351d4f83b&verbose=true&timezoneOffset=0&q=%s' % nq)
@@ -66,6 +65,11 @@ def cbAnswer(nq, courseID=0, chatWindow=False):
             if entTemp != doc[0].text:
                 luisEntities.append(doc[0].text)
         
+    for ent in luisEntities:
+        syn = wordnet.synsets(ent)
+        if len(syn):
+            temp = syn[0].name().partition('.')[0]
+            print(temp)
     luisEntities = [word for word in luisEntities if word not in stopwords.words('english')]
     
     if luisEntities == [] and chatWindow == True:
