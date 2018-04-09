@@ -27,6 +27,8 @@ The purpose of Amesite Chat Responder (ACR) is to have students become more invo
 11. pip install botocore
 12. pip install redis
 13. pip install python-pptx
+14. pip install django-cleanup
+15. 
 
 ## Setup 
 

@@ -38,19 +38,25 @@ def parsePPTX(file, cid, catID, fileid, docType):
     for slide in parseFile.slides:
         title= slide.shapes.title.text_frame.text
         dataArray.append(title+'<br>')
-#testing PRP   
-#        print(title + '<br>'+"=============")
         for shape in slide.shapes:
             if shape.has_text_frame:
-                for paragraph in shape.text_frame.paragraphs:
-                    if paragraph.text != '' and paragraph.text != title:
-                        text = paragraph.text
-                        if paragraph.text == '.':
-                            dataArray[-1] += '' + (text)
-                        else: 
-                            dataArray[-1] += ' ' + (text) + '<br>'
-#testing PRP   
-#                            print(text)
+                if shape.is_placeholder == True and 'FOOTER' not in str(shape.placeholder_format.type):
+                    for paragraph in shape.text_frame.paragraphs:
+                        if paragraph.text != '' and paragraph.text != title:
+                            text = paragraph.text
+                            if paragraph.text == '.':
+                                dataArray[-1] += '' + (text)
+                            else: 
+                                dataArray[-1] += ' ' + (text) + '<br>'
+                else:
+                    for paragraph in shape.text_frame.paragraphs:
+                        if paragraph.text != '' and paragraph.text != title:
+                            text = paragraph.text
+                            if paragraph.text == '.':
+                                dataArray[-1] += '' + (text)
+                            else: 
+                                dataArray[-1] += ' ' + (text) + '<br>'
+                                
             elif shape.has_table:
                 table = shape.table
                 
