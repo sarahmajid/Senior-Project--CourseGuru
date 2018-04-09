@@ -70,7 +70,7 @@ def docxParser(docxFile, cid, catID, fileid, docType):
                         if data != "" and header != "":
                             while(header[-1:] == ':' or header[-1:] == ' '):
                                 header = header[:-1]
-                            #header = header + ': '  
+                            header = header + ' : '  
                             #UNCOMMENT THIS LINE FOR TESTING
                             #####print(header + data + '\n')
                             #COMMENT THIS LINE FOR TESTING

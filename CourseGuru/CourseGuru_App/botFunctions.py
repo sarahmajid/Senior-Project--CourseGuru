@@ -32,27 +32,16 @@ def cbAnswer(nq, courseID=0, chatWindow=False):
     #for a in synStr['noun']['syn']:
     #    print(a)
 
+    ent_list = []
     luisEntities = []
     nlp = spacy.load('en')
     #regex = re.compile('[^a-zA-Z]')
-
-#LUIS ENTITY METHOD
-#         z = 0
-#         for x in luisStr['entities']:
-#             newEnt = luisStr['entities'][z]['entity']
-#             luisEntities.append(newEnt)
-#             z += 1
-
-#NLTK/SPACY METHOD
-    nq = nq.replace('-',' ').lower()
-    detokenizer = MosesDetokenizer()
-    ent_list = nltk.word_tokenize(nq)
-    #Spacy Stop Word Removal
-    for ind,ent in enumerate(ent_list):
-        if ent in STOP_WORDS and ent != 'name':
-            del ent_list[ind]
     
-    detokenizer.detokenize(ent_list, return_str=True)
+    if luisIntent != "Other":
+        ent_list = entityMethod(nq, luisStr)
+    else:
+        ent_list = spacyMethod(nq)
+        
     #Removes punctuation from string
     regex = re.compile('[%s]' % re.escape(string.punctuation))
     for ind,ent in enumerate(ent_list):
@@ -66,7 +55,7 @@ def cbAnswer(nq, courseID=0, chatWindow=False):
                 if entTemp != doc[0].text:
                     luisEntities.append(doc[0].text) 
         
-    luisEntities = [word for word in luisEntities if word not in stopwords.words('english')]
+#    luisEntities = [word for word in luisEntities if word not in stopwords.words('english')]
     
     if luisEntities == [] and chatWindow == True:
         return("Sorry, I don't know the answer to that.")
@@ -96,6 +85,32 @@ def cbAnswer(nq, courseID=0, chatWindow=False):
 
     botAns = entAnswer
     return(botAns)
+
+def entityMethod(nq, luisStr):
+    #LUIS ENTITY METHOD
+    ent_list = []
+    z = 0
+    for x in luisStr['entities']:
+        newEnt = luisStr['entities'][z]['entity']
+        ent_list.append(newEnt)
+        z += 1
+    
+    #If entity method fails, try spacy
+    if ent_list == []:
+        ent_list = spacyMethod(nq)
+    return(ent_list)
+    
+def spacyMethod(nq):
+    #NLTK/SPACY METHOD
+    nq = nq.replace('-',' ').lower()
+    detokenizer = MosesDetokenizer()
+    ent_list = nltk.word_tokenize(nq)
+    #Spacy Stop Word Removal
+    for ind,ent in enumerate(ent_list):
+        if ent in STOP_WORDS and ent != 'name':
+            del ent_list[ind]
+    detokenizer.detokenize(ent_list, return_str=True)
+    return(ent_list)
 
 # returns a good match to entities answer object  
 def getIntentAns(luisIntent, entitiesList, courseID=0, chatWindow=False):    

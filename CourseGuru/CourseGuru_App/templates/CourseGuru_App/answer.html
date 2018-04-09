@@ -64,11 +64,11 @@
 						<form method = "POST" action="" >
 							{% csrf_token %}
 							{% if request.POST.query == None %}
-							<input type="submit" class="btn btn-primary" value="SEARCH" style="float:right;"></input>
-							<input type="text" class="form-control" name="query" placeholder="Search Posts" style="float: right; width:20%; margin-right: 10px;"></input>
+							<input type="submit" class="btn btn-primary" value="SEARCH" style="float:right; border-radius: 0 5px 5px 0"></input>
+							<input type="text" class="form-control" name="query" placeholder="Search Posts" style="float: right; width:20%; border-radius: 5px 0 0 5px"></input>
 							{% else %}
-							<input type="submit" class="btn btn-primary" value="SEARCH" style="float:right;"></input>
-							<input type="text" class="form-control" name="query" placeholder="Search Posts" value="{{request.POST.query}}" style="float: right; width:20%; margin-right: 10px;"></input>
+							<input type="submit" class="btn btn-primary" value="SEARCH" style="float:right; border-radius: 0 5px 5px 0"></input>
+							<input type="text" class="form-control" name="query" placeholder="Search Posts" value="{{request.POST.query}}" style="float: right; width:20%; border-radius: 5px 0 0 5px"></input>
 							{% endif %}
 						</form>
 					</div>
@@ -157,7 +157,7 @@
 								&nbsp;<button type="submit" onclick="return confirm('Are you sure you want to mark this as the best answer?')" class="btn btn-success" name="resolve" value="{{a.id}}">Resolve</button>
 							{% endif %}
 							{% if user.id == a.user.id or user.status == "Teacher" %}
-							&nbsp;<button type="submit" onclick="return confirm('Are you sure you want to delete this answer?')" class="btn btn-danger" name="delAns" value="{{a.id}}">Delete</button>
+							&nbsp;<button type="submit" onclick="return confirm('Are you sure you want to delete this answer?')" class="btn btn-danger" style="margin-top: -10px; border-radius: 0 0 10px 10px;" name="delAns" value="{{a.id}}">Delete</button>
 							{% endif %}
 						</form>	
 					</div>
