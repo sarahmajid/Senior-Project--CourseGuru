@@ -23,7 +23,7 @@ def cbAnswer(nq, courseID=0, chatWindow=False):
         return
     #If there is no intent, the question does not get answered
     elif luisIntent == "None" and chatWindow == True:
-        return("Sorry, I didn't understand that.")
+        return("Sorry, I don't know the answer to that.")
     elif luisIntent == "None":
         return
     
@@ -44,36 +44,32 @@ def cbAnswer(nq, courseID=0, chatWindow=False):
 #             z += 1
 
 #NLTK/SPACY METHOD
-    nq = nq.replace('-',' ')
+    nq = nq.replace('-',' ').lower()
     detokenizer = MosesDetokenizer()
     ent_list = nltk.word_tokenize(nq)
-    #NLTK Stop Word Removal
-    ent_list = [word for word in ent_list if word not in stopwords.words('english')]
     #Spacy Stop Word Removal
     for ind,ent in enumerate(ent_list):
-        if ent in STOP_WORDS:
+        if ent in STOP_WORDS and ent != 'name':
             del ent_list[ind]
-        
+    
     detokenizer.detokenize(ent_list, return_str=True)
     #Removes punctuation from string
     regex = re.compile('[%s]' % re.escape(string.punctuation))
     for ind,ent in enumerate(ent_list):
-        doc = nlp(ent)
-        entTemp = regex.sub('', doc[0].lemma_)
-        if entTemp != '' and len(entTemp) > 2:
-            luisEntities.append(entTemp)
-            if entTemp != doc[0].text:
-                luisEntities.append(doc[0].text)
+        if ent.isdigit():
+            luisEntities.append(ent_list[ind-1] + ' ' + ent)
+        else:
+            doc = nlp(ent)
+            entTemp = regex.sub('', doc[0].lemma_)
+            if entTemp != '' and len(entTemp) > 2:
+                luisEntities.append(entTemp)
+                if entTemp != doc[0].text:
+                    luisEntities.append(doc[0].text) 
         
-    for ent in luisEntities:
-        syn = wordnet.synsets(ent)
-        if len(syn):
-            temp = syn[0].name().partition('.')[0]
-            print(temp)
     luisEntities = [word for word in luisEntities if word not in stopwords.words('english')]
     
     if luisEntities == [] and chatWindow == True:
-        return("Sorry, I didn't understand that.")
+        return("Sorry, I don't know the answer to that.")
     elif luisEntities == []:
         return
     
@@ -121,6 +117,9 @@ def getIntentAns(luisIntent, entitiesList, courseID=0, chatWindow=False):
         for ent in entitiesList:
             if ent.lower() in m.entities.lower():
                 Match += 1
+            exactMatch = re.findall('\\b' + ent.lower() +'\\b', m.entities.lower())
+            if len(exactMatch) > 0:
+                Match += 1
         Accuracy = (Match/ansLen)
         if (Accuracy > count or Match > bestMatch) and not Match < bestMatch:
             count = Accuracy
@@ -129,6 +128,6 @@ def getIntentAns(luisIntent, entitiesList, courseID=0, chatWindow=False):
                 bestMatch = Match
             
     if answr == "" and chatWindow == True:
-        answr = "Sorry, I didn't understand that."
+        answr = "Sorry, I don't know the answer to that."
     
     return (answr) 

@@ -159,6 +159,7 @@ def pdfToText(file, cid, catID, fileid, docType):
 
         #num = False
         data = ""
+        head = ""
         for page in doc.get_pages():
             read_position = retstr.tell()
             interpreter.process_page(page)
@@ -175,8 +176,14 @@ def pdfToText(file, cid, catID, fileid, docType):
                         if c.isdigit() and ind < len(word)-1:
                             if word[ind+1] == '.':
                                 #print(data)
-                                parsedToDB(data, cid, catID, fileid)     
-                                data = 'Question ' + word
+                                tempStr = data.replace('<br>', '')
+                                while(tempStr[-1:] == ' '):
+                                    tempStr = tempStr[:-1]
+                                if tempStr != "":
+                                    data = head + ' ' + data
+                                    parsedToDB(data, cid, catID, fileid)     
+                                head = 'Question ' + word
+                                data = ""
                                 #num = True
                                 skip = True
                                 break
@@ -188,6 +195,7 @@ def pdfToText(file, cid, catID, fileid, docType):
 
         if data != "":
             #print(data)
+            data = head + ' ' + data
             parsedToDB(data, cid, catID, fileid)          
         file.close() 
 
@@ -195,6 +203,10 @@ def parsedToDB(data, cid, catID, fileid):
     file = document.objects.get(id = fileid)
     fileName = file.file_name
     fileName = fileName.split(".")[0]   
+    tempName = re.split('(\d+)',fileName)
+    fileName = ""
+    for part in tempName:
+        fileName += (' ' + part)
     
     detokenizer = MosesDetokenizer()
     regex = re.compile('[^a-zA-Z0-9 \n\.]')
@@ -206,7 +218,7 @@ def parsedToDB(data, cid, catID, fileid):
     data_list = nltk.word_tokenize(data)
     data = [word for word in data_list if word not in stopwords.words('english')]
     detokenizer.detokenize(data, return_str=True)
-    dbInfo = " ".join(data)    
+    dbInfo = " ".join(data).lower()  
     botanswers.objects.create(answer = dbAnswer, rating = 0, category_id = catID.id, entities = dbInfo, course_id = cid, file_id = fileid)
 
 

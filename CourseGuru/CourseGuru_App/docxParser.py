@@ -61,15 +61,6 @@ def docxParser(docxFile, cid, catID, fileid, docType):
                     if re.match(r'^\s*$', words.text) or words.text == ':':
                         exit
                     elif wInd > 0:
-                        #This commented out portion looks for bold words in the middle of a paragraph. Does not work correctly yet.
-#                         if newHead == False:
-#                             while(header[-1:] == ':' or header[-1:] == ' '):
-#                                 header = header[:-1]
-#                             header = header + ': '  
-#                             print(header + data + '\n')
-#                             data = ""
-#                             header = words.text
-#                             newHead = True
                         if n.runs[wInd - 1].text in header:
                             header = header + ' '.join(words.text.split())      
                             #newHead = True
@@ -79,7 +70,7 @@ def docxParser(docxFile, cid, catID, fileid, docType):
                         if data != "" and header != "":
                             while(header[-1:] == ':' or header[-1:] == ' '):
                                 header = header[:-1]
-                            header = header + ': '  
+                            #header = header + ': '  
                             #UNCOMMENT THIS LINE FOR TESTING
                             #####print(header + data + '\n')
                             #COMMENT THIS LINE FOR TESTING
@@ -101,9 +92,11 @@ def docxParser(docxFile, cid, catID, fileid, docType):
                     header = header[:-1]
                 header = header + ': '    
             else:
+                #Checking for blank lines
                 if n.text=="":
                     exit            
                 else:
+                    #Grab text if it is not in the header
                     tempHeader = header
                     tempText = ' '.join(n.text.split())
                     while(tempHeader[-1:] == ':' or tempHeader[-1:] == ' '):

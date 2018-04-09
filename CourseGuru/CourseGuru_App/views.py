@@ -267,11 +267,11 @@ def uploadDocument(request):
                 else:
                     error = 'Course file must be in docx or pdf format.'
         #Syllabus files
-        sFiles = document.objects.filter(course_id = cid, category_id = 6)
+        sFiles = document.objects.filter(course_id = cid, category_id = 6).order_by('pk')
         #Assignment files
-        aFiles = document.objects.filter(course_id = cid, category_id = 7)
+        aFiles = document.objects.filter(course_id = cid, category_id = 7).order_by('pk')
         #Lecture files
-        lFiles = document.objects.filter(course_id = cid, category_id = 8)
+        lFiles = document.objects.filter(course_id = cid, category_id = 8).order_by('pk')
         return render(request, 'CourseGuru_App/uploadDocument.html', {'courseID': cid, 'courseName': cName, 'error': error, 'success': success, 'sFiles': sFiles, 'aFiles': aFiles, 'lFiles': lFiles})
     else:
         return HttpResponseRedirect('/')
