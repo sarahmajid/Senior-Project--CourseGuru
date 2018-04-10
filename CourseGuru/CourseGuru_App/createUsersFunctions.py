@@ -12,13 +12,15 @@ def autoGenPasswordCredential():
     genCredential = User.objects.make_random_password(8)
     return genCredential  
 
-def createTempUser(userEmail, courseId, courseName):
+def createTempUser(userEmail, courseId, courseName, stat):
     notRegistered = 'No-Credential'
     userName = autoGenUsernameCredential()
     while userName == User.objects.filter(username = userName).exists():
         userName = autoGenUsernameCredential()
     password = autoGenPasswordCredential()
-    createNewUser(userName, userEmail, password, notRegistered, notRegistered, notRegistered)
+    if stat == '':
+        stat = 'Student' 
+    createNewUser(userName, userEmail, password, notRegistered, notRegistered, stat)
     addUser = User.objects.get(email = userEmail)
     courseusers.objects.create(user_id = addUser.id, course_id = courseId)
     sendEmailNonExistingUser(courseName, userEmail, userName, password)

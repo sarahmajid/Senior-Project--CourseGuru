@@ -55,17 +55,8 @@
 						<input type="text" name="email" class="form-control" value="{{user.email}}" required="required" disabled maxlength="50" style="width: 100%;"></input><br>
 						<label style="font-size: 16px; color: grey; font-family: century gothic;">Status: </label><br>
 						{% csrf_token %}
-						<select name="status" class="form-control select-short" required="required" >
+						<select name="status" class="form-control select-short" required="required" disabled >
 							<option>{{user.status}}</option>
-							{% if user.status != "Student"%}
-							<option value="Student">Student</option>
-							{%endif%}
-							{% if user.status != "Teaching Assistant"%}
-							<option value="TA">Teaching Assistant</option>
-							{%endif%}
-							{% if user.status != "Instructor"%}
-							<option value="Teacher">Instructor</option>
-							{%endif%}
 						</select><br><br>
 						<hr>
 						<br>

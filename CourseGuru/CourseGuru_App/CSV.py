@@ -12,11 +12,11 @@ def downloadCSV():
     file = HttpResponse(content_type='text/csv')
     file['Content-Disposition'] = 'attachment; filename=CSVTemplate.csv'
     writer = csv.writer(file)
-    writer.writerow(["Email"])
-    writer.writerow(["User1 Email"])
-    writer.writerow(["User2 Email"])
-    writer.writerow(["User3 Email"])
-    writer.writerow(["..."])
+    writer.writerow(["Email", "Status"])
+    writer.writerow(["User1 Email", "TA"])
+    writer.writerow(["User2 Email", "Student"])
+    writer.writerow(["User3 Email", "Student"])
+    writer.writerow(["...", "..."])
     return file
     
 def readCSV(csvFile, courseId, courseName):
@@ -30,9 +30,11 @@ def readCSV(csvFile, courseId, courseName):
            
     #variable initialization 
     str1 = "The following "
-    str2 = " users will need to create an account: "
+    str2 = " users will need to edit their account information: "
+    str3 = " We have created accounts for them and sent them their login credentials, requesting they edit their account information."
     strNotAdded = ""
     notAddedUsers = []
+    notAddedUsersStat = []
     addedUsers = []
     numUserNotAdded=0
     
@@ -46,7 +48,8 @@ def readCSV(csvFile, courseId, courseName):
                     addedUsers.append(n['email'])
             else: 
                 if n['email'] not in notAddedUsers: 
-                    notAddedUsers.append(n['email']) 
+                    notAddedUsers.append(n['email'])
+                    notAddedUsersStat.append(n['status']) 
                     numUserNotAdded+=1   
                     strNotAdded = str1 + str(numUserNotAdded) + str2
         except KeyError: 
@@ -56,8 +59,8 @@ def readCSV(csvFile, courseId, courseName):
     for n in addedUsers: 
         userInfo = User.objects.get(email = n)
         sendEmailExistingUser(courseName, userInfo)
-    for n in notAddedUsers: 
-        createTempUser(n, courseId, courseName)
+    for i, n in enumerate(notAddedUsers): 
+        createTempUser(n, courseId, courseName, notAddedUsersStat[i])
     
     #creates a list of none existing users.         
     if(len(notAddedUsers)>0):
@@ -66,10 +69,10 @@ def readCSV(csvFile, courseId, courseName):
                 strNotAdded += n + ", "
             else:
                 if (len(notAddedUsers)==1):
-                    strNotAdded += n + "."
+                    strNotAdded += n + "." + str3
                     return strNotAdded
                 else:
-                    strNotAdded += "and " + n +"."
+                    strNotAdded += "and " + n +"." + str3
                     return strNotAdded
     else: 
         strNotAdded = "All Users Added Successfully!"        
