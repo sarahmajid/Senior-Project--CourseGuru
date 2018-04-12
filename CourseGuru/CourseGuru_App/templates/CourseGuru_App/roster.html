@@ -69,16 +69,26 @@
 		
 		<table width="70%" align="Center" style="border-spacing: 0;  float:left; margin-left: calc(300px + 5%); margin-left: -moz-calc(300px + 5%); margin-right: 5%; margin-bottom: 100px;">
 			<tr>
-				<td style="padding: 10px;">
+				<td width = "50%" style="padding: 10px;">
 					{%if user.status == "Teacher"%}
 					<form method="POST" action="" style="">
 						<h3 style="font-size: 16px; color: red; font-family: century gothic;">{{credentialmismatch}}</h3>
 						
 						<div style="font-size: 18px; color: grey; font-family: century gothic;"><b>Add a student or teaching assistant to this course</b></div>
 						<br>
+						<div>
 						<label style="font-size: 16px; color: grey; font-family: century gothic;">Student/TA Email Address: </label><br>
 						{% csrf_token %}
 						<input type="text" name="newUser" class="form-control" required="required" maxlength="30" style="width: 50%;"></input>	
+						</div>
+						<div>
+						<label style="font-size: 16px; color: grey; font-family: century gothic;">Status: </label><br>
+						{% csrf_token %}
+						<select name="status" class="form-control select-short" required="required" >
+							<option value="Student">Student</option>
+							<option value="TA">Teaching Assistant</option>
+						</select>
+						</div>
 						<br>
 						{% if userAdded %}
 						<h3 style="font-size: 16px; color: green; font-family: century gothic;">{{userAdded}}</h3>
@@ -94,6 +104,9 @@
 						{% csrf_token %}
 						<button type="submit" name="dlCSV" class="btn btn-warning" value="DOWNLOAD">Download</button>
 						<br><br>
+						<div style="font-size: 16px; color: grey; font-family: century gothic;">(Please put TA for teaching assistants and Student for students.) 
+						<div style="font-size: 16px; color: grey; font-family: century gothic;">*Leaving status cell empty defaults to student status.*
+						<br><br>
 						</div>
 					</form>
 					<form method="POST" action="" enctype="multipart/form-data">
@@ -102,15 +115,23 @@
 						<br>
 						<button type="submit" name="submit" class="btn basic-btn" id="login-btn" value="Add Multiple" >Add Multiple</button>
 					</form>	
+					{% if addedUsers != "" %}
+					<h3 style="font-size: 16px; color: green; font-family: century gothic;">{{addedUsers}}</h3>
+					{% endif %}
+					{% if createdUsers != "" %}
+					<h3 style="font-size: 16px; color: orange; font-family: century gothic;">{{createdUsers}}</h3>
+					{% if notAdded != "" %}
+					{% endif %}
 					<h3 style="font-size: 16px; color: red; font-family: century gothic;">{{notAdded}}</h3>
+					{% endif %}
 					<br>
 					{% endif %}
 					<table class="table" style="width:100%; border-collapse: collapse " >
 	  					<thead>
 		  					<tr>
 			  					<th>Username</th>
-			    				<th>Firstname</th>
-			    				<th>Lastname</th> 
+			    				<th>First Name</th>
+			    				<th>Last Name</th> 
 			    				<th>Email</th>
 		    				</tr>
 	    				</thead>

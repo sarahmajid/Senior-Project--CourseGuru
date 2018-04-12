@@ -115,7 +115,6 @@ def account(request):
 def editAccount(request):
     if request.user.is_authenticated:
         curUser = request.user
-        stat = 'Student'
         if request.method == "POST":
             if request.POST.get('Logout') == "Logout":
                 logout(request)
@@ -192,8 +191,9 @@ def roster(request):
                 return HttpResponseRedirect('/editAccount/')
             if 'newUser' in request.POST:
                 newUser = request.POST.get('newUser')
-                if User.objects.filter(email = newUser).exists():
-                    addUser = User.objects.get(email = newUser)
+                stat = request.POST.get('status')
+                addUser = User.objects.get(email = newUser)
+                if addUser.email == newUser and addUser.status == stat:
                     if courseusers.objects.filter(user_id = addUser.id, course_id = cid).exists():
                         credentialmismatch = "User is already in the course"
                         return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'credentialmismatch': credentialmismatch, 'studentList': studentList})
@@ -201,7 +201,10 @@ def roster(request):
                         userAdded = "User has been successfully added to the course"
                         courseusers.objects.create(user_id = addUser.id, course_id = cid)
                         sendEmailExistingUser(cName.courseName, addUser)
-                        return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'userAdded': userAdded, 'studentList': studentList})
+                        return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'userAdded': userAdded, 'studentList': studentList})               
+                elif addUser.email == newUser and addUser.status != stat:
+                    credentialmismatch = "The email address entered is not associated with the status chosen."
+                    return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'credentialmismatch': credentialmismatch, 'studentList': studentList})
                 else:
                     credentialmismatch = "Email address not yet registered. We have sent an email asking the individual to register."
                     createTempUser(newUser, cid, cName.courseName)
@@ -221,8 +224,11 @@ def roster(request):
             elif request.method == 'POST' and request.FILES['csvFile']:
                 #getting file and reading it
                 csvF = request.FILES['csvFile']
-                strNotAdded = readCSV(csvF, cid, cName.courseName)
-                return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'studentList': studentList, 'notAdded': strNotAdded})
+                csvMessage = readCSV(csvF, cid, cName.courseName)
+                notAdded = csvMessage[0]
+                createdUsers = csvMessage[1]
+                addedUsers = csvMessage[2]
+                return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'studentList': studentList, 'notAdded': notAdded, 'createdUsers': createdUsers, 'addedUsers': addedUsers})
             else:
                 credentialmismatch = "Username does not exist"
                 return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'credentialmismatch': credentialmismatch, 'courseName': cName})

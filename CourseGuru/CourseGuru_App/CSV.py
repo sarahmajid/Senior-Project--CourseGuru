@@ -18,7 +18,23 @@ def downloadCSV():
     writer.writerow(["User3 Email", "Student"])
     writer.writerow(["...", "..."])
     return file
-    
+
+def restructString(strMessage, userList):
+    if (len(userList)==1):
+        strMessage += userList[0]+ "."
+    elif (len(userList)==2):  
+        strMessage += userList[0]+ " and " + userList[1]
+    else:
+        for n in userList:
+            if n != userList[len(userList)-1]:
+                strMessage += n + ", "
+            else:
+                if (len(userList)==1):
+                    strMessage += n + "."
+                else:
+                    strMessage += "and " + n +"."
+    return strMessage
+
 def readCSV(csvFile, courseId, courseName):
     csvF = csvFile.read().decode()
     #sniffing for the delimiter in csv
@@ -29,51 +45,57 @@ def readCSV(csvFile, courseId, courseName):
     reader.fieldnames = [header.strip().lower() for header in reader.fieldnames]
            
     #variable initialization 
-    str1 = "The following "
-    str2 = " users will need to edit their account information: "
-    str3 = " We have created accounts for them and sent them their login credentials, requesting they edit their account information."
-    strNotAdded = ""
+    strNotAdded = "We were not able to add the following user(s) because the status of the email provided did not match the status of the user: "
+    strCreatedUser = "We have created accounts and sent login credentials, via email, for the following user(s) requesting that they edit their account information as soon as possible. "
+    strExistingUser = "We have added the following users to the course: "
     notAddedUsers = []
-    notAddedUsersStat = []
+    createdUsers = []
+    createdUsersStat = []
     addedUsers = []
-    numUserNotAdded=0
     
     #Adds students according to the csv content. If DictReader is changed code below must be edited.            
     for n in reader:
         try:
             if(User.objects.filter(email = n['email'])):
                 addUser = User.objects.get(email = n['email'])
-                if (courseusers.objects.filter(user_id = addUser.id, course_id = courseId).exists()==False):
-                    courseusers.objects.create(user_id = addUser.id, course_id = courseId)
-                    addedUsers.append(n['email'])
+                if addUser.email == n['email'] and addUser.status == n['status']:
+                    if (courseusers.objects.filter(user_id = addUser.id, course_id = courseId).exists()==False):
+                        courseusers.objects.create(user_id = addUser.id, course_id = courseId)
+                        if n['email'] not in addedUsers: 
+                            addedUsers.append(n['email'])
+                elif addUser.email == n['email'] and addUser.status != n['status'] and n['status'] != '':
+                    if n['email'] not in notAddedUsers: 
+                        notAddedUsers.append(n['email'])
             else: 
-                if n['email'] not in notAddedUsers: 
-                    notAddedUsers.append(n['email'])
-                    notAddedUsersStat.append(n['status']) 
-                    numUserNotAdded+=1   
-                    strNotAdded = str1 + str(numUserNotAdded) + str2
+                if n['email'] not in createdUsers: 
+                    createdUsers.append(n['email'])
+                    createdUsersStat.append(n['status']) 
         except KeyError: 
-            return 'CSV header error! Please make sure CSV file contain "Email" as the header for all of the emails.'
+            return 'CSV header error! Please make sure CSV file contain "Email" and "Status" as the header for all of the rows.'
     
     #sending out emails to the added users  
     for n in addedUsers: 
         userInfo = User.objects.get(email = n)
         sendEmailExistingUser(courseName, userInfo)
-    for i, n in enumerate(notAddedUsers): 
-        createTempUser(n, courseId, courseName, notAddedUsersStat[i])
+    for i, n in enumerate(createdUsers): 
+        createTempUser(n, courseId, courseName, createdUsers[i])
     
     #creates a list of none existing users.         
-    if(len(notAddedUsers)>0):
-        for n in notAddedUsers:
-            if n != notAddedUsers[len(notAddedUsers)-1]:
-                strNotAdded += n + ", "
-            else:
-                if (len(notAddedUsers)==1):
-                    strNotAdded += n + "." + str3
-                    return strNotAdded
-                else:
-                    strNotAdded += "and " + n +"." + str3
-                    return strNotAdded
+    if len(notAddedUsers)>0:
+        strNotAdded = restructString(strNotAdded, notAddedUsers)
+    else:
+        strNotAdded = ''
+
+    if len(createdUsers)>0:
+        strCreatedUser = restructString(strCreatedUser, createdUsers)
     else: 
-        strNotAdded = "All Users Added Successfully!"        
-        return strNotAdded
+        strCreatedUser = '' 
+    
+    if len(addedUsers)>0:    
+        strExistingUser = restructString(strExistingUser, addedUsers)
+    else: 
+        strExistingUser = ''   
+         
+   
+    
+    return (strNotAdded, strCreatedUser, strExistingUser)
