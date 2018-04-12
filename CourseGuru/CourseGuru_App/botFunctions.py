@@ -125,6 +125,7 @@ def getIntentAns(luisIntent, entitiesList, courseID=0, chatWindow=False):
         filtAns = botanswers.objects.filter(category_id = catgry.id)
     
     bestMatch = 0
+    merit = 0
     
     for m in filtAns:
         Match = 0
@@ -136,9 +137,12 @@ def getIntentAns(luisIntent, entitiesList, courseID=0, chatWindow=False):
             if len(exactMatch) > 0:
                 Match += 1
         Accuracy = (Match/ansLen)
-        if (Accuracy > count or Match > bestMatch) and not Match < bestMatch:
+        print('Accuracy: ' + str(Accuracy))
+        print('Count: ' + str(count))
+        if (Accuracy > count or Match > bestMatch or (Accuracy > count - 0.05 and merit < m.rating)) and not Match < bestMatch:
             count = Accuracy
             answr = m.answer
+            merit = m.rating
             if Match > bestMatch:
                 bestMatch = Match
             

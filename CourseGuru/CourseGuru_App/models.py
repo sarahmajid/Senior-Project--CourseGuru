@@ -91,3 +91,4 @@ class botanswers(models.Model):
     rating = models.IntegerField(default=0)
     entities = models.CharField(max_length=5000)
     file = models.ForeignKey(document, default=0, on_delete=models.CASCADE)
+    example_id = models.IntegerField(default=0)
