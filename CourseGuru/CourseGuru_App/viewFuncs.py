@@ -76,26 +76,36 @@ def resolveQues(cid, aid, qData):
     ans.resolved = True
     ans.save()
     profRate = False
+    taRate = False
+    checked = False
     if ans.user_id != 38:
         ansRatings = userratings.objects.filter(answer_id = ans.id)
         if ans.user.status == "Teacher":
             profRate = True
+        elif ans.user.status == "TA":
+            taRate = True
         else:
             for row in ansRatings:
                 rowUser = row.user_id
                 rateUser = User.objects.get(id = rowUser)
-                if rateUser.status == "Teacher":
-                    profRate = True  
+                if rateUser.status == "Teacher" or ans.user.status == "TA":
+                    checked = True  
         rostSize = courseusers.objects.filter(course_id = cid).count()
         weight = (ans.rating / rostSize) * 100
-        if weight >= 5 or profRate:
+        if weight >= 5 or profRate or taRate or checked:
             detokenizer = MosesDetokenizer()
             data_list = nltk.word_tokenize(qData.question)
             data = [word for word in data_list if word not in stopwords.words('english')]
             detokenizer.detokenize(data, return_str=True)
             dbInfo = " ".join(data).lower()
-            botanswers.objects.create(answer = ans.answer, rating = 0, category_id = 9, entities = dbInfo, course_id = cid)
-            teachLuis(qData.question, 'Other')
+            merit = 0
+            if taRate:
+                merit = 1
+            elif profRate:
+                merit = 2
+            exampleID = teachLuis(qData.question, 'Other')
+            botanswers.objects.create(answer = ans.answer, rating = merit, category_id = 9, entities = dbInfo, course_id = cid, example_id = exampleID)
+            
             
 def newRating(rate, answerID, userID):
     if userratings.objects.filter(user_id = userID, answer_id = answerID).exists():

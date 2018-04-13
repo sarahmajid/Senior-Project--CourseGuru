@@ -19,10 +19,14 @@ def teachLuis(text, intent):
         conn.request("POST", "/luis/api/v2.0/apps/6059c365-d88a-412b-8f33-d7393ba3bf9f/versions/0.1/example?%s" % params, body, headers)
         response = conn.getresponse()
         data = response.read()
+        luisJson = json.loads(data)
         print(data)
+        exampleID = int(luisJson['ExampleId'])
         conn.close()
     except Exception as e:
-        print("[Errno {0}] {1}".format(e.errno, e.strerror))
+        print("Error when adding utterance to LUIS.")
+        return(0)
+    return(exampleID)
 
 def trainLUIS():
 
