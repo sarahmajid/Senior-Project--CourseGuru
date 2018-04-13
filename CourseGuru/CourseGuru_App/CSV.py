@@ -7,6 +7,7 @@ from django.contrib.auth.models import User
 from CourseGuru_App.models import courseusers
 from CourseGuru_App.sendEmail import sendEmailExistingUser
 from CourseGuru_App.createUsersFunctions import createTempUser
+from CourseGuru_App.validate import emailValidator
 
 def downloadCSV():
     file = HttpResponse(content_type='text/csv')
@@ -72,22 +73,23 @@ def readCSV(csvFile, courseId, courseName):
     #    Adds students according to the csv content. If DictReader is changed code below must be edited.            
     for n in reader:
         try:
-            if(User.objects.filter(email = n['email'], status = n['status'])):
+            if(User.objects.filter(email = n['email'], status = n['status']) and emailValidator(n['email']) == True):
                 addUser = User.objects.get(email = n['email'])
                 #if addUser.email == n['email'] and addUser.status == n['status']:
                 if (courseusers.objects.filter(user_id = addUser.id, course_id = courseId).exists()==False):
                     courseusers.objects.create(user_id = addUser.id, course_id = courseId)    
                     addedUsers.append(n['email'])
-            elif (User.objects.filter(email = n['email'])):
+            elif (User.objects.filter(email = n['email']) and emailValidator(n['email']) == True):
             #elif addUser.email == n['email'] and addUser.status != n['status'] and n['status'] != '':
                 addUser = User.objects.get(email = n['email'])
                 if addUser.email == n['email'] and addUser.status != n['status'] and n['status'] != '':
                     if n['email'] not in notAddedUsers: 
                         notAddedUsers.append(n['email'])
-            else: 
-                if n['email'] not in createdUsers: 
-                    createdUsers.append(n['email'])
-                    createdUsersStat.append(n['status']) 
+            else:
+                if emailValidator(n['email']) == True: 
+                    if n['email'] not in createdUsers: 
+                        createdUsers.append(n['email'])
+                        createdUsersStat.append(n['status']) 
         except KeyError: 
             return (csvHeaderError)
     

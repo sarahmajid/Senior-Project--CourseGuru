@@ -206,12 +206,13 @@ def roster(request):
                     credentialmismatch = "The email address entered is not associated with the status chosen."
                     return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'credentialmismatch': credentialmismatch, 'studentList': studentList})
                 else:
-                    credentialmismatch = "Email address not yet registered. We have sent an email asking the individual to register."
-                    createTempUser(newUser, cid, cName.courseName)
-                    addUser = User.objects.get(email = newUser)
-                    courseusers.objects.create(user_id = addUser.id, course_id = cid)
-                    return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'credentialmismatch': credentialmismatch, 'studentList': studentList})
-             
+                    if emailValidator(newUser) == True:
+                        credentialmismatch = "Email address not yet registered. We have sent an email asking the individual to register."
+                        createTempUser(newUser, cid, cName.courseName)
+                        addUser = User.objects.get(email = newUser)
+                        courseusers.objects.create(user_id = addUser.id, course_id = cid)
+                        return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'credentialmismatch': credentialmismatch, 'studentList': studentList})
+                 
             elif 'delete' in request.POST:
                 user = request.POST.get('delete')
                 rmvUser = courseusers.objects.get(id = int(user))
