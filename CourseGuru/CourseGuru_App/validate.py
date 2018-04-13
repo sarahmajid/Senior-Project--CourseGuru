@@ -7,6 +7,7 @@ import re
 from django.core.validators import validate_email
 from django.core.exceptions import ValidationError
 
+
 def passwordValidator(password):
     passRegCheck = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)"
     if (len(password)<8): 
@@ -25,4 +26,4 @@ def emailValidator(email):
     except ValidationError:
         return False     
 
-    
+  

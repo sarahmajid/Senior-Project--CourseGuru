@@ -49,6 +49,7 @@
 						    <form method="POST" action=""> 
 								{% csrf_token %}
 								<button class="head-btn" type="submit" name="Logout" value="Logout" style=" ">Logout</button>
+								<button class="head-btn" type="submit" name="Edit" value="Edit" style=" ">Edit Account</button>
 							</form>
 						  </div>
 					</div>
@@ -75,7 +76,7 @@
 						
 						<div style="font-size: 18px; color: grey; font-family: century gothic;"><b>Add a student or teaching assistant to this course:</b></div>
 						<br>
-						<label style="font-size: 16px; color: grey; font-family: century gothic;">Student/TA Username: </label><br>
+						<label style="font-size: 16px; color: grey; font-family: century gothic;">Student/TA Email Address: </label><br>
 						{% csrf_token %}
 						<input type="text" name="newUser" class="form-control" required="required" maxlength="30" style="width: 50%;"></input>	
 						<br>
