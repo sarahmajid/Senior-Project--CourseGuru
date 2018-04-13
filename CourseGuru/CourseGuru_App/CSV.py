@@ -36,34 +36,52 @@ def restructString(strMessage, userList):
     return strMessage
 
 def readCSV(csvFile, courseId, courseName):
-    csvF = csvFile.read().decode()
-    #sniffing for the delimiter in csv
-    sniffer = csv.Sniffer().sniff(csvF)         
-    #reading csv using DictReader     
-    reader = csv.DictReader(((io.StringIO(csvF))), delimiter=sniffer.delimiter)   
-    #converts all field names to lowercase
-    reader.fieldnames = [header.strip().lower() for header in reader.fieldnames]
-           
+    
     #variable initialization 
     strNotAdded = "We were not able to add the following user(s) because the status of the email provided did not match the status of the user: "
     strCreatedUser = "We have created accounts and sent login credentials, via email, for the following user(s) requesting that they edit their account information as soon as possible. "
     strExistingUser = "We have added the following users to the course: "
+    csvHeaderError = 'CSV header error! Please make sure CSV file contain "Email" and "Status" as the header for all of the rows'
+    csvCountError = 'CSV file must not contain more than 1,000 rows of data.' 
     notAddedUsers = []
     createdUsers = []
     createdUsersStat = []
     addedUsers = []
     
-    #Adds students according to the csv content. If DictReader is changed code below must be edited.            
+    csvF = csvFile.read().decode()
+    #sniffing for the delimiter in csv
+    sniffer = csv.Sniffer().sniff(csvF)         
+    #reading csv using DictReader     
+    reader = csv.DictReader(((io.StringIO(csvF))), delimiter=sniffer.delimiter)   
+        
+    #check if file contains more then 1,000 rows
+    count = len(list(reader))  
+    if count>1000:
+        return (csvCountError)
+    else:
+        csvFile.seek(0) 
+        csvF = csvFile.read().decode()
+        #sniffing for the delimiter in csv
+        sniffer = csv.Sniffer().sniff(csvF)         
+        #reading csv using DictReader     
+        reader = csv.DictReader(((io.StringIO(csvF))), delimiter=sniffer.delimiter)
+        
+    #converts all field names to lowercase
+    reader.fieldnames = [header.strip().lower() for header in reader.fieldnames]
+
+    #    Adds students according to the csv content. If DictReader is changed code below must be edited.            
     for n in reader:
         try:
-            if(User.objects.filter(email = n['email'])):
+            if(User.objects.filter(email = n['email'], status = n['status'])):
                 addUser = User.objects.get(email = n['email'])
-                if addUser.email == n['email'] and addUser.status == n['status']:
-                    if (courseusers.objects.filter(user_id = addUser.id, course_id = courseId).exists()==False):
-                        courseusers.objects.create(user_id = addUser.id, course_id = courseId)
-                        if n['email'] not in addedUsers: 
-                            addedUsers.append(n['email'])
-                elif addUser.email == n['email'] and addUser.status != n['status'] and n['status'] != '':
+                #if addUser.email == n['email'] and addUser.status == n['status']:
+                if (courseusers.objects.filter(user_id = addUser.id, course_id = courseId).exists()==False):
+                    courseusers.objects.create(user_id = addUser.id, course_id = courseId)    
+                    addedUsers.append(n['email'])
+            elif (User.objects.filter(email = n['email'])):
+            #elif addUser.email == n['email'] and addUser.status != n['status'] and n['status'] != '':
+                addUser = User.objects.get(email = n['email'])
+                if addUser.email == n['email'] and addUser.status != n['status'] and n['status'] != '':
                     if n['email'] not in notAddedUsers: 
                         notAddedUsers.append(n['email'])
             else: 
@@ -71,14 +89,14 @@ def readCSV(csvFile, courseId, courseName):
                     createdUsers.append(n['email'])
                     createdUsersStat.append(n['status']) 
         except KeyError: 
-            return 'CSV header error! Please make sure CSV file contain "Email" and "Status" as the header for all of the rows.'
+            return (csvHeaderError)
     
     #sending out emails to the added users  
     for n in addedUsers: 
         userInfo = User.objects.get(email = n)
         sendEmailExistingUser(courseName, userInfo)
     for i, n in enumerate(createdUsers): 
-        createTempUser(n, courseId, courseName, createdUsers[i])
+        createTempUser(n, courseId, courseName, createdUsersStat[i])
     
     #creates a list of none existing users.         
     if len(notAddedUsers)>0:

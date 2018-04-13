@@ -115,15 +115,15 @@
 						<br>
 						<button type="submit" name="submit" class="btn basic-btn" id="login-btn" value="Add Multiple" >Add Multiple</button>
 					</form>	
-					{% if addedUsers != "" %}
-					<h3 style="font-size: 16px; color: green; font-family: century gothic;">{{addedUsers}}</h3>
-					{% endif %}
-					{% if createdUsers != "" %}
-					<h3 style="font-size: 16px; color: orange; font-family: century gothic;">{{createdUsers}}</h3>
-					{% if notAdded != "" %}
-					{% endif %}
-					<h3 style="font-size: 16px; color: red; font-family: century gothic;">{{notAdded}}</h3>
-					{% endif %}
+						{% if addedUsers != "" %}
+						<h3 style="font-size: 16px; color: green; font-family: century gothic;">{{addedUsers}}</h3>
+						{% endif %}
+						{% if createdUsers != "" %}
+						<h3 style="font-size: 16px; color: orange; font-family: century gothic;">{{createdUsers}}</h3>
+						{% endif %}
+						{% if notAdded != "" %}
+						<h3 style="font-size: 16px; color: red; font-family: century gothic;">{{notAdded}}</h3>
+						{% endif %}
 					<br>
 					{% endif %}
 					<table class="table" style="width:100%; border-collapse: collapse " >

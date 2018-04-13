@@ -126,7 +126,7 @@ def editAccount(request):
             username = request.POST.get('username').lower()
             psword = request.POST.get('password')
             cpsword = request.POST.get('cpassword')
-            stat = request.POST.get('status')
+            stat = curUser.status
             email = curUser.email  
             if authenticate(username=oldusername, password=oldpassword) is not None:
                 if (psword != cpsword):
@@ -225,9 +225,14 @@ def roster(request):
                 #getting file and reading it
                 csvF = request.FILES['csvFile']
                 csvMessage = readCSV(csvF, cid, cName.courseName)
-                notAdded = csvMessage[0]
-                createdUsers = csvMessage[1]
-                addedUsers = csvMessage[2]
+                if isinstance(csvMessage, str):
+                    notAdded = csvMessage
+                    createdUsers = ''
+                    addedUsers = ''   
+                else:       
+                    notAdded = csvMessage[0]
+                    createdUsers = csvMessage[1]
+                    addedUsers = csvMessage[2]
                 return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'studentList': studentList, 'notAdded': notAdded, 'createdUsers': createdUsers, 'addedUsers': addedUsers})
             else:
                 credentialmismatch = "Username does not exist"
