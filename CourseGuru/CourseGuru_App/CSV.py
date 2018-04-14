@@ -13,10 +13,10 @@ def downloadCSV():
     file = HttpResponse(content_type='text/csv')
     file['Content-Disposition'] = 'attachment; filename=CSVTemplate.csv'
     writer = csv.writer(file)
-    writer.writerow(["Email", "Status"])
-    writer.writerow(["User1 Email", "TA"])
-    writer.writerow(["User2 Email", "Student"])
-    writer.writerow(["User3 Email", "Student"])
+    writer.writerow(["Email", "TA"])
+    writer.writerow(["User1(TA) Email", "1"])
+    writer.writerow(["User2 Email", ""])
+    writer.writerow(["User3(TA) Email", "1"])
     writer.writerow(["...", "..."])
     return file
 
@@ -42,7 +42,7 @@ def readCSV(csvFile, courseId, courseName):
     strNotAdded = "We were not able to add the following user(s) because the status of the email provided did not match the status of the user: "
     strCreatedUser = "We have created accounts and sent login credentials, via email, for the following user(s) requesting that they edit their account information as soon as possible. "
     strExistingUser = "We have added the following users to the course: "
-    csvHeaderError = 'CSV header error! Please make sure CSV file contain "Email" and "Status" as the header for all of the rows'
+    csvHeaderError = 'CSV header error! Please make sure CSV file contain "Email" and "TA" as the header for all of the rows. Also all emails must be in proper email format.'
     csvCountError = 'CSV file must not contain more than 1,000 rows of data.' 
     notAddedUsers = []
     createdUsers = []
@@ -73,23 +73,29 @@ def readCSV(csvFile, courseId, courseName):
     #    Adds students according to the csv content. If DictReader is changed code below must be edited.            
     for n in reader:
         try:
-            if(User.objects.filter(email = n['email'], status = n['status']) and emailValidator(n['email']) == True):
-                addUser = User.objects.get(email = n['email'])
-                #if addUser.email == n['email'] and addUser.status == n['status']:
-                if (courseusers.objects.filter(user_id = addUser.id, course_id = courseId).exists()==False):
-                    courseusers.objects.create(user_id = addUser.id, course_id = courseId)    
-                    addedUsers.append(n['email'])
-            elif (User.objects.filter(email = n['email']) and emailValidator(n['email']) == True):
-            #elif addUser.email == n['email'] and addUser.status != n['status'] and n['status'] != '':
-                addUser = User.objects.get(email = n['email'])
-                if addUser.email == n['email'] and addUser.status != n['status'] and n['status'] != '':
-                    if n['email'] not in notAddedUsers: 
-                        notAddedUsers.append(n['email'])
-            else:
-                if emailValidator(n['email']) == True: 
-                    if n['email'] not in createdUsers: 
-                        createdUsers.append(n['email'])
-                        createdUsersStat.append(n['status']) 
+            if n['email']: 
+                inputEmail = n['email'].lower() 
+                if emailValidator(inputEmail):                
+                    if n['ta'] == '1':
+                        stat = 'TA'
+                    else:
+                        stat = 'Student'
+                    if(User.objects.filter(email = inputEmail, status = stat)):
+                        addUser = User.objects.get(email = inputEmail)
+                        #if addUser.email == n['email'] and addUser.status == n['status']:
+                        if (courseusers.objects.filter(user_id = addUser.id, course_id = courseId).exists()==False):
+                            courseusers.objects.create(user_id = addUser.id, course_id = courseId)    
+                            addedUsers.append(inputEmail)
+                    elif (User.objects.filter(email = inputEmail)):
+                    #elif addUser.email == n['email'] and addUser.status != n['status'] and n['status'] != '':
+                        addUser = User.objects.get(email = inputEmail)
+                        if addUser.email == inputEmail and addUser.status != stat:
+                            if inputEmail not in notAddedUsers: 
+                                notAddedUsers.append(inputEmail)
+                    else:
+                        if inputEmail not in createdUsers: 
+                            createdUsers.append(inputEmail)
+                            createdUsersStat.append(stat) 
         except KeyError: 
             return (csvHeaderError)
     

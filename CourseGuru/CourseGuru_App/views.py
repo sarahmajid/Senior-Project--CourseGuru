@@ -131,8 +131,8 @@ def editAccount(request):
             if authenticate(username=oldusername, password=oldpassword) is not None:
                 if (psword != cpsword):
                     errorMsg = 'Password Mismatch'
-                elif (oldpassword == psword or oldusername == username):
-                    errorMsg = 'New password or username can not be the same as the old password or username!'      
+                elif (oldpassword == psword):
+                    errorMsg = 'New password can not be the same as the old password!'      
                 elif (emailValidator(email) == False): 
                     errorMsg = "Invalid Email Address!"
                 elif(psword == username):
@@ -144,7 +144,11 @@ def editAccount(request):
                     if User.objects.filter(username = username).exists():
                         errorMsg = "Username taken" 
                     else:
-                        updateUserInfo(username, email, psword, firstname, lastname, stat)
+                        if username == '':
+                            username = curUser.username
+                            updateUserInfo(username, email, psword, firstname, lastname, stat)
+                        else:
+                            updateUserInfo(username, email, psword, firstname, lastname, stat)
                         return HttpResponseRedirect('/?newAct=2')  
             else: 
                 errorMsg = "Could not verify old username and password."
@@ -190,29 +194,33 @@ def roster(request):
             elif request.POST.get('Edit') == 'Edit': 
                 return HttpResponseRedirect('/editAccount/')
             if 'newUser' in request.POST:
-                newUser = request.POST.get('newUser')
+                newUser = request.POST.get('newUser').lower()
                 stat = request.POST.get('status')
                 addUser = User.objects.get(email = newUser)
-                if addUser.email == newUser and addUser.status == stat:
-                    if courseusers.objects.filter(user_id = addUser.id, course_id = cid).exists():
-                        credentialmismatch = "User is already in the course"
+                if emailValidator(newUser) == False:
+                    credentialmismatch = "You must enter a valid email address."
+                    return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'credentialmismatch': credentialmismatch, 'studentList': studentList})
+                else:    
+                    if addUser.email == newUser and addUser.status == stat:
+                        if courseusers.objects.filter(user_id = addUser.id, course_id = cid).exists():
+                            credentialmismatch = "User is already in the course"
+                            return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'credentialmismatch': credentialmismatch, 'studentList': studentList})
+                        else:
+                            userAdded = "User has been successfully added to the course"
+                            courseusers.objects.create(user_id = addUser.id, course_id = cid)
+                            sendEmailExistingUser(cName.courseName, addUser)
+                            return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'userAdded': userAdded, 'studentList': studentList})               
+                    elif addUser.email == newUser and addUser.status != stat:
+                        credentialmismatch = "The email address entered is not associated with the status chosen."
                         return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'credentialmismatch': credentialmismatch, 'studentList': studentList})
                     else:
-                        userAdded = "User has been successfully added to the course"
-                        courseusers.objects.create(user_id = addUser.id, course_id = cid)
-                        sendEmailExistingUser(cName.courseName, addUser)
-                        return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'userAdded': userAdded, 'studentList': studentList})               
-                elif addUser.email == newUser and addUser.status != stat:
-                    credentialmismatch = "The email address entered is not associated with the status chosen."
-                    return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'credentialmismatch': credentialmismatch, 'studentList': studentList})
-                else:
-                    if emailValidator(newUser) == True:
-                        credentialmismatch = "Email address not yet registered. We have sent an email asking the individual to register."
-                        createTempUser(newUser, cid, cName.courseName)
-                        addUser = User.objects.get(email = newUser)
-                        courseusers.objects.create(user_id = addUser.id, course_id = cid)
-                        return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'credentialmismatch': credentialmismatch, 'studentList': studentList})
-                 
+                        if emailValidator(newUser) == True:
+                            credentialmismatch = "Email address not yet registered. We have sent an email asking the individual to register."
+                            createTempUser(newUser, cid, cName.courseName)
+                            addUser = User.objects.get(email = newUser)
+                            courseusers.objects.create(user_id = addUser.id, course_id = cid)
+                            return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'credentialmismatch': credentialmismatch, 'studentList': studentList})
+                     
             elif 'delete' in request.POST:
                 user = request.POST.get('delete')
                 rmvUser = courseusers.objects.get(id = int(user))
@@ -328,7 +336,7 @@ def uploadDocument(request):
                 elif docType == 'Lecture' and document.objects.filter(course_id = cid, category_id = 8).count() > 14:
                     error = "You've reached the maximum number of lectures for this course. (15)"    
                 elif (upFileName.endswith('.docx') and fileType == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') or (upFileName.endswith('.pdf') and fileType == 'application/pdf') or (upFileName.endswith('.pptx') and fileType == 'application/vnd.openxmlformats-officedocument.presentationml.presentation'):
-                    fileUpload(cid, docType, upFile, upFileName, fileType, user)
+                    fileUpload(cid, docType, upFile, upFileName, fileType, user)  
                     success = 'Course file successfully uploaded.'
                 else:
                     error = 'Course file must be in docx or pdf format.'
