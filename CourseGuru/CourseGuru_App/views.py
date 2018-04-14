@@ -29,7 +29,6 @@ from CourseGuru_App.models import answers
 from CourseGuru_App.models import course
 from CourseGuru_App.models import category
 from CourseGuru_App.models import botanswers
-from CourseGuru_App.models import comments
 from CourseGuru_App.models import courseusers
 from CourseGuru_App.models import userratings
 from CourseGuru_App.models import document
@@ -184,6 +183,8 @@ def roster(request):
         cid = request.GET.get('cid', '')
         cName = course.objects.get(id = cid)
         user = request.user
+        credentialmismatch = ''
+        userAdded = ''
         if not courseusers.objects.filter(user_id = user.id, course_id = cid).exists() and not course.objects.filter(user_id = user.id, id = cid).exists():
             return redirect('courses')
         studentList = courseusers.objects.filter(course_id=cid)
@@ -198,21 +199,17 @@ def roster(request):
                 stat = request.POST.get('status')
                 addUser = User.objects.get(email = newUser)
                 if emailValidator(newUser) == False:
-                    credentialmismatch = "You must enter a valid email address."
-                    return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'credentialmismatch': credentialmismatch, 'studentList': studentList})
+                    credentialmismatch = "Please enter a valid email address."
                 else:    
                     if addUser.email == newUser and addUser.status == stat:
                         if courseusers.objects.filter(user_id = addUser.id, course_id = cid).exists():
                             credentialmismatch = "User is already in the course"
-                            return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'credentialmismatch': credentialmismatch, 'studentList': studentList})
                         else:
                             userAdded = "User has been successfully added to the course"
                             courseusers.objects.create(user_id = addUser.id, course_id = cid)
                             sendEmailExistingUser(cName.courseName, addUser)
-                            return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'userAdded': userAdded, 'studentList': studentList})               
                     elif addUser.email == newUser and addUser.status != stat:
                         credentialmismatch = "The email address entered is not associated with the status chosen."
-                        return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'credentialmismatch': credentialmismatch, 'studentList': studentList})
                     else:
                         if emailValidator(newUser) == True:
                             credentialmismatch = "Email address not yet registered. We have sent an email asking the individual to register."
@@ -220,7 +217,6 @@ def roster(request):
                             addUser = User.objects.get(email = newUser)
                             courseusers.objects.create(user_id = addUser.id, course_id = cid)
                             return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'credentialmismatch': credentialmismatch, 'studentList': studentList})
-                     
             elif 'delete' in request.POST:
                 user = request.POST.get('delete')
                 rmvUser = courseusers.objects.get(id = int(user))
@@ -246,7 +242,7 @@ def roster(request):
             else:
                 credentialmismatch = "Username does not exist"
                 return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'credentialmismatch': credentialmismatch, 'courseName': cName})
-        return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'studentList': studentList, 'courseName': cName})
+        return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'studentList': studentList, 'credentialmismatch': credentialmismatch, 'userAdded': userAdded, 'courseName': cName})
     else:
         return HttpResponseRedirect('/')
   
@@ -339,7 +335,7 @@ def uploadDocument(request):
                     fileUpload(cid, docType, upFile, upFileName, fileType, user)  
                     success = 'Course file successfully uploaded.'
                 else:
-                    error = 'Course file must be in docx or pdf format.'
+                    error = 'Course file must be in docx, pdf, or pptx format.'
         #Syllabus files
         sFiles = document.objects.filter(course_id = cid, category_id = 6).order_by('pk')
         #Assignment files
@@ -361,6 +357,8 @@ def courseFiles(request):
             if request.POST.get('Logout') == "Logout":
                 logout(request)
                 return HttpResponseRedirect('/')
+            elif request.POST.get('Edit') == 'Edit': 
+                return HttpResponseRedirect('/editAccount/')
             elif 'download' in request.POST:
                 fid = request.POST.get('download')
                 file = document.objects.get(id = fid)
@@ -466,7 +464,6 @@ def answer(request):
         aData = answers.objects.filter(question_id = qid).order_by( '-resolved', 'pk')
         ansCt = aData.count()
         qData = questions.objects.get(id = qid)
-        cData = comments.objects.filter(question_id = qid)
   
         #-----Used for checking if post was previously rated------
         upData2 = userratings.objects.filter(user_id = user.id, rating = 1).only('answer_id')
@@ -492,7 +489,7 @@ def answer(request):
                 query = request.POST.get('query')
                 if query: 
                     aData = aData.filter(answer__icontains=query)
-                return render(request, 'CourseGuru_App/answer.html', {'answers': aData, 'numAnswers': ansCt, 'Title': qData, 'comments': cData, 'courseID': cid, 'resolved':resolve})
+                return render(request, 'CourseGuru_App/answer.html', {'answers': aData, 'numAnswers': ansCt, 'Title': qData, 'courseID': cid, 'resolved':resolve})
             elif 'delAns' in request.POST:
                 aid = request.POST.get('delAns')
                 delAnswers(aid)
@@ -504,9 +501,9 @@ def answer(request):
                 resolveQues(cid, aid, qData)
                 resolve = True
                 aData = answers.objects.filter(question_id = qid).order_by( '-resolved', 'pk')
-                return render(request, 'CourseGuru_App/answer.html', {'answers': aData, 'numAnswers': ansCt, 'Title': qData, 'comments': cData, 'courseID': cid, 'resolved':resolve})        
+                return render(request, 'CourseGuru_App/answer.html', {'answers': aData, 'numAnswers': ansCt, 'Title': qData, 'courseID': cid, 'resolved':resolve})        
             return HttpResponseRedirect('/answer/?id=%s&cid=%s' % (qid, cid)) 
-        return render(request, 'CourseGuru_App/answer.html', {'answers': aData, 'numAnswers': ansCt, 'Title': qData, 'comments': cData, 'courseID': cid, 'resolved': resolve, 'upData': upData, 'downData': downData})
+        return render(request, 'CourseGuru_App/answer.html', {'answers': aData, 'numAnswers': ansCt, 'Title': qData, 'courseID': cid, 'resolved': resolve, 'upData': upData, 'downData': downData})
     else:
         return HttpResponseRedirect('/')
     
