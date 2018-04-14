@@ -32,31 +32,21 @@ def restructForDB (text, cid, catID, fileid):
 
 def parsePPTX(file, cid, catID, fileid, docType):
     parseFile = Presentation(file)
-    
     dataArray = [] 
 
     for slide in parseFile.slides:
-        title= slide.shapes.title.text_frame.text
-        dataArray.append(title+'<br>')
+        dataArray.append('')
         for shape in slide.shapes:
             if shape.has_text_frame:
-                if shape.is_placeholder == True and 'FOOTER' not in str(shape.placeholder_format.type):
+                if shape.is_placeholder == True and 'FOOTER' not in str(shape.placeholder_format.type) or shape.is_placeholder == False:
                     for paragraph in shape.text_frame.paragraphs:
-                        if paragraph.text != '' and paragraph.text != title:
+                        if paragraph.text != '':
                             text = paragraph.text
-                            if paragraph.text == '.':
-                                dataArray[-1] += '' + (text)
-                            else: 
-                                dataArray[-1] += ' ' + (text) + '<br>'
-                else:
-                    for paragraph in shape.text_frame.paragraphs:
-                        if paragraph.text != '' and paragraph.text != title:
-                            text = paragraph.text
-                            if paragraph.text == '.':
-                                dataArray[-1] += '' + (text)
-                            else: 
-                                dataArray[-1] += ' ' + (text) + '<br>'
-                                
+                            if re.match('^[0-9]*$', text) == None:
+                                if text == '.':
+                                    dataArray[-1] += '' + (text)
+                                else: 
+                                    dataArray[-1] += '' + (text) + '<br>'                            
             elif shape.has_table:
                 table = shape.table
                 

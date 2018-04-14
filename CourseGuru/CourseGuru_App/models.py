@@ -52,7 +52,6 @@ class category(models.Model):
       
 class keywords(models.Model):
     categoryKeyWords = models.CharField(max_length=100)
-    subCategoryKeyWords = models.CharField(max_length=100) 
     
 def fileUpload(instance, filename):
     #ext = filename.split('.')[-1]
