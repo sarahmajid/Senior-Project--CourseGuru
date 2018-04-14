@@ -88,7 +88,7 @@ def resolveQues(cid, aid, qData):
             for row in ansRatings:
                 rowUser = row.user_id
                 rateUser = User.objects.get(id = rowUser)
-                if rateUser.status == "Teacher" or ans.user.status == "TA":
+                if (rateUser.status == "Teacher" or rateUser.status == "TA") and row.rating == 1:
                     checked = True  
         rostSize = courseusers.objects.filter(course_id = cid).count()
         weight = (ans.rating / rostSize) * 100
