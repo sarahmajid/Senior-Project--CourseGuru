@@ -29,7 +29,6 @@ from CourseGuru_App.models import answers
 from CourseGuru_App.models import course
 from CourseGuru_App.models import category
 from CourseGuru_App.models import botanswers
-from CourseGuru_App.models import comments
 from CourseGuru_App.models import courseusers
 from CourseGuru_App.models import userratings
 from CourseGuru_App.models import document
@@ -446,7 +445,6 @@ def answer(request):
         aData = answers.objects.filter(question_id = qid).order_by( '-resolved', 'pk')
         ansCt = aData.count()
         qData = questions.objects.get(id = qid)
-        cData = comments.objects.filter(question_id = qid)
   
         #-----Used for checking if post was previously rated------
         upData2 = userratings.objects.filter(user_id = user.id, rating = 1).only('answer_id')
@@ -472,7 +470,7 @@ def answer(request):
                 query = request.POST.get('query')
                 if query: 
                     aData = aData.filter(answer__icontains=query)
-                return render(request, 'CourseGuru_App/answer.html', {'answers': aData, 'numAnswers': ansCt, 'Title': qData, 'comments': cData, 'courseID': cid, 'resolved':resolve})
+                return render(request, 'CourseGuru_App/answer.html', {'answers': aData, 'numAnswers': ansCt, 'Title': qData, 'courseID': cid, 'resolved':resolve})
             elif 'delAns' in request.POST:
                 aid = request.POST.get('delAns')
                 delAnswers(aid)
@@ -484,9 +482,9 @@ def answer(request):
                 resolveQues(cid, aid, qData)
                 resolve = True
                 aData = answers.objects.filter(question_id = qid).order_by( '-resolved', 'pk')
-                return render(request, 'CourseGuru_App/answer.html', {'answers': aData, 'numAnswers': ansCt, 'Title': qData, 'comments': cData, 'courseID': cid, 'resolved':resolve})        
+                return render(request, 'CourseGuru_App/answer.html', {'answers': aData, 'numAnswers': ansCt, 'Title': qData, 'courseID': cid, 'resolved':resolve})        
             return HttpResponseRedirect('/answer/?id=%s&cid=%s' % (qid, cid)) 
-        return render(request, 'CourseGuru_App/answer.html', {'answers': aData, 'numAnswers': ansCt, 'Title': qData, 'comments': cData, 'courseID': cid, 'resolved': resolve, 'upData': upData, 'downData': downData})
+        return render(request, 'CourseGuru_App/answer.html', {'answers': aData, 'numAnswers': ansCt, 'Title': qData, 'courseID': cid, 'resolved': resolve, 'upData': upData, 'downData': downData})
     else:
         return HttpResponseRedirect('/')
     
