@@ -39,11 +39,13 @@ def restructString(strMessage, userList):
 def readCSV(csvFile, courseId, courseName):
     
     #variable initialization 
-    strNotAdded = "We were not able to add the following user(s) because the status of the email provided did not match the status of the user: "
-    strCreatedUser = "We have created accounts and sent login credentials, via email, for the following user(s) requesting that they edit their account information as soon as possible. "
-    strExistingUser = "We have added the following users to the course: "
+    strNotAdded = "We were not able to add the following user(s) because the status of the email provided did not match the status of the email in the database: "
+    strCreatedUser = "We have created accounts and sent login credentials, via email, for the following user(s): "
+    strExistingUser = "We have added the following user(s) to the course: "
     csvHeaderError = 'CSV header error! Please make sure CSV file contain "Email" and "TA" as the header for all of the rows. Also all emails must be in proper email format.'
     csvCountError = 'CSV file must not contain more than 1,000 rows of data.' 
+    strInvalidEmail = "The following provided email(s) are invalid: "
+    invalidEmail = []
     notAddedUsers = []
     createdUsers = []
     createdUsersStat = []
@@ -96,8 +98,13 @@ def readCSV(csvFile, courseId, courseName):
                         if inputEmail not in createdUsers: 
                             createdUsers.append(inputEmail)
                             createdUsersStat.append(stat) 
+                else:
+                    if inputEmail not in invalidEmail:
+                        invalidEmail.append(inputEmail)
+                                
         except KeyError: 
             return (csvHeaderError)
+    
     
     #sending out emails to the added users  
     for n in addedUsers: 
@@ -120,8 +127,11 @@ def readCSV(csvFile, courseId, courseName):
     if len(addedUsers)>0:    
         strExistingUser = restructString(strExistingUser, addedUsers)
     else: 
-        strExistingUser = ''   
-         
-   
+        strExistingUser = '' 
     
-    return (strNotAdded, strCreatedUser, strExistingUser)
+    if len(invalidEmail)>0:    
+        strInvalidEmail = restructString(strInvalidEmail, invalidEmail)
+    else: 
+        strInvalidEmail = ''       
+   
+    return (strNotAdded, strCreatedUser, strExistingUser, strInvalidEmail)

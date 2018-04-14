@@ -38,15 +38,15 @@ def parsePPTX(file, cid, catID, fileid, docType):
         dataArray.append('')
         for shape in slide.shapes:
             if shape.has_text_frame:
-                for paragraph in shape.text_frame.paragraphs:
-                    if paragraph.text != '':
-                        text = paragraph.text
-                        if re.match('^[0-9]*$', text) == None:
-                            if text == '.':
-                                dataArray[-1] += '' + (text)
-                            else: 
-                                dataArray[-1] += '' + (text) + '<br>'
-                            
+                if shape.is_placeholder == True and 'FOOTER' not in str(shape.placeholder_format.type) or shape.is_placeholder == False:
+                    for paragraph in shape.text_frame.paragraphs:
+                        if paragraph.text != '':
+                            text = paragraph.text
+                            if re.match('^[0-9]*$', text) == None:
+                                if text == '.':
+                                    dataArray[-1] += '' + (text)
+                                else: 
+                                    dataArray[-1] += '' + (text) + '<br>'                            
             elif shape.has_table:
                 table = shape.table
                 

@@ -62,23 +62,23 @@
 						<br>
 						<label style="font-size: 16px; color: grey; font-family: century gothic;">Username: </label><br>
 						{% csrf_token %}
-						<input type="text" name="oldusername" class="form-control" required="required" maxlength="50" style="width: 100%;"></input><br>	
+						<input type="text" name="oldusername" class="form-control" value="{{user.username}}" disabled maxlength="50" style="width: 100%;"></input><br>	
 						<label style="font-size: 16px; color: grey; font-family: century gothic;">New Username: </label><br>
 						{% csrf_token %}
 						<input type="text" name="username" class="form-control" maxlength="50" style="width: 100%;"></input><br><br>
 						<br>
 						<label style="font-size: 16px; color: grey; font-family: century gothic;">Password: </label><br>
 						{% csrf_token %}
-						<input type="password" name="oldpassword" class="form-control" required="required" maxlength="50" style="width: 100%;"></input><br>
+						<input type="password" name="oldpassword" class="form-control" maxlength="50" style="width: 100%;"></input><br>
 						<label style="font-size: 16px; color: grey; font-family: century gothic;">New Password: </label><br>
 						{% csrf_token %}
-						<input type="password" name="password" class="form-control" required="required" maxlength="20" style="width: 100%;"></input><br>
+						<input type="password" name="password" class="form-control" maxlength="20" style="width: 100%;"></input><br>
 						<label style="font-size: 16px; color: grey; font-family: century gothic;">Confirm Password: </label><br>
 						{% csrf_token %}
-						<input type="password" name="cpassword" class="form-control" required="required" maxlength="20" style="width: 100%;"></input><br>						
+						<input type="password" name="cpassword" class="form-control" maxlength="20" style="width: 100%;"></input><br>						
 						<br><br>					
 						<input type="submit" name="submit" class="btn basic-btn" id="login-btn" value="Save">
-						<a href="javascript:window.history.back()" class="btn basic-btn" font-size: 18px; font-family: century gothic; color: grey; text-decoration: none;">Cancel</a> 					
+						<a href="javascript:window.history.back()" class="btn basic-btn" id="login-btn" font-size: 18px; font-family: century gothic; color: grey; text-decoration: none;">Cancel</a> 					
 					</form>		
 					<br>
 				</td>

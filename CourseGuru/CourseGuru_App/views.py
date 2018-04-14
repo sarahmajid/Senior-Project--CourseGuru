@@ -118,39 +118,48 @@ def editAccount(request):
             if request.POST.get('Logout') == "Logout":
                 logout(request)
                 return HttpResponseRedirect('/')
-            oldusername = request.POST.get('oldusername')
             oldpassword = request.POST.get('oldpassword')
             firstname = request.POST.get('firstname').strip()
             lastname = request.POST.get('lastname').strip()
             username = request.POST.get('username').lower()
             psword = request.POST.get('password')
             cpsword = request.POST.get('cpassword')
+            errorMsg = ''
             stat = curUser.status
-            email = curUser.email  
+            email = curUser.email 
+            oldusername = curUser.username 
             if authenticate(username=oldusername, password=oldpassword) is not None:
-                if (psword != cpsword):
-                    errorMsg = 'Password Mismatch'
-                elif (oldpassword == psword):
-                    errorMsg = 'New password can not be the same as the old password!'      
-                elif (emailValidator(email) == False): 
-                    errorMsg = "Invalid Email Address!"
-                elif(psword == username):
-                    errorMsg = "Username and Password can not be the same!"
-                else:
-                    if (passwordValidator(psword) != None):
-                        errorMsg =  passwordValidator(psword)
-                        return render(request, 'CourseGuru_App/editAccount.html', {'errorMsg': errorMsg,'fname': firstname, 'lname': lastname, 'status': stat, 'email': email})
-                    if User.objects.filter(username = username).exists():
-                        errorMsg = "Username taken" 
+                if psword == '' and username !='' and cpsword =='':
+                    updateUserInfo(username, email, oldpassword, firstname, lastname, stat)
+                    user = authenticate(username=username, password=oldpassword)
+                    login(request,user)
+                    return HttpResponseRedirect('/courses/?newAct=2') 
+                elif (psword != '' and cpsword =='') or (psword == '' and cpsword !=''):
+                    errorMsg = "If you'd like to change your password, please provide a new password and confirm the password!"
+                else: 
+                    if (psword != cpsword):
+                        errorMsg = 'Password Mismatch'
+                    elif (oldpassword == psword):
+                        errorMsg = 'New password can not be the same as the current password!'      
+                    elif(psword == username):
+                        errorMsg = "Username and Password can not be the same!"
                     else:
-                        if username == '':
-                            username = curUser.username
-                            updateUserInfo(username, email, psword, firstname, lastname, stat)
+                        if (passwordValidator(psword) != None):
+                            errorMsg =  passwordValidator(psword)
+                            return render(request, 'CourseGuru_App/editAccount.html', {'errorMsg': errorMsg,'user': curUser})
+                        if User.objects.filter(username = username).exists():
+                            errorMsg = "Username taken" 
                         else:
-                            updateUserInfo(username, email, psword, firstname, lastname, stat)
-                        return HttpResponseRedirect('/?newAct=2')  
+                            if username == '':
+                                username = curUser.username
+                                updateUserInfo(username, email, psword, firstname, lastname, stat)
+                            else:
+                                updateUserInfo(username, email, psword, firstname, lastname, stat)
+                            user = authenticate(username=username, password=oldpassword)
+                            login(request,user)
+                            return HttpResponseRedirect('/courses/?newAct=2')
             else: 
-                errorMsg = "Could not verify old username and password."
+                errorMsg = "Could not verify password."
             return render(request, 'CourseGuru_App/editAccount.html', {'errorMsg': errorMsg, 'user': curUser})
         else:
             return render(request, 'CourseGuru_App/editAccount.html', {'user': curUser})    
@@ -159,6 +168,10 @@ def editAccount(request):
    
 def courses(request):
     if request.user.is_authenticated:
+        if request.GET.get('newAct', ''):
+            newAct = "Account successfully updated."
+        else: 
+            newAct = ''
         if request.method == "POST":
             if request.POST.get('Logout') == "Logout":
                 logout(request)
@@ -174,7 +187,7 @@ def courses(request):
             courseList = course.objects.filter(user_id = curUser.id)
         else:
             courseList = courseusers.objects.filter(user_id = curUser.id)
-        return render(request, 'CourseGuru_App/courses.html', {'courses': courseList})
+        return render(request, 'CourseGuru_App/courses.html', {'courses': courseList, 'newAct': newAct})
     else:
         return HttpResponseRedirect('/')
 
@@ -233,12 +246,14 @@ def roster(request):
                 if isinstance(csvMessage, str):
                     notAdded = csvMessage
                     createdUsers = ''
-                    addedUsers = ''   
+                    addedUsers = '' 
+                    invalidEmail = ''  
                 else:       
                     notAdded = csvMessage[0]
                     createdUsers = csvMessage[1]
                     addedUsers = csvMessage[2]
-                return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'studentList': studentList, 'notAdded': notAdded, 'createdUsers': createdUsers, 'addedUsers': addedUsers})
+                    invalidEmail = csvMessage[3]
+                return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'studentList': studentList, 'notAdded': notAdded, 'createdUsers': createdUsers, 'addedUsers': addedUsers, 'invalidEmail': invalidEmail})
             else:
                 credentialmismatch = "Username does not exist"
                 return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'credentialmismatch': credentialmismatch, 'courseName': cName})
