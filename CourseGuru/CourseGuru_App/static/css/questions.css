@@ -93,9 +93,12 @@ body {
 }
 
 .select-short {
-	max-width: 33%;
+	max-width: 15%;
 }
 
+.select-shorter { 
+	max-width: 25%;
+}
 
 
 /* PAGINATOR */

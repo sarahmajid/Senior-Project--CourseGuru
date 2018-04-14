@@ -114,7 +114,6 @@ def account(request):
 def editAccount(request):
     if request.user.is_authenticated:
         curUser = request.user
-        stat = 'Student'
         if request.method == "POST":
             if request.POST.get('Logout') == "Logout":
                 logout(request)
@@ -126,7 +125,7 @@ def editAccount(request):
             username = request.POST.get('username').lower()
             psword = request.POST.get('password')
             cpsword = request.POST.get('cpassword')
-            stat = request.POST.get('status')
+            stat = curUser.status
             email = curUser.email  
             if authenticate(username=oldusername, password=oldpassword) is not None:
                 if (psword != cpsword):
@@ -191,8 +190,9 @@ def roster(request):
                 return HttpResponseRedirect('/editAccount/')
             if 'newUser' in request.POST:
                 newUser = request.POST.get('newUser')
-                if User.objects.filter(email = newUser).exists():
-                    addUser = User.objects.get(email = newUser)
+                stat = request.POST.get('status')
+                addUser = User.objects.get(email = newUser)
+                if addUser.email == newUser and addUser.status == stat:
                     if courseusers.objects.filter(user_id = addUser.id, course_id = cid).exists():
                         credentialmismatch = "User is already in the course"
                         return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'credentialmismatch': credentialmismatch, 'studentList': studentList})
@@ -200,14 +200,18 @@ def roster(request):
                         userAdded = "User has been successfully added to the course"
                         courseusers.objects.create(user_id = addUser.id, course_id = cid)
                         sendEmailExistingUser(cName.courseName, addUser)
-                        return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'userAdded': userAdded, 'studentList': studentList})
-                else:
-                    credentialmismatch = "Email address not yet registered. We have sent an email asking the individual to register."
-                    createTempUser(newUser, cid, cName.courseName)
-                    addUser = User.objects.get(email = newUser)
-                    courseusers.objects.create(user_id = addUser.id, course_id = cid)
+                        return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'userAdded': userAdded, 'studentList': studentList})               
+                elif addUser.email == newUser and addUser.status != stat:
+                    credentialmismatch = "The email address entered is not associated with the status chosen."
                     return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'credentialmismatch': credentialmismatch, 'studentList': studentList})
-             
+                else:
+                    if emailValidator(newUser) == True:
+                        credentialmismatch = "Email address not yet registered. We have sent an email asking the individual to register."
+                        createTempUser(newUser, cid, cName.courseName)
+                        addUser = User.objects.get(email = newUser)
+                        courseusers.objects.create(user_id = addUser.id, course_id = cid)
+                        return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'credentialmismatch': credentialmismatch, 'studentList': studentList})
+                 
             elif 'delete' in request.POST:
                 user = request.POST.get('delete')
                 rmvUser = courseusers.objects.get(id = int(user))
@@ -220,8 +224,16 @@ def roster(request):
             elif request.method == 'POST' and request.FILES['csvFile']:
                 #getting file and reading it
                 csvF = request.FILES['csvFile']
-                strNotAdded = readCSV(csvF, cid, cName.courseName)
-                return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'studentList': studentList, 'notAdded': strNotAdded})
+                csvMessage = readCSV(csvF, cid, cName.courseName)
+                if isinstance(csvMessage, str):
+                    notAdded = csvMessage
+                    createdUsers = ''
+                    addedUsers = ''   
+                else:       
+                    notAdded = csvMessage[0]
+                    createdUsers = csvMessage[1]
+                    addedUsers = csvMessage[2]
+                return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'studentList': studentList, 'notAdded': notAdded, 'createdUsers': createdUsers, 'addedUsers': addedUsers})
             else:
                 credentialmismatch = "Username does not exist"
                 return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'credentialmismatch': credentialmismatch, 'courseName': cName})
@@ -314,7 +326,7 @@ def uploadDocument(request):
                     error = "You've reached the maximum number of assignments for this course. (15)"
                 elif docType == 'Lecture' and document.objects.filter(course_id = cid, category_id = 8).count() > 14:
                     error = "You've reached the maximum number of lectures for this course. (15)"    
-                elif (upFileName.endswith('.docx') and fileType == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') or (upFileName.endswith('.pdf') and fileType == 'application/pdf') or upFileName.endswith('.pptx'):
+                elif (upFileName.endswith('.docx') and fileType == 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') or (upFileName.endswith('.pdf') and fileType == 'application/pdf') or (upFileName.endswith('.pptx') and fileType == 'application/vnd.openxmlformats-officedocument.presentationml.presentation'):
                     fileUpload(cid, docType, upFile, upFileName, fileType, user)
                     success = 'Course file successfully uploaded.'
                 else:

@@ -45,6 +45,15 @@ def restructForDB (text, cid, catID, fileid):
 def restructString(text):
     #change \n to <br>
     filtText = re.sub('\\n', '<br>', text)
+    
+    #accommodating sentences that may have been broken up by a new line
+    while (re.search('<br>[a-z]', filtText) != None):
+        f = re.search('<br>[a-z]', filtText)
+        start = f.span()[0]
+        end = f.span()[1]
+        filtText= filtText[:start] + filtText[end-1] + filtText[end:]
+    
+    #filtText = re.sub('<br>[a-z]', '[a-z]', filtText)
     #getting rid of non ASCII unicode characters which cause errors
     filtText= ''.join(i for i in filtText if ord(i)<128)
     #getting rid on any unnecessary extra spaces or <br> tags 
@@ -125,7 +134,7 @@ def pdfToText(file, cid, catID, fileid, docType):
         for n in dataArray: 
             restructForDB(n, cid, catID, fileid)
             
-    elif docType == 'Lectures':      
+    elif docType == 'Lecture':      
         for page in doc.get_pages():
             dataArray.append('')
             interpreter.process_page(page)
