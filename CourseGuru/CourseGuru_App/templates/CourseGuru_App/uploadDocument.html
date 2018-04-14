@@ -72,7 +72,7 @@
 				<form method="POST" action="" enctype="multipart/form-data">
 					{% csrf_token %}
 					<label style="font-size: 16px; color: grey; font-family: century gothic;">Upload a course file for the Chatbot to learn: </label><br>
-					<span style="color:grey;">Upload a Syllabus or up to fifteen Assignments or Lectures.<br>Files must be in .pdf, pptx, or .docx format.</span><br><br>
+					<span style="color:grey;">Upload a Syllabus and up to fifteen Assignments or Lectures.<br>Files must be in .pdf, pptx, or .docx format.</span><br><br>
 					<input type="file" name="courseFile" style="border: 1px solid grey; padding: 10px;" required = "required"><br><br>
 					<label style="font-size: 16px; color: grey; font-family: century gothic;">What type of course file is this?: </label><br>
 					<select name="docType" id="docType" class="form-control select-short" required="required" >
@@ -100,7 +100,7 @@
 					{{s.file_name}}
 					<form method="POST" action="" margin="0" style="display: inline;">
 						{% csrf_token %}
-						<button type="submit" onclick="return confirm('Are you sure you want to remove this file from the Chatbot\'s knowledge database?');" class="btn btn-danger" name="del" value="{{s.id}}" >&#10008</button>
+						<button type="submit" onclick="return confirm('Are you sure you want to remove \'{{s.file_name}}\' from the Chatbot\'s knowledge database?');" class="btn btn-danger" name="del" value="{{s.id}}" >&#10008</button>
 					</form>
 					<br><br>
 				{% endfor %}
@@ -111,7 +111,7 @@
 					{{a.file_name}}
 					<form method="POST" action="" margin="0" style="display: inline;">
 						{% csrf_token %}
-						<button type="submit" onclick="return confirm('Are you sure you want to remove this file from the Chatbot\'s knowledge database?');" class="btn btn-danger" name="del" value="{{a.id}}" >&#10008</button>
+						<button type="submit" onclick="return confirm('Are you sure you want to remove \'{{a.file_name}}\' from the Chatbot\'s knowledge database?');" class="btn btn-danger" name="del" value="{{a.id}}" >&#10008</button>
 					</form>
 					<br><br>
 				{% endfor %}
@@ -122,7 +122,7 @@
 					{{l.file_name}}
 					<form method="POST" action="" margin="0" style="display: inline;">
 						{% csrf_token %}
-						<button type="submit" onclick="return confirm('Are you sure you want to remove this file from the Chatbot\'s knowledge database?');" class="btn btn-danger" name="del" value="{{l.id}}" >&#10008</button>
+						<button type="submit" onclick="return confirm('Are you sure you want to remove \'{{l.file_name}}\' from the Chatbot\'s knowledge database?');" class="btn btn-danger" name="del" value="{{l.id}}" >&#10008</button>
 					</form>
 					<br><br>
 				{% endfor %}
