@@ -91,7 +91,7 @@ def account(request):
         psword = request.POST.get('password')
         cpsword = request.POST.get('cpassword')
         stat = request.POST.get('status')
-        email = request.POST.get('email')       
+        email = request.POST.get('email').lower()  
         if (psword != cpsword):
             errorMsg = 'Password Mismatch'      
         elif (emailValidator(email) == False): 
@@ -141,22 +141,30 @@ def editAccount(request):
                         errorMsg = 'Password Mismatch'
                     elif (oldpassword == psword):
                         errorMsg = 'New password can not be the same as the current password!'      
-                    elif(psword == username):
+                    elif(psword == username and len(username) > 0):
                         errorMsg = "Username and Password can not be the same!"
                     else:
-                        if (passwordValidator(psword) != None):
+                        if (len(psword) > 0 and passwordValidator(psword) != None):
                             errorMsg =  passwordValidator(psword)
                             return render(request, 'CourseGuru_App/editAccount.html', {'errorMsg': errorMsg,'user': curUser})
                         if User.objects.filter(username = username).exists():
                             errorMsg = "Username taken" 
                         else:
-                            if username == '':
+                            if username == '' and psword == '':
+                                username = curUser.username
+                                psword = oldpassword
+                                updateUserInfo(username, email, psword, firstname, lastname, stat)
+                            elif username == '':
                                 username = curUser.username
                                 updateUserInfo(username, email, psword, firstname, lastname, stat)
                             else:
                                 updateUserInfo(username, email, psword, firstname, lastname, stat)
-                            user = authenticate(username=username, password=oldpassword)
+                            if len(psword) > 0:
+                                user = authenticate(username=username, password=psword)
+                            elif len(username) > 0:
+                                user = authenticate(username=username, password=oldpassword)
                             login(request,user)
+                            print('hite')
                             return HttpResponseRedirect('/courses/?newAct=2')
             else: 
                 errorMsg = "Could not verify password."
@@ -210,26 +218,25 @@ def roster(request):
             if 'newUser' in request.POST:
                 newUser = request.POST.get('newUser').lower()
                 stat = request.POST.get('status')
-                addUser = User.objects.get(email = newUser)
                 if emailValidator(newUser) == False:
-                    credentialmismatch = "Please enter a valid email address."
+                    credentialmismatch = "Invalid email address."
                 else:    
-                    if addUser.email == newUser and addUser.status == stat:
-                        if courseusers.objects.filter(user_id = addUser.id, course_id = cid).exists():
-                            credentialmismatch = "User is already in the course"
+                    if User.objects.filter(email = newUser):
+                        addUser = User.objects.get(email = newUser)
+                        if addUser.status == stat:
+                            if courseusers.objects.filter(user_id = addUser.id, course_id = cid).exists():
+                                credentialmismatch = "User is already in the course"
+                            else:
+                                userAdded = "User has been successfully added to the course"
+                                courseusers.objects.create(user_id = addUser.id, course_id = cid)
+                                sendEmailExistingUser(cName.courseName, addUser)
                         else:
-                            userAdded = "User has been successfully added to the course"
-                            courseusers.objects.create(user_id = addUser.id, course_id = cid)
-                            sendEmailExistingUser(cName.courseName, addUser)
-                    elif addUser.email == newUser and addUser.status != stat:
-                        credentialmismatch = "The email address entered is not associated with the status chosen."
+                            credentialmismatch = "The email address entered is not associated with the status chosen."
                     else:
-                        if emailValidator(newUser) == True:
-                            credentialmismatch = "Email address not yet registered. We have sent an email asking the individual to register."
-                            createTempUser(newUser, cid, cName.courseName, stat)
-                            addUser = User.objects.get(email = newUser)
-                            courseusers.objects.create(user_id = addUser.id, course_id = cid)
-                            return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'credentialmismatch': credentialmismatch, 'studentList': studentList})
+                        userAdded = "Email address not yet registered. We have sent an email asking the individual to register."
+                        createTempUser(newUser, cid, cName.courseName, stat)
+                        addUser = User.objects.get(email = newUser)
+                        return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'credentialmismatch': credentialmismatch, 'userAdded': userAdded, 'studentList': studentList})
             elif 'delete' in request.POST:
                 user = request.POST.get('delete')
                 rmvUser = courseusers.objects.get(id = int(user))
@@ -248,12 +255,14 @@ def roster(request):
                     createdUsers = ''
                     addedUsers = '' 
                     invalidEmail = ''  
+                    teacherUsers = ''
                 else:       
                     notAdded = csvMessage[0]
                     createdUsers = csvMessage[1]
                     addedUsers = csvMessage[2]
                     invalidEmail = csvMessage[3]
-                return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'studentList': studentList, 'notAdded': notAdded, 'createdUsers': createdUsers, 'addedUsers': addedUsers, 'invalidEmail': invalidEmail})
+                    teacherUsers = csvMessage[4]
+                return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'studentList': studentList, 'notAdded': notAdded, 'createdUsers': createdUsers, 'addedUsers': addedUsers, 'invalidEmail': invalidEmail, 'teacherUsers': teacherUsers})
             else:
                 credentialmismatch = "Username does not exist"
                 return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'credentialmismatch': credentialmismatch, 'courseName': cName})
