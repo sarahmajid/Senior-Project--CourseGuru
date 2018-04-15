@@ -126,6 +126,7 @@ def getIntentAns(luisIntent, entitiesList, courseID=0, chatWindow=False):
     
     bestMatch = 0
     merit = 0
+    Accuracy = 0
     
     for m in filtAns:
         Match = 0
@@ -136,7 +137,8 @@ def getIntentAns(luisIntent, entitiesList, courseID=0, chatWindow=False):
             exactMatch = re.findall('\\b' + ent.lower() +'\\b', m.entities.lower())
             if len(exactMatch) > 0:
                 Match += 1
-        Accuracy = (Match/ansLen)
+        if luisIntent != 'Lecture':
+            Accuracy = (Match/ansLen)
         if (Accuracy > count or Match > bestMatch or (Accuracy > count - 0.05 and merit < m.rating)) and not Match < bestMatch:
             count = Accuracy
             answr = m.answer
