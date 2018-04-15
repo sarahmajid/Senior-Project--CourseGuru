@@ -226,7 +226,7 @@ def roster(request):
                     else:
                         if emailValidator(newUser) == True:
                             credentialmismatch = "Email address not yet registered. We have sent an email asking the individual to register."
-                            createTempUser(newUser, cid, cName.courseName)
+                            createTempUser(newUser, cid, cName.courseName, stat)
                             addUser = User.objects.get(email = newUser)
                             courseusers.objects.create(user_id = addUser.id, course_id = cid)
                             return render(request, 'CourseGuru_App/roster.html', {'courseID': cid, 'credentialmismatch': credentialmismatch, 'studentList': studentList})
