@@ -14,9 +14,9 @@ def downloadCSV():
     file['Content-Disposition'] = 'attachment; filename=CSVTemplate.csv'
     writer = csv.writer(file)
     writer.writerow(["Email", "TA"])
-    writer.writerow(["User1(TA) Email", "1"])
+    writer.writerow(["User1 Email", "1"])
     writer.writerow(["User2 Email", ""])
-    writer.writerow(["User3(TA) Email", "1"])
+    writer.writerow(["User3 Email", "1"])
     writer.writerow(["...", "..."])
     return file
 
@@ -39,14 +39,16 @@ def restructString(strMessage, userList):
 def readCSV(csvFile, courseId, courseName):
     
     #variable initialization 
-    strNotAdded = "We were not able to add the following user(s) because the status of the email provided did not match the status of the email in the database: "
+    strNotAdded = "We were not able to add the following user(s) because the status of the email provided did not match the status of the registered user: "
     strCreatedUser = "We have created accounts and sent login credentials, via email, for the following user(s): "
     strExistingUser = "We have added the following user(s) to the course: "
+    strTeacherUser = "Other instructors cannot be added to your course. The following accounts have an Instructor status: "
     csvHeaderError = 'CSV header error! Please make sure CSV file contain "Email" and "TA" as the header for all of the rows. Also all emails must be in proper email format.'
     csvCountError = 'CSV file must not contain more than 1,000 rows of data.' 
     strInvalidEmail = "The following provided email(s) are invalid: "
     invalidEmail = []
     notAddedUsers = []
+    teacherUsers = []
     createdUsers = []
     createdUsersStat = []
     addedUsers = []
@@ -77,19 +79,21 @@ def readCSV(csvFile, courseId, courseName):
         try:
             if n['email']: 
                 inputEmail = n['email'].lower() 
+                inputEmail = inputEmail.strip()
                 if emailValidator(inputEmail):                
                     if n['ta'] == '1':
                         stat = 'TA'
                     else:
                         stat = 'Student'
-                    if(User.objects.filter(email = inputEmail, status = stat)):
+                    if(User.objects.filter(email = inputEmail, status = stat).exists()):
                         addUser = User.objects.get(email = inputEmail)
                         #if addUser.email == n['email'] and addUser.status == n['status']:
                         if (courseusers.objects.filter(user_id = addUser.id, course_id = courseId).exists()==False):
                             courseusers.objects.create(user_id = addUser.id, course_id = courseId)    
                             addedUsers.append(inputEmail)
-                    elif (User.objects.filter(email = inputEmail)):
-                    #elif addUser.email == n['email'] and addUser.status != n['status'] and n['status'] != '':
+                    elif User.objects.filter(email = inputEmail, status = "Teacher").exists():
+                        teacherUsers.append(inputEmail)
+                    elif (User.objects.filter(email = inputEmail).exists()):
                         addUser = User.objects.get(email = inputEmail)
                         if addUser.email == inputEmail and addUser.status != stat:
                             if inputEmail not in notAddedUsers: 
@@ -123,6 +127,11 @@ def readCSV(csvFile, courseId, courseName):
         strCreatedUser = restructString(strCreatedUser, createdUsers)
     else: 
         strCreatedUser = '' 
+        
+    if len(teacherUsers)>0:
+        strTeacherUser = restructString(strTeacherUser, teacherUsers)
+    else: 
+        strTeacherUser = ''
     
     if len(addedUsers)>0:    
         strExistingUser = restructString(strExistingUser, addedUsers)
@@ -134,4 +143,4 @@ def readCSV(csvFile, courseId, courseName):
     else: 
         strInvalidEmail = ''       
    
-    return (strNotAdded, strCreatedUser, strExistingUser, strInvalidEmail)
+    return (strNotAdded, strCreatedUser, strExistingUser, strInvalidEmail, strTeacherUser)

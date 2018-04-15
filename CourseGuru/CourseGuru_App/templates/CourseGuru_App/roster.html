@@ -73,7 +73,9 @@
 					{%if user.status == "Teacher"%}
 					<form method="POST" action="" style="">
 						<h3 style="font-size: 16px; color: red; font-family: century gothic;">{{credentialmismatch}}</h3>
-						
+						{% if userAdded %}
+						<h3 style="font-size: 16px; color: green; font-family: century gothic;">{{userAdded}}</h3>
+						{% endif %}
 						<div style="font-size: 18px; color: grey; font-family: century gothic;"><b>Add a student or teaching assistant to this course:</b></div>
 						<br>
 						<div>
@@ -90,10 +92,6 @@
 						</select>
 						</div>
 						<br>
-						{% if userAdded %}
-						<h3 style="font-size: 16px; color: green; font-family: century gothic;">{{userAdded}}</h3>
-						<br>
-						{% endif %}
 						<button type="submit" name="submit" class="btn basic-btn" id="login-btn" value="Add Single">Add Single</button>								
 					</form>
 					<br><hr><br>
@@ -104,7 +102,7 @@
 						{% csrf_token %}
 						<button type="submit" name="dlCSV" class="btn btn-warning" value="DOWNLOAD">Download</button>
 						<br><br>
-						<div style="font-size: 16px; color: grey; font-family: century gothic;">(Please put a 1 under TA header for teaching assistants otherwise user will be considered a student.
+						<div style="font-size: 16px; color: grey; font-family: century gothic;">If the user is a teaching assistant, enter '1' in the TA column.
 						<br><br>
 						</div>
 					</form>
@@ -125,6 +123,9 @@
 						{% endif %}
 						{% if invalidEmail != "" %}
 						<h3 style="font-size: 16px; color: red; font-family: century gothic;">{{invalidEmail}}</h3>
+						{% endif %}
+						{% if teacherUsers != "" %}
+						<h3 style="font-size: 16px; color: red; font-family: century gothic;">{{teacherUsers}}</h3>
 						{% endif %}
 					<br>
 					{% endif %}
