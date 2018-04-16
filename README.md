@@ -62,8 +62,8 @@ Run the following commands in cmd terminal:
 6. Open Browser window and type the following in the URL space: 127.0.0.1:8000.
 7. You should now see the Amesite Chat Responder Login page. 
 8. For asynchronous tasks run the exe redis file, open 2 separate cmd windows.
-    In the first cmd window type the following command: celery -A CourseGuru worker -l info
-    In the other cmd window type the following command: celery -A CourseGuru beat -l Debug
+    In the first cmd window type the following command: celery -A CourseGuru worker -l info.
+    In the other cmd window type the following command: celery -A CourseGuru beat -l Debug,
 
    
 
